@@ -1,7 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import { generateRandomAddress, generatePassword } from '../utils/helpers';
+import { getEmailDomains, getDefaultEmailDomain, EMAIL_DOMAINS, DEFAULT_EMAIL_DOMAIN } from '../config';
 
 interface CreateLoginDialogProps {
   isOpen: boolean;
@@ -13,14 +14,34 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const { loginWithPassword, isLoading, createMailboxWithCredentials, showSuccessMessage, showErrorMessage } = useContext(MailboxContext);
   const [activeTab, setActiveTab] = useState<'create' | 'login'>('create');
   
+  // Domain state
+  const [emailDomains, setEmailDomains] = useState<string[]>(EMAIL_DOMAINS);
+  const [selectedDomain, setSelectedDomain] = useState<string>(DEFAULT_EMAIL_DOMAIN);
+  
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const domains = await getEmailDomains();
+        const defaultDom = await getDefaultEmailDomain();
+        setEmailDomains(domains.length > 0 ? domains : EMAIL_DOMAINS);
+        setSelectedDomain(defaultDom || DEFAULT_EMAIL_DOMAIN);
+      } catch (error) {
+        console.error('加载域名配置失败:', error);
+      }
+    };
+    loadConfig();
+  }, []);
+
   // 创建标签状态
   const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
   const [createdCopied, setCreatedCopied] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
   
   // 登录标签状态
   const [loginAddress, setLoginAddress] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginDomain, setLoginDomain] = useState('');
   const [loginError, setLoginError] = useState('');
 
   if (!isOpen) return null;
@@ -30,15 +51,17 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     setGeneratedPassword(generatePassword());
   };
 
-  const handleCopyCreate = (text: string) => {
+  const handleCopyAll = () => {
+    const text = `用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}`;
     navigator.clipboard.writeText(text).then(() => {
-      setCreatedCopied(true);
-      setTimeout(() => setCreatedCopied(false), 2000);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2000);
     });
   };
 
   const handleCreate = async () => {
-    const result = await createMailboxWithCredentials(generatedAddress, generatedPassword);
+    const fullAddress = `${generatedAddress}@${selectedDomain}`;
+    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
     if (result) {
       onDismiss();
     }
@@ -53,7 +76,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
       return;
     }
 
-    const success = await loginWithPassword(loginAddress.trim(), loginPassword);
+    const fullAddress = `${loginAddress.trim()}@${loginDomain}`;
+    const success = await loginWithPassword(fullAddress, loginPassword);
     if (success) {
       setLoginAddress('');
       setLoginPassword('');
@@ -66,7 +90,76 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const handleTabSwitch = (tab: 'create' | 'login') => {
     setActiveTab(tab);
     setLoginError('');
-    setCreatedCopied(false);
+    setCopiedAll(false);
+    if (loginDomain === '') {
+      setLoginDomain(selectedDomain);
+    }
+  };
+    loadConfig();
+  }, []);
+
+  // 创建标签状态
+  const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
+  const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
+  const [createdCopied, setCreatedCopied] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
+  
+  // 登录标签状态
+  const [loginAddress, setLoginAddress] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginDomain, setLoginDomain] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleRegenerate = () => {
+    setGeneratedAddress(generateRandomAddress());
+    setGeneratedPassword(generatePassword());
+  };
+
+  const handleCopyAll = () => {
+    const text = `用户名：\n${generatedAddress}\n密码：\n${generatedPassword}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2000);
+    });
+  };
+
+  const handleCreate = async () => {
+    const fullAddress = `${generatedAddress}@${selectedDomain}`;
+    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
+    if (result) {
+      onDismiss();
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+
+    if (!loginAddress.trim() || !loginPassword.trim()) {
+      setLoginError(t('mailbox.loginRequiredFields'));
+      return;
+    }
+
+    const fullAddress = `${loginAddress.trim()}@${loginDomain}`;
+    const success = await loginWithPassword(fullAddress, loginPassword);
+    if (success) {
+      setLoginAddress('');
+      setLoginPassword('');
+      onDismiss();
+    } else {
+      setLoginError(t('mailbox.loginFailed'));
+    }
+  };
+
+  const handleTabSwitch = (tab: 'create' | 'login') => {
+    setActiveTab(tab);
+    setLoginError('');
+    setCopiedAll(false);
+    if (loginDomain === '') {
+      setLoginDomain(selectedDomain);
+    }
   };
 
   return (
@@ -119,15 +212,31 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                   {t('mailbox.address')}
                 </label>
                 <div className="flex items-center bg-background rounded-md px-3 py-2">
-                  <code className="flex-1 text-sm break-all font-mono">{generatedAddress}</code>
+                  <code className="flex-1 text-sm break-all font-mono">{generatedAddress}@{selectedDomain}</code>
                   <button
-                    onClick={() => handleCopyCreate(generatedAddress)}
+                    onClick={handleCopyAll}
                     className="ml-2 w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors"
-                    title={t('common.copy')}
+                    title={t('mailbox.copyAll') || '复制全部'}
                   >
-                    <i className="fas fa-copy text-sm"></i>
+                    <i className={`fas ${copiedAll ? 'fa-check text-green-500' : 'fa-copy'} text-sm`}></i>
                   </button>
                 </div>
+              </div>
+
+              {/* 域名选择 */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('mailbox.selectDomain') || '选择域名'}
+                </label>
+                <select 
+                  value={selectedDomain}
+                  onChange={(e) => setSelectedDomain(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                >
+                  {emailDomains.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               </div>
 
               {/* 密码 */}
@@ -137,13 +246,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 </label>
                 <div className="flex items-center bg-background rounded-md px-3 py-2">
                   <code className="flex-1 text-sm break-all font-mono">{generatedPassword}</code>
-                  <button
-                    onClick={() => handleCopyCreate(generatedPassword)}
-                    className="ml-2 w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors"
-                    title={t('common.copy')}
-                  >
-                    <i className="fas fa-copy text-sm"></i>
-                  </button>
                 </div>
               </div>
             </div>
@@ -167,6 +269,14 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 ) : (
                   <span><i className="fas fa-plus mr-1"></i>{t('mailbox.create')}</span>
                 )}
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              {t('mailbox.createPasswordTip')}
+            </p>
+          </div>
+        )}
               </button>
             </div>
 

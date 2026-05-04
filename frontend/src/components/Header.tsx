@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({
                 <ThemeSwitcher />
                 <LanguageSwitcher />
                 <a
-                  href="https://github.com/zaunist/zmail"
+                  href="https://github.com/fyjn4r5/miaoyou"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"

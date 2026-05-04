@@ -1,6 +1,6 @@
 export function generateRandomAddress(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const length = Math.floor(Math.random() * 5) + 8;
+  const length = 12;
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));

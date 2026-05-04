@@ -63,7 +63,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
       <div className="flex items-center space-x-2">
         {/* 邮箱地址显示 */}
         <code className="hidden sm:block bg-muted px-2 py-1 rounded text-sm font-medium">
-          {mailbox.address}@{domain}
+          {mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${domain}`}
         </code>
         
         {/* 操作按钮 */}
