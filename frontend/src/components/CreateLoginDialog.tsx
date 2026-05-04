@@ -35,7 +35,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   // 创建标签状态
   const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
-  const [createdCopied, setCreatedCopied] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
   
   // 登录标签状态
@@ -53,72 +52,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   const handleCopyAll = () => {
     const text = `用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedAll(true);
-      setTimeout(() => setCopiedAll(false), 2000);
-    });
-  };
-
-  const handleCreate = async () => {
-    const fullAddress = `${generatedAddress}@${selectedDomain}`;
-    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
-    if (result) {
-      onDismiss();
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-
-    if (!loginAddress.trim() || !loginPassword.trim()) {
-      setLoginError(t('mailbox.loginRequiredFields'));
-      return;
-    }
-
-    const fullAddress = `${loginAddress.trim()}@${loginDomain}`;
-    const success = await loginWithPassword(fullAddress, loginPassword);
-    if (success) {
-      setLoginAddress('');
-      setLoginPassword('');
-      onDismiss();
-    } else {
-      setLoginError(t('mailbox.loginFailed'));
-    }
-  };
-
-  const handleTabSwitch = (tab: 'create' | 'login') => {
-    setActiveTab(tab);
-    setLoginError('');
-    setCopiedAll(false);
-    if (loginDomain === '') {
-      setLoginDomain(selectedDomain);
-    }
-  };
-    loadConfig();
-  }, []);
-
-  // 创建标签状态
-  const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
-  const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
-  const [createdCopied, setCreatedCopied] = useState(false);
-  const [copiedAll, setCopiedAll] = useState(false);
-  
-  // 登录标签状态
-  const [loginAddress, setLoginAddress] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginDomain, setLoginDomain] = useState('');
-  const [loginError, setLoginError] = useState('');
-
-  if (!isOpen) return null;
-
-  const handleRegenerate = () => {
-    setGeneratedAddress(generateRandomAddress());
-    setGeneratedPassword(generatePassword());
-  };
-
-  const handleCopyAll = () => {
-    const text = `用户名：\n${generatedAddress}\n密码：\n${generatedPassword}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
@@ -269,14 +202,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 ) : (
                   <span><i className="fas fa-plus mr-1"></i>{t('mailbox.create')}</span>
                 )}
-              </button>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              {t('mailbox.createPasswordTip')}
-            </p>
-          </div>
-        )}
               </button>
             </div>
 
