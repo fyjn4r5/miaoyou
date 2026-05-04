@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect, ReactNode, useRef } from 'react';
 import {
-  createRandomMailbox,
   getMailboxFromLocalStorage,
   saveMailboxToLocalStorage,
   removeMailboxFromLocalStorage,
   getEmails,
   deleteMailbox as apiDeleteMailbox,
-  loginMailbox as apiLoginMailbox
+  loginMailbox as apiLoginMailbox,
+  createMailboxWithCredentials
 } from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_AUTO_REFRESH, AUTO_REFRESH_INTERVAL } from '../config';
@@ -32,7 +32,6 @@ interface MailboxContextType {
   setIsEmailsLoading: (loading: boolean) => void;
   autoRefresh: boolean;
   setAutoRefresh: (autoRefresh: boolean) => void;
-  createNewMailbox: () => Promise<void>;
   deleteMailbox: () => Promise<void>;
   refreshEmails: (isManual?: boolean) => Promise<void>;
   emailCache: EmailCache;
@@ -48,6 +47,7 @@ interface MailboxContextType {
   togglePasswordVisibility: () => void;
   showPasswordDialog: boolean;
   setShowPasswordDialog: (show: boolean) => void;
+  createMailboxWithCredentials: (address: string, password: string) => Promise<boolean>;
 }
 
 export const MailboxContext = createContext<MailboxContextType>({
@@ -62,7 +62,6 @@ export const MailboxContext = createContext<MailboxContextType>({
   setIsEmailsLoading: () => {},
   autoRefresh: DEFAULT_AUTO_REFRESH,
   setAutoRefresh: () => {},
-  createNewMailbox: async () => {},
   deleteMailbox: async () => {},
   refreshEmails: async () => {},
   emailCache: {},
@@ -78,6 +77,7 @@ export const MailboxContext = createContext<MailboxContextType>({
   togglePasswordVisibility: () => {},
   showPasswordDialog: false,
   setShowPasswordDialog: () => {},
+  createMailboxWithCredentials: async () => false,
 });
 
 interface MailboxProviderProps {
@@ -87,7 +87,7 @@ interface MailboxProviderProps {
 export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) => {
   const { t } = useTranslation();
   const [mailbox, setMailboxState] = useState<(Mailbox & { password: string }) | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const [isEmailsLoading, setIsEmailsLoading] = useState(false);
@@ -146,50 +146,40 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     };
   }, []);
 
-  // 初始化：检查本地存储或创建新邮箱
+  // 初始化：仅检查本地存储，不再自动创建
   useEffect(() => {
-    const initMailbox = async () => {
-      // 检查本地存储中是否有未过期的邮箱
-      const savedMailbox = getMailboxFromLocalStorage();
-
-      if (savedMailbox) {
-        setMailbox(savedMailbox);
-        setIsLoading(false);
-      } else {
-        // 创建新邮箱
-        await createNewMailbox();
-      }
-    };
-
-    initMailbox();
+    const savedMailbox = getMailboxFromLocalStorage();
+    if (savedMailbox) {
+      setMailbox(savedMailbox);
+    }
+    setIsLoading(false);
   }, []);
 
-  // 创建新邮箱
-  const createNewMailbox = async () => {
+  // 使用指定的用户名和密码创建邮箱
+  const createMailboxWithCredentialsFn = async (address: string, password: string): Promise<boolean> => {
     try {
-      // 清除之前的错误和成功信息
+      setIsLoading(true);
       setErrorMessage(null);
       setSuccessMessage(null);
-      setIsLoading(true);
-      const result = await createRandomMailbox();
+      
+      const result = await createMailboxWithCredentials(address, password);
+      
       if (result.success && result.mailbox) {
         const mailboxWithPassword = {
           ...result.mailbox,
-          password: result.password || ''
+          password: result.password || password
         };
         setMailbox(mailboxWithPassword);
-        // 显示密码对话框
-        setShowPasswordDialog(true);
-        // feat: 创建新邮箱也给出提示
         showSuccessMessage(t('mailbox.createSuccess'));
+        return true;
       } else {
-        // fix: 使用全局通知函数
-        showErrorMessage(t('mailbox.createFailed'));
-        throw new Error('Failed to create mailbox');
+        showErrorMessage(result.error || t('mailbox.createFailed'));
+        return false;
       }
     } catch (error) {
-      console.error('createNewMailbox: Error:', error);
-      throw error;
+      console.error('createMailboxWithCredentials: Error:', error);
+      showErrorMessage(t('mailbox.createFailed'));
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -230,25 +220,19 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     if (!mailbox) return;
 
     try {
-      // 清除之前的错误和成功信息
       setErrorMessage(null);
       setSuccessMessage(null);
 
-      // 调用API删除邮箱
       const result = await apiDeleteMailbox(mailbox.address);
 
       if (result.success) {
         showSuccessMessage(t('mailbox.deleteSuccess'));
 
-        // 清除本地数据
         setMailboxState(null);
         setEmails([]);
         setSelectedEmail(null);
         removeMailboxFromLocalStorage();
         clearEmailCache();
-
-        // 创建新邮箱
-        await createNewMailbox();
       } else {
         showErrorMessage(t('mailbox.deleteFailed'));
       }
@@ -312,83 +296,12 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
   const handleMailboxNotFound = async () => {
     showSuccessMessage(t('mailbox.creatingNew'));
     
-    // 清除当前无效的邮箱信息
     removeMailboxFromLocalStorage();
     clearEmailCache();
     
-    // 异步创建新邮箱，并更新应用状态
-    await createNewMailbox();
+    setMailboxState(null);
+    setShowPasswordDialog(true);
   };
-
-  // 设置邮箱并保存到localStorage
-  const handleSetMailbox = (newMailbox: Mailbox & { password: string }) => {
-    setMailboxState(newMailbox);
-    saveMailboxToLocalStorage(newMailbox, newMailbox.password);
-  };
-
-  // 添加邮件到缓存
-  const addToEmailCache = (emailId: string, email: Email, attachments: any[]) => {
-    setEmailCache(prev => ({
-      ...prev,
-      [emailId]: {
-        email,
-        attachments,
-        timestamp: Date.now()
-      }
-    }));
-
-    // 保存到localStorage
-    try {
-      const mailboxAddress = mailbox?.address;
-      if (mailboxAddress) {
-        const cacheKey = `emailCache_${mailboxAddress}`;
-        const updatedCache = {
-          ...emailCache,
-          [emailId]: {
-            email,
-            attachments,
-            timestamp: Date.now()
-          }
-        };
-        localStorage.setItem(cacheKey, JSON.stringify(updatedCache));
-      }
-    } catch (error) {
-      console.error('Error saving email cache to localStorage:', error);
-    }
-  };
-
-  // 清除邮件缓存
-  const clearEmailCache = () => {
-    setEmailCache({});
-
-    // 清除localStorage中的缓存
-    try {
-      const mailboxAddress = mailbox?.address;
-      if (mailboxAddress) {
-        const cacheKey = `emailCache_${mailboxAddress}`;
-        localStorage.removeItem(cacheKey);
-      }
-    } catch (error) {
-      console.error('Error clearing email cache from localStorage:', error);
-    }
-  };
-
-  // 从localStorage加载邮件缓存
-  useEffect(() => {
-    if (!mailbox) return;
-
-    try {
-      const cacheKey = `emailCache_${mailbox.address}`;
-      const cachedData = localStorage.getItem(cacheKey);
-
-      if (cachedData) {
-        const parsedCache = JSON.parse(cachedData);
-        setEmailCache(parsedCache);
-      }
-    } catch (error) {
-      console.error('Error loading email cache from localStorage:', error);
-    }
-  }, [mailbox]);
 
   return (
     <MailboxContext.Provider
@@ -404,7 +317,6 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
         setIsEmailsLoading,
         autoRefresh,
         setAutoRefresh,
-        createNewMailbox,
         deleteMailbox,
         refreshEmails,
         emailCache,
@@ -420,6 +332,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
         togglePasswordVisibility,
         showPasswordDialog,
         setShowPasswordDialog,
+        createMailboxWithCredentials: createMailboxWithCredentialsFn,
       }}
     >
       {/* [feat] 全局通知组件 */}

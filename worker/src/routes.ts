@@ -70,8 +70,8 @@ app.post('/api/mailboxes', async (c) => {
     
     // 生成或使用提供的地址
     const address = body.address || generateRandomAddress();
-    // 生成随机密码（30-45位）
-    const password = generatePassword();
+    // 使用前端提供的密码，或生成随机密码
+    const password = body.password || generatePassword();
     
     // 检查邮箱是否已存在
     const existingMailbox = await getMailbox(c.env.DB, address);

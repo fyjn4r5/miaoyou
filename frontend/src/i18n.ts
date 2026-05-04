@@ -22,13 +22,14 @@ i18n
         translation: en,
       },
     },
+    lng: 'zh-CN',
     fallbackLng: 'zh-CN',
     debug: import.meta.env.MODE === 'development',
     interpolation: {
       escapeValue: false, // 不转义HTML
     },
     detection: {
-      order: ['navigator', 'htmlTag', 'path', 'localStorage'],
+      order: ['localStorage'],
       caches: ['localStorage'],
     },
   });

@@ -34,6 +34,41 @@ export const createRandomMailbox = async (expiresInHours = 876000) => {
   }
 };
 
+// 使用指定的用户名和密码创建邮箱
+export const createMailboxWithCredentials = async (address: string, password: string, expiresInHours = 876000) => {
+  try {
+    const response = await fetch(apiUrl('/api/mailboxes'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        address: address.trim(),
+        password: password.trim(),
+        expiresInHours,
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      if (response.status === 400) {
+        return { success: false, error: data.error || '邮箱地址已存在' };
+      }
+      throw new Error(data.error || '创建失败');
+    }
+    
+    if (data.success) {
+      return { success: true, mailbox: data.mailbox, password: data.password || password };
+    } else {
+      throw new Error(data.error || '未知错误');
+    }
+  } catch (error) {
+    console.error('Error creating mailbox with credentials:', error);
+    return { success: false, error };
+  }
+};
+
 // 创建自定义邮箱
 export const createCustomMailbox = async (address: string, expiresInHours = 876000) => {
   try {

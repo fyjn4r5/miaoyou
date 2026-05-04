@@ -1,17 +1,16 @@
 import React, { useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import EmailList from '../components/EmailList';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import PasswordDisplay from '../components/PasswordDisplay';
+import CreateLoginDialog from '../components/CreateLoginDialog';
 
 // 添加结构化数据组件
 const StructuredData: React.FC = () => {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "秒邮-24小时匿名邮箱",
+    "name": "秒邮-永久匿名邮箱",
     "applicationCategory": "UtilityApplication",
     "operatingSystem": "All",
     "offers": {
@@ -19,7 +18,7 @@ const StructuredData: React.FC = () => {
       "price": "0",
       "priceCurrency": "CNY"
     },
-    "description": "创建临时邮箱地址，接收邮件，无需注册，保护您的隐私安全",
+    "description": "创建永久邮箱地址，接收邮件，支持密码登录找回，保护您的隐私安全",
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.8",
@@ -64,19 +63,15 @@ const HomePage: React.FC = () => {
   return (
     <Container>
       <StructuredData />
-      {showPasswordDialog && mailbox && (
-        <PasswordDisplay 
-          password={mailbox.password} 
-          address={`${mailbox.address}`}
-          onDismiss={() => setShowPasswordDialog(false)} 
+      <CreateLoginDialog isOpen={showPasswordDialog || !mailbox} onDismiss={() => { if (mailbox) setShowPasswordDialog(false); }} />
+      {mailbox && (
+        <EmailList 
+          emails={emails} 
+          selectedEmailId={selectedEmail}
+          onSelectEmail={setSelectedEmail}
+          isLoading={isEmailsLoading}
         />
       )}
-      <EmailList 
-        emails={emails} 
-        selectedEmailId={selectedEmail}
-        onSelectEmail={setSelectedEmail}
-        isLoading={isEmailsLoading}
-      />
       
       {/* 介绍内容区域 */}
       <div className="mt-8 space-y-6">
@@ -93,10 +88,10 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <i className="fas fa-clock text-primary mt-1"></i>
+                <i className="fas fa-infinity text-primary mt-1"></i>
                 <div>
-                  <h3 className="font-medium">{t('intro.features.temporary.title')}</h3>
-                  <p className="text-sm text-muted-foreground">{t('intro.features.temporary.description')}</p>
+                  <h3 className="font-medium">{t('intro.features.permanent.title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('intro.features.permanent.description')}</p>
                 </div>
               </div>
             </div>
@@ -109,10 +104,10 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <i className="fas fa-bolt text-primary mt-1"></i>
+                <i className="fas fa-key text-primary mt-1"></i>
                 <div>
-                  <h3 className="font-medium">{t('intro.features.instant.title')}</h3>
-                  <p className="text-sm text-muted-foreground">{t('intro.features.instant.description')}</p>
+                  <h3 className="font-medium">{t('intro.features.secure.title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('intro.features.secure.description')}</p>
                 </div>
               </div>
             </div>
@@ -134,9 +129,9 @@ const HomePage: React.FC = () => {
               <p className="text-sm text-muted-foreground">{t('intro.useCases.downloads.description')}</p>
             </div>
             <div className="text-center p-4">
-              <i className="fas fa-vial text-2xl text-primary mb-3"></i>
-              <h3 className="font-medium mb-2">{t('intro.useCases.testing.title')}</h3>
-              <p className="text-sm text-muted-foreground">{t('intro.useCases.testing.description')}</p>
+              <i className="fas fa-user-shield text-2xl text-primary mb-3"></i>
+              <h3 className="font-medium mb-2">{t('intro.useCases.privacy.title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('intro.useCases.privacy.description')}</p>
             </div>
           </div>
         </section>

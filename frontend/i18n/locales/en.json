@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "秒邮-24h Anonymous Email"
+    "title": "秒邮-Permanent Anonymous Email"
   },
   "common": {
     "loading": "Loading...",
@@ -30,6 +30,8 @@
   "mailbox": {
     "createRandom": "Create Random Mailbox",
     "createCustom": "Create Custom Mailbox",
+    "create": "Create",
+    "createPasswordTip": "Please save your username and password, this is the only way to recover your mailbox",
     "address": "Email Address",
     "password": "Password",
     "login": "Login to Mailbox",
@@ -90,53 +92,53 @@
         "title": "Privacy Protection",
         "description": "No registration required, no personal information collected, completely anonymous"
       },
-      "temporary": {
-        "title": "Temporary Email",
-        "description": "24-hour validity period, automatic expiration and deletion, avoid spam troubles"
+      "permanent": {
+        "title": "Permanent Validity",
+        "description": "Mailbox accounts never expire, can be recovered anytime with independent password"
       },
       "anonymous": {
         "title": "Anonymous Reception",
         "description": "Protect your real email address, prevent information leakage and harassment"
       },
-      "instant": {
-        "title": "Instant Creation",
-        "description": "One-click generation of temporary email, ready to use immediately, simple and convenient"
+      "secure": {
+        "title": "Secure Control",
+        "description": "High-strength random password generation, support custom creation, secure data control"
       }
     },
     "useCases": {
       "title": "Use Cases",
       "verification": {
-        "title": "One-time Verification",
-        "description": "Receive verification codes, confirmation emails and other temporary verification needs"
+        "title": "Website Registration",
+        "description": "Register various website accounts, receive verification codes and confirmations"
       },
       "downloads": {
-        "title": "Software Downloads",
-        "description": "Avoid marketing emails when downloading software and getting resources"
+        "title": "Resource Acquisition",
+        "description": "Avoid marketing email bombardment when downloading software and documents"
       },
-      "testing": {
-        "title": "Testing & Verification",
-        "description": "Ideal tool for development testing and email verification functions"
+      "privacy": {
+        "title": "Privacy Protection",
+        "description": "Protect personal mailbox, avoid spam and privacy leakage risks"
       }
     },
     "security": {
       "title": "Security Notice",
-      "warning1": "Do not use for receiving important or sensitive information, temporary email does not guarantee data security",
-      "warning2": "Email content may be accessed by others, please avoid including personal privacy information",
-      "warning3": "The mailbox will be automatically deleted after 24 hours, please save important content in time"
+      "warning1": "Please keep your mailbox address and password safe, this is the only way to recover your account",
+      "warning2": "Mailbox content may be accessed by others, please avoid including personal privacy information",
+      "warning3": "Do not use your real account passwords in the password input field to prevent leakage"
     },
     "faq": {
       "title": "FAQ",
       "q1": {
-        "question": "How long is the mailbox valid?",
-        "answer": "All mailboxes are valid for 24 hours and will be automatically deleted after expiration."
+        "question": "Will the mailbox account expire?",
+        "answer": "No. Mailbox accounts created with 秒邮 are permanently valid, you can log in anytime with your username and password."
       },
       "q2": {
-        "question": "Can I send emails?",
-        "answer": "This service only supports receiving emails, not sending emails."
+        "question": "Can I still log in after changing devices?",
+        "answer": "Yes. As long as you remember the mailbox address and the assigned password, you can log in from any browser."
       },
       "q3": {
         "question": "Is email content secure?",
-        "answer": "All email content is only stored during the validity period and will be automatically deleted after expiration. Please check important information in time."
+        "answer": "We regularly clean up read emails and long-unaccessed emails. It is recommended to save important content promptly."
       }
     }
   },
