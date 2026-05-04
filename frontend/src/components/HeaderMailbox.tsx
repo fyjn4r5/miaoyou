@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import CreateLoginDialog from './CreateLoginDialog';
-import CreateLoginDialog from './CreateLoginDialog';
 
 interface HeaderMailboxProps {
   mailbox: Mailbox | null;
@@ -20,7 +19,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, setShowPasswordDialog } = useContext(MailboxContext);
+  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog } = useContext(MailboxContext);
   const [selectedDomain] = useState(domain);
   const [showDialog, setShowDialog] = useState(false);
 

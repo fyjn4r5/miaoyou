@@ -303,6 +303,53 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     setShowPasswordDialog(true);
   };
 
+  // 添加邮件到缓存
+  const addToEmailCache = (emailId: string, email: Email, attachments: any[]) => {
+    setEmailCache(prev => ({
+      ...prev,
+      [emailId]: {
+        email,
+        attachments,
+        timestamp: Date.now()
+      }
+    }));
+
+    // 保存到localStorage
+    try {
+      const mailboxAddress = mailbox?.address;
+      if (mailboxAddress) {
+        const cacheKey = `emailCache_${mailboxAddress}`;
+        const updatedCache = {
+          ...emailCache,
+          [emailId]: {
+            email,
+            attachments,
+            timestamp: Date.now()
+          }
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(updatedCache));
+      }
+    } catch (error) {
+      console.error('Error saving email cache to localStorage:', error);
+    }
+  };
+
+  // 清除邮件缓存
+  const clearEmailCache = () => {
+    setEmailCache({});
+
+    // 清除localStorage中的缓存
+    try {
+      const mailboxAddress = mailbox?.address;
+      if (mailboxAddress) {
+        const cacheKey = `emailCache_${mailboxAddress}`;
+        localStorage.removeItem(cacheKey);
+      }
+    } catch (error) {
+      console.error('Error clearing email cache from localStorage:', error);
+    }
+  };
+
   return (
     <MailboxContext.Provider
       value={{
