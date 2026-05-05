@@ -49,7 +49,7 @@
     "expiresInMinutes": "{{minutes}}分钟",
     "copySuccess": "邮箱地址已复制到剪贴板",
     "copyFailed": "复制邮箱地址失败",
-    "createSuccess": "邮箱创建成功",
+    "createSuccess": "邮箱创建成功,帐号信息已复制，请直接粘帖保存。",
     "createFailed": "邮箱创建失败",
     "deleteSuccess": "邮箱删除成功",
     "deleteFailed": "邮箱删除失败",
