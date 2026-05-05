@@ -1,4 +1,4 @@
-name = "zmail"
+name = "miaoyou-copy"
 main = "worker/src/index.ts"
 
 # 打包配置
@@ -8,11 +8,10 @@ compatibility_date = "2025-03-01"
 keep_vars = true
 
 # 启用 D1 数据库
-# 注意：这里的 binding 是固定的 "DB"，database_name 和 database_id 将由 GitHub Action 动态替换
 [[d1_databases]]
 binding = "DB"
-database_name = "thanks1"  # 这是 D1 数据库名称的占位符
-database_id = "adeb3ea5-2c09-4767-aeec-2b9d2c8df823"      # 这是 D1 数据库 ID 的占位符
+database_name = "miaoyou"
+database_id = "7efbe74a-e91d-4b6a-9535-52bf08377d43"
 
 # 设置域名
 # 注意：这里的 VITE_EMAIL_DOMAIN 将由 GitHub Action 动态替换
