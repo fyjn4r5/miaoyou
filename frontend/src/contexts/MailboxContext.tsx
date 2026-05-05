@@ -81,6 +81,9 @@ export const MailboxContext = createContext<MailboxContextType>({
   showPasswordDialog: false,
   setShowPasswordDialog: () => {},
   createMailboxWithCredentials: async () => false,
+  emailDomains: [],
+  selectedDomain: 'example.com',
+  setSelectedDomain: () => {},
 });
 
 interface MailboxProviderProps {
