@@ -30,11 +30,22 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   const handleCopyAll = () => {
     const siteUrl = window.location.origin;
-    const text = `----------------------------------------------\n邮箱地址：\n${siteUrl}\n\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n----------------------------------------------\n`;
+    const text = `永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
     });
+  };
+
+  const handleCreate = async () => {
+    const fullAddress = `${generatedAddress}@${selectedDomain}`;
+    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
+    if (result) {
+      handleCopyAll();
+      setTimeout(() => {
+        onDismiss();
+      }, 1000);
+    }
   };
 
   const handleCreate = async () => {
@@ -143,14 +154,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 </code>
               </div>
             </div>
-
-            <button
-              onClick={handleCopyAll}
-              className="w-full px-4 py-2 text-sm rounded-md bg-muted hover:bg-muted/80 transition-colors flex items-center justify-center"
-            >
-              <i className={`fas ${copiedAll ? 'fa-check text-green-500' : 'fa-copy'} mr-2`}></i>
-              {copiedAll ? (t('common.copied') || '已复制') : (t('复制帐号信息') || 'mailbox.copyAll')}
-            </button>
 
             <div className="flex space-x-2">
               <button
