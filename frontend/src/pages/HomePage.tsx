@@ -47,7 +47,6 @@ const HomePage: React.FC = () => {
     setShowPasswordDialog
   } = useContext(MailboxContext);
   
-  // 使用ref来跟踪是否已经处理过404错误
   const handlingNotFoundRef = useRef(false);
   
   if (isLoading) {
@@ -63,7 +62,7 @@ const HomePage: React.FC = () => {
   return (
     <Container>
       <StructuredData />
-      <CreateLoginDialog isOpen={showPasswordDialog || !mailbox} onDismiss={() => { if (mailbox) setShowPasswordDialog(false); }} />
+      <CreateLoginDialog isOpen={showPasswordDialog} onDismiss={() => setShowPasswordDialog(false)} />
       {mailbox && (
         <EmailList 
           emails={emails} 
@@ -71,6 +70,32 @@ const HomePage: React.FC = () => {
           onSelectEmail={setSelectedEmail}
           isLoading={isEmailsLoading}
         />
+      )}
+      
+      {/* 未登录时的操作区域 */}
+      {!mailbox && (
+        <div className="mt-6 mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button
+            onClick={() => setShowPasswordDialog(true)}
+            className="w-full sm:w-auto px-8 py-3 text-base rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+          >
+            <i className="fas fa-plus mr-2"></i>
+            {t('mailbox.create')}
+          </button>
+          <button
+            onClick={() => {
+              setShowPasswordDialog(true);
+              setTimeout(() => {
+                const loginTab = document.querySelector('[data-tab="login"]');
+                if (loginTab) (loginTab as HTMLElement).click();
+              }, 100);
+            }}
+            className="w-full sm:w-auto px-8 py-3 text-base rounded-lg bg-muted hover:bg-muted/80 transition-colors font-medium"
+          >
+            <i className="fas fa-sign-in-alt mr-2"></i>
+            {t('mailbox.login')}
+          </button>
+        </div>
       )}
       
       {/* 介绍内容区域 */}

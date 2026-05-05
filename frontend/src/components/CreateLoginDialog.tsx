@@ -38,9 +38,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const [copiedAll, setCopiedAll] = useState(false);
   
   // 登录标签状态
-  const [loginAddress, setLoginAddress] = useState('');
+  const [loginFullAddress, setLoginFullAddress] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginDomain, setLoginDomain] = useState('');
   const [loginError, setLoginError] = useState('');
 
   if (!isOpen) return null;
@@ -51,7 +50,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   };
 
   const handleCopyAll = () => {
-    const text = `用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}`;
+    const siteUrl = window.location.origin;
+    const text = `用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n永久匿名邮箱：\n${siteUrl}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
@@ -70,15 +70,14 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     e.preventDefault();
     setLoginError('');
 
-    if (!loginAddress.trim() || !loginPassword.trim()) {
+    if (!loginFullAddress.trim() || !loginPassword.trim()) {
       setLoginError(t('mailbox.loginRequiredFields'));
       return;
     }
 
-    const fullAddress = `${loginAddress.trim()}@${loginDomain}`;
-    const success = await loginWithPassword(fullAddress, loginPassword);
+    const success = await loginWithPassword(loginFullAddress.trim(), loginPassword);
     if (success) {
-      setLoginAddress('');
+      setLoginFullAddress('');
       setLoginPassword('');
       onDismiss();
     } else {
@@ -90,9 +89,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     setActiveTab(tab);
     setLoginError('');
     setCopiedAll(false);
-    if (loginDomain === '') {
-      setLoginDomain(selectedDomain);
-    }
   };
 
   return (
@@ -114,6 +110,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         {/* 标签页切换 */}
         <div className="flex border-b mb-4">
           <button
+            data-tab="create"
             className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
               activeTab === 'create' 
                 ? 'border-b-2 border-primary text-primary' 
@@ -124,6 +121,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
             {t('mailbox.create')}
           </button>
           <button
+            data-tab="login"
             className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
               activeTab === 'login' 
                 ? 'border-b-2 border-primary text-primary' 
@@ -139,37 +137,26 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         {activeTab === 'create' && (
           <div className="space-y-4">
             <div className="bg-muted/50 rounded-md p-4 space-y-3">
-              {/* 邮箱地址 */}
+              {/* 邮箱用户名 + 域名选择（一排） */}
               <div>
                 <label className="block text-sm font-medium mb-1">
                   {t('mailbox.address')}
                 </label>
-                <div className="flex items-center bg-background rounded-md px-3 py-2">
-                  <code className="flex-1 text-sm break-all font-mono">{generatedAddress}@{selectedDomain}</code>
-                  <button
-                    onClick={handleCopyAll}
-                    className="ml-2 w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors"
-                    title={t('mailbox.copyAll') || '复制全部'}
+                <div className="flex items-center space-x-2">
+                  <code className="flex-1 bg-background rounded-md px-3 py-2 text-sm break-all font-mono">
+                    {generatedAddress}
+                  </code>
+                  <span className="text-muted-foreground">@</span>
+                  <select 
+                    value={selectedDomain}
+                    onChange={(e) => setSelectedDomain(e.target.value)}
+                    className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   >
-                    <i className={`fas ${copiedAll ? 'fa-check text-green-500' : 'fa-copy'} text-sm`}></i>
-                  </button>
+                    {emailDomains.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
                 </div>
-              </div>
-
-              {/* 域名选择 */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('mailbox.selectDomain') || '选择域名'}
-                </label>
-                <select 
-                  value={selectedDomain}
-                  onChange={(e) => setSelectedDomain(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                >
-                  {emailDomains.map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
               </div>
 
               {/* 密码 */}
@@ -177,11 +164,20 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 <label className="block text-sm font-medium mb-1">
                   {t('mailbox.password')}
                 </label>
-                <div className="flex items-center bg-background rounded-md px-3 py-2">
-                  <code className="flex-1 text-sm break-all font-mono">{generatedPassword}</code>
-                </div>
+                <code className="block bg-background rounded-md px-3 py-2 text-sm break-all font-mono">
+                  {generatedPassword}
+                </code>
               </div>
             </div>
+
+            {/* 复制按钮（放在下方） */}
+            <button
+              onClick={handleCopyAll}
+              className="w-full px-4 py-2 text-sm rounded-md bg-muted hover:bg-muted/80 transition-colors flex items-center justify-center"
+            >
+              <i className={`fas ${copiedAll ? 'fa-check text-green-500' : 'fa-copy'} mr-2`}></i>
+              {copiedAll ? (t('common.copied') || '已复制') : (t('mailbox.copyAll') || '复制用户名和密码')}
+            </button>
 
             <div className="flex space-x-2">
               <button
@@ -220,10 +216,10 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               </label>
               <input
                 type="text"
-                value={loginAddress}
-                onChange={(e) => setLoginAddress(e.target.value)}
+                value={loginFullAddress}
+                onChange={(e) => setLoginFullAddress(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                placeholder={t('mailbox.address')}
+                placeholder={`${t('mailbox.address')} (如: abc123456789@example.com)`}
                 disabled={isLoading}
               />
             </div>
