@@ -149,7 +149,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               className="w-full px-4 py-2 text-sm rounded-md bg-muted hover:bg-muted/80 transition-colors flex items-center justify-center"
             >
               <i className={`fas ${copiedAll ? 'fa-check text-green-500' : 'fa-copy'} mr-2`}></i>
-              {copiedAll ? (t('common.copied') || '已复制') : (t('mailbox.copyAll') || '复制帐号信息')}
+              {copiedAll ? (t('common.copied') || '已复制') : (t('复制帐号信息') || 'mailbox.copyAll')}
             </button>
 
             <div className="flex space-x-2">
