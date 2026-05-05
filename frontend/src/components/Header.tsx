@@ -20,7 +20,6 @@ const Header: React.FC<HeaderProps> = ({
   isLoading = false 
 }) => {
   const { t } = useTranslation();
-  const { emailDomains, selectedDomain, setSelectedDomain, setShowPasswordDialog } = useContext(MailboxContext);
   
   return (
     <header className="border-b">
@@ -30,60 +29,29 @@ const Header: React.FC<HeaderProps> = ({
             {t('app.title')}
           </Link>
           
-          <div className="flex items-center gap-3">
-            {/* 域名选择器（始终显示） */}
-            {emailDomains.length > 1 && (
-              <select 
-                value={selectedDomain}
-                onChange={(e) => setSelectedDomain(e.target.value)}
-                className="px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-              >
-                {emailDomains.map(d => (
-                  <option key={d} value={d}>@{d}</option>
-                ))}
-              </select>
-            )}
-            
+          <div className="flex items-center bg-muted/70 rounded-md px-3 py-1.5">
             {mailbox && (
-              <div className="flex items-center bg-muted/70 rounded-md px-3 py-1.5">
-                <HeaderMailbox 
-                  mailbox={mailbox} 
-                  onMailboxChange={onMailboxChange}
-                  isLoading={isLoading}
-                />
-                <div className="ml-3 pl-3 border-l border-muted-foreground/20 flex items-center">
-                  <ThemeSwitcher />
-                  <LanguageSwitcher />
-                  <a
-                    href="https://github.com/fyjn4r5/miaoyou"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"
-                    aria-label="GitHub"
-                    title="GitHub"
-                  >
-                    <i className="fab fa-github text-base"></i>
-                  </a>
-                </div>
-              </div>
+              <HeaderMailbox 
+                mailbox={mailbox} 
+                onMailboxChange={onMailboxChange}
+                isLoading={isLoading}
+              />
             )}
             
-            {!mailbox && (
-              <div className="flex items-center bg-muted/70 rounded-md px-3 py-1.5">
-                <ThemeSwitcher />
-                <LanguageSwitcher />
-                <a
-                  href="https://github.com/fyjn4r5/miaoyou"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"
-                  aria-label="GitHub"
-                  title="GitHub"
-                >
-                  <i className="fab fa-github text-base"></i>
-                </a>
-              </div>
-            )}
+            <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-muted-foreground/20' : ''}`}>
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+              <a
+                href="https://github.com/fyjn4r5/miaoyou"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"
+                aria-label="GitHub"
+                title="GitHub"
+              >
+                <i className="fab fa-github text-base"></i>
+              </a>
+            </div>
           </div>
         </div>
       </Container>

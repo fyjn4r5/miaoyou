@@ -27,7 +27,7 @@
     "terms": "Terms of Service",
     "about": "About Us"
   },
-  "mailbox": {
+    "mailbox": {
     "createRandom": "Create Random Mailbox",
     "createCustom": "Create Custom Mailbox",
     "create": "Create",
@@ -44,7 +44,35 @@
     "copyPasswordSuccess": "Password copied to clipboard",
     "copyPasswordFailed": "Failed to copy password",
     "savePassword": "Save Your Password",
-    "savePasswordWarning": "This password is only shown once. Please save it! You will need your email address and password to login next time."
+    "savePasswordWarning": "This password is only shown once. Please save it! You will need your email address and password to login next time.",
+    "copyMailbox": "Copy Email Address",
+    "copyNew": "Copy New Mailbox",
+    "createNew": "Create New Mailbox",
+    "copySuccess": "Email address copied to clipboard",
+    "copyFailed": "Failed to copy email address",
+    "createSuccess": "Mailbox created successfully",
+    "createFailed": "Failed to create mailbox",
+    "deleteSuccess": "Mailbox deleted successfully",
+    "deleteFailed": "Failed to delete mailbox",
+    "delete": "Permanently delete mailbox",
+    "confirmDelete": "Are you sure you want to delete the current mailbox? It will not be accessible after deletion.",
+    "invalidAddress": "Invalid email address",
+    "addressExists": "Email address already exists",
+    "refresh": "Change mailbox",
+    "refreshSuccess": "Mailbox changed successfully",
+    "refreshFailed": "Failed to change mailbox",
+    "customize": "Custom mailbox",
+    "notFound": "Mailbox not found or expired",
+    "creatingNew": "Creating new mailbox...",
+    "switch": "Switch mailbox",
+    "switchSuccess": "Mailbox switched successfully",
+    "savedMailboxes": "Saved mailboxes",
+    "confirmDeleteMailbox": "Are you sure you want to delete this saved mailbox?",
+    "deleteSavedSuccess": "Saved mailbox deleted successfully",
+    "confirmClearAllMailboxes": "Are you sure you want to clear all saved mailboxes? (The currently used mailbox will not be deleted)",
+    "clearAll": "Clear all",
+    "clearAllSuccess": "All saved mailboxes cleared",
+    "clearAllFailed": "Failed to clear some mailboxes ({{count}})"
   },
   "email": {
     "inbox": "Inbox",
@@ -85,61 +113,113 @@
     "generic": "An error occurred, please try again later",
     "notFound": "The requested resource was not found"
   },
-  "intro": {
+    "intro": {
+    "hero": {
+      "title": "Your Permanent Anonymous Email",
+      "subtitle": "No phone number, no personal info, one-click to create a permanent mailbox with password recovery",
+      "createBtn": "Create New Mailbox",
+      "loginBtn": "Login with Password",
+      "stats": {
+        "permanent": "Permanent",
+        "secure": "Secure Password",
+        "anonymous": "Anonymous"
+      }
+    },
     "features": {
-      "title": "Core Features",
+      "title": "Why Choose Miaoyou?",
+      "subtitle": "Secure, simple, ready-to-use email service",
       "privacy": {
         "title": "Privacy Protection",
-        "description": "No registration required, no personal information collected, completely anonymous"
+        "description": "No registration required, no personal data collected, completely anonymous"
       },
       "permanent": {
         "title": "Permanent Validity",
-        "description": "Mailbox accounts never expire, can be recovered anytime with independent password"
+        "description": "Mailbox accounts never expire, recoverable anytime with your independent password"
       },
       "anonymous": {
         "title": "Anonymous Reception",
-        "description": "Protect your real email address, prevent information leakage and harassment"
+        "description": "Protect your real email address, prevent information leaks and spam"
       },
       "secure": {
         "title": "Secure Control",
-        "description": "High-strength random password generation, support custom creation, secure data control"
+        "description": "High-strength random passwords, custom mailbox support, your data is in your hands"
+      }
+    },
+    "steps": {
+      "title": "How to Use Miaoyou",
+      "subtitle": "Three steps to get started, all within 30 seconds",
+      "step1": {
+        "title": "Create Mailbox",
+        "description": "Click create to generate a unique email address with a 30-character high-strength password"
+      },
+      "step2": {
+        "title": "Save Credentials",
+        "description": "Click copy to save your email and password in a secure place — your only recovery method"
+      },
+      "step3": {
+        "title": "Use Anytime",
+        "description": "On any device, any browser, enter your full email and password to log in and use"
       }
     },
     "useCases": {
       "title": "Use Cases",
+      "subtitle": "Miaoyou fits multiple scenarios, protecting your digital privacy",
       "verification": {
         "title": "Website Registration",
-        "description": "Register various website accounts, receive verification codes and confirmations"
+        "description": "Register accounts on websites, receive verification codes and confirmation emails"
       },
       "downloads": {
-        "title": "Resource Acquisition",
-        "description": "Avoid marketing email bombardment when downloading software and documents"
+        "title": "Resource Downloads",
+        "description": "Download software and documents without marketing email bombardment"
       },
       "privacy": {
         "title": "Privacy Protection",
-        "description": "Protect personal mailbox, avoid spam and privacy leakage risks"
+        "description": "Protect your personal mailbox from spam and privacy leaks"
+      },
+      "testing": {
+        "title": "Development Testing",
+        "description": "Test email sending functionality without using your real mailbox"
+      },
+      "forum": {
+        "title": "Forum Registration",
+        "description": "Register on forums and communities, avoid receiving spam emails"
+      },
+      "shopping": {
+        "title": "Online Shopping",
+        "description": "Register on e-commerce platforms for first-order deals, protect your main mailbox from marketing"
       }
     },
     "security": {
-      "title": "Security Notice",
-      "warning1": "Please keep your mailbox address and password safe, this is the only way to recover your account",
-      "warning2": "Mailbox content may be accessed by others, please avoid including personal privacy information",
-      "warning3": "Do not use your real account passwords in the password input field to prevent leakage"
+      "title": "Security Tips",
+      "subtitle": "To protect your account security, please read the following tips",
+      "warning1": "Keep your email address and password safe — this is the only way to recover your account",
+      "warning2": "Mailbox content may be accessed by others, avoid including personal privacy information",
+      "warning3": "Do not enter your real account password in the password field to prevent leaks"
     },
     "faq": {
       "title": "FAQ",
+      "subtitle": "Answers to common questions about Miaoyou",
       "q1": {
         "question": "Will the mailbox account expire?",
-        "answer": "No. Mailbox accounts created with 秒邮 are permanently valid, you can log in anytime with your username and password."
+        "answer": "No. Mailbox accounts created with Miaoyou are permanently valid, you can log in anytime with your email and password."
       },
       "q2": {
         "question": "Can I still log in after changing devices?",
-        "answer": "Yes. As long as you remember the mailbox address and the assigned password, you can log in from any browser."
+        "answer": "Yes. As long as you remember your email address and password, you can log in from any browser on any device."
       },
       "q3": {
         "question": "Is email content secure?",
-        "answer": "We regularly clean up read emails and long-unaccessed emails. It is recommended to save important content promptly."
+        "answer": "We regularly clean up read and long-unaccessed emails. It is recommended to save important content promptly."
+      },
+      "q4": {
+        "question": "What if I forget my password?",
+        "answer": "Unfortunately, for security reasons, we cannot provide password recovery. Please be sure to back up your email and password."
       }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Create your permanent anonymous mailbox now and protect your digital privacy",
+      "btn": "Create Free Mailbox Now"
     }
   },
   "terms": {
