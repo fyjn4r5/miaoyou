@@ -48,14 +48,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     }
   };
 
-  const handleCreate = async () => {
-    const fullAddress = `${generatedAddress}@${selectedDomain}`;
-    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
-    if (result) {
-      onDismiss();
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -83,7 +75,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+      <div className="bg-background rounded-lg shadow-xl w-full max-w-2xl mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {t('app.title')}
@@ -129,7 +121,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                   {t('mailbox.address')}
                 </label>
                 <div className="flex items-center space-x-2">
-                  <code className="flex-1 bg-background rounded-md px-3 py-2 text-sm break-all font-mono">
+                  <code className="flex-1 bg-background rounded-md px-3 py-2 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis" title={generatedAddress}>
                     {generatedAddress}
                   </code>
                   <span className="text-muted-foreground">@</span>
@@ -149,7 +141,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 <label className="block text-sm font-medium mb-1">
                   {t('mailbox.password')}
                 </label>
-                <code className="block bg-background rounded-md px-3 py-2 text-sm break-all font-mono">
+                <code className="block bg-background rounded-md px-3 py-2 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis" title={generatedPassword}>
                   {generatedPassword}
                 </code>
               </div>
