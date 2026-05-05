@@ -15,7 +15,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
-  const [copiedAll, setCopiedAll] = useState(false);
   
   const [loginFullAddress, setLoginFullAddress] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -28,36 +27,19 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     setGeneratedPassword(generatePassword());
   };
 
-  const handleCopyAll = () => {
-    const siteUrl = window.location.origin;
-    const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n--------------------------------`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedAll(true);
-      setTimeout(() => setCopiedAll(false), 8000);
-    });
-  };
-
   const handleCreate = async () => {
     const fullAddress = `${generatedAddress}@${selectedDomain}`;
     const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
+    
     if (result) {
       const siteUrl = window.location.origin;
-      const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n--------------------------------`;
+      const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${fullAddress}\n密码：\n${generatedPassword}\n--------------------------------`;
       
-      try {
-        // 先执行复制
-        await navigator.clipboard.writeText(text);
-        setCopiedAll(true); // 设置为 true 以显示提示框
-        
-        // 等待 8 秒，确保用户能看到提示框，然后再关闭弹窗
-        setTimeout(() => {
-          onDismiss();
-        }, 8000);
-      } catch (err) {
-        console.error("复制失败:", err);
-        // 如果复制失败，也关闭弹窗（或者您可以选择在这里报错）
-        onDismiss();
-      }
+      // 后台静默复制，不阻塞 UI
+      navigator.clipboard.writeText(text).catch(err => console.error("复制失败", err));
+      
+      // 立即关闭弹窗，显示收件箱
+      onDismiss();
     }
   };
 
@@ -83,19 +65,11 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const handleTabSwitch = (tab: 'create' | 'login') => {
     setActiveTab(tab);
     setLoginError('');
-    setCopiedAll(false);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background rounded-lg shadow-xl w-[460px] max-w-[95vw] mx-4 p-5 relative">
-        {/* 复制成功提示动画 */}
-        {copiedAll && (
-          <div className="fixed bottom-10 right-10 z-[60] bg-primary text-primary-foreground px-6 py-4 rounded-lg shadow-2xl animate-bounce flex items-center gap-3 border-2 border-primary-foreground/20">
-            <i className="fas fa-check-circle text-2xl"></i>
-            <span className="font-medium text-base">已复制并保存，请及时粘贴备份！</span>
-          </div>
-        )}
+      <div className="bg-background rounded-lg shadow-xl w-[460px] max-w-[95vw] mx-4 p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {t('app.title')}
@@ -183,8 +157,6 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               >
                 {isLoading ? (
                   <span><i className="fas fa-spinner fa-spin mr-1"></i>{t('common.loading')}</span>
-                ) : copiedAll ? (
-                  <span><i className="fas fa-clipboard-check mr-1"></i>已复制，请粘贴保存</span>
                 ) : (
                   <span><i className="fas fa-plus mr-1"></i>创建并复制帐号</span>
                 )}
