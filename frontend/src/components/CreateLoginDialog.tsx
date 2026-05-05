@@ -41,10 +41,23 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     const fullAddress = `${generatedAddress}@${selectedDomain}`;
     const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
     if (result) {
-      handleCopyAll();
-      setTimeout(() => {
+      const siteUrl = window.location.origin;
+      const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n--------------------------------`;
+      
+      try {
+        // 先执行复制
+        await navigator.clipboard.writeText(text);
+        setCopiedAll(true); // 设置为 true 以显示提示框
+        
+        // 等待 8 秒，确保用户能看到提示框，然后再关闭弹窗
+        setTimeout(() => {
+          onDismiss();
+        }, 8000);
+      } catch (err) {
+        console.error("复制失败:", err);
+        // 如果复制失败，也关闭弹窗（或者您可以选择在这里报错）
         onDismiss();
-      }, 1000);
+      }
     }
   };
 
@@ -173,7 +186,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 ) : copiedAll ? (
                   <span><i className="fas fa-clipboard-check mr-1"></i>已复制，请粘贴保存</span>
                 ) : (
-                  <span><i className="fas fa-plus mr-1"></i>{t('mailbox.createNew')}</span>
+                  <span><i className="fas fa-plus mr-1"></i>创建并复制帐号</span>
                 )}
               </button>
             </div>
