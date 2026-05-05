@@ -12,10 +12,9 @@
   <h3>💌 Secure, Simple, Disposable Email Service</h3>
 
   <p>
-    <a href="https://mail.mdzz.uk" target="_blank"><strong>🌐 Live Demo</strong></a> •
     <a href="#features"><strong>✨ Features</strong></a> •
-    <a href="#quick-deployment"><strong>🚀 Deployment</strong></a> •
-    <a href="#local-development"><strong>💻 Development</strong></a> •
+    <a href="#deployment"><strong>🚀 Deployment</strong></a> •
+    <a href="#development"><strong>💻 Development</strong></a> •
     <a href="#tech-stack"><strong>🔧 Tech Stack</strong></a>
   </p>
 
@@ -28,7 +27,7 @@
 
 ---
 
-## ✨ Features
+## <a id="features"></a>✨ Features
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
   <div>
@@ -59,7 +58,7 @@
 
 ---
 
-## 🚀 Quick Deployment
+## <a id="deployment"></a>🚀 Quick Deployment
 
 ZMAIL now adopts a brand new integrated deployment approach, with frontend and backend integrated into a single Cloudflare Worker, making deployment even simpler!
 
@@ -164,7 +163,7 @@ Regardless of which deployment method you choose, you need to configure Cloudfla
 
 ---
 
-## 💻 Local Development
+## <a id="development"></a>💻 Local Development
 
 ### 🚀 Development
 
@@ -196,7 +195,7 @@ pnpm run deploy
 
 ---
 
-## 🔧 Tech Stack
+## <a id="tech-stack"></a>🔧 Tech Stack
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;">
   <div>

@@ -12,11 +12,10 @@
   <h3>💌 安全、简单、即用即走的临时邮箱服务</h3>
 
   <p>
-    <a href="https://mail.mdzz.uk" target="_blank"><strong>🌐 在线体验</strong></a> •
-    <a href="#功能特点"><strong>✨ 功能特点</strong></a> •
-    <a href="#快速部署"><strong>🚀 快速部署</strong></a> •
-    <a href="#本地开发"><strong>💻 本地开发</strong></a> •
-    <a href="#技术栈"><strong>🔧 技术栈</strong></a>
+    <a href="#features"><strong>✨ 功能特点</strong></a> •
+    <a href="#deployment"><strong>🚀 快速部署</strong></a> •
+    <a href="#development"><strong>💻 本地开发</strong></a> •
+    <a href="#tech-stack"><strong>🔧 技术栈</strong></a>
   </p>
 
 </div>
@@ -26,7 +25,7 @@
 
 ---
 
-## ✨ 功能特点
+## <a id="features"></a>✨ 功能特点
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
   <div>
@@ -57,7 +56,7 @@
 
 ---
 
-## 🚀 快速部署
+## <a id="deployment"></a>🚀 快速部署
 
 ZMAIL 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
 
@@ -163,7 +162,7 @@ ZMAIL 现在采用全新的一体化部署方式，前端和后端整合为一�
 ---
 
 
-## 💻 本地开发
+## <a id="development"></a>💻 本地开发
 
 ### 🚀 开发
 
@@ -195,7 +194,7 @@ pnpm run deploy
 
 ---
 
-## 🔧 技术栈
+## <a id="tech-stack"></a>🔧 技术栈
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;">
   <div>
