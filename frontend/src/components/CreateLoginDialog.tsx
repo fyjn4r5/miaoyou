@@ -33,7 +33,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n--------------------------------`;
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
-      setTimeout(() => setCopiedAll(false), 3000);
+      setTimeout(() => setCopiedAll(false), 8000);
     });
   };
 
@@ -75,12 +75,12 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background rounded-lg shadow-xl w-full max-w-sm mx-4 p-5 relative">
+      <div className="bg-background rounded-lg shadow-xl w-[460px] max-w-[95vw] mx-4 p-5 relative">
         {/* 复制成功提示动画 */}
         {copiedAll && (
-          <div className="absolute -bottom-16 right-0 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-lg animate-bounce flex items-center gap-2">
-            <i className="fas fa-check-circle text-lg"></i>
-            <span className="font-medium text-sm">已复制并保存，请及时粘贴备份！</span>
+          <div className="fixed bottom-10 right-10 z-[60] bg-primary text-primary-foreground px-6 py-4 rounded-lg shadow-2xl animate-bounce flex items-center gap-3 border-2 border-primary-foreground/20">
+            <i className="fas fa-check-circle text-2xl"></i>
+            <span className="font-medium text-base">已复制并保存，请及时粘贴备份！</span>
           </div>
         )}
         <div className="flex items-center justify-between mb-4">
