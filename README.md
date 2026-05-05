@@ -1,4 +1,4 @@
-# <div align="center">🚀 ZMAIL - 24小时临时邮箱服务</div>
+# <div align="center">🚀 秒邮 - 永久匿名邮箱服务</div>
 
 <div align="center">
   <p>
@@ -7,9 +7,9 @@
 
   <p>如果这个项目对您有帮助，请考虑给它一个 ⭐️ Star ⭐️，这将是对我最大的鼓励！</p>
 
-  <img src="frontend/public/favicon.svg" alt="ZMAIL Logo" width="120" height="120" style="background-color: #4f46e5; padding: 20px; border-radius: 12px; margin: 20px 0;">
+  <img src="frontend/public/favicon.svg" alt="秒邮 Logo" width="120" height="120" style="background-color: #4f46e5; padding: 20px; border-radius: 12px; margin: 20px 0;">
 
-  <h3>💌 安全、简单、即用即走的临时邮箱服务</h3>
+  <h3>💌 安全、简单、永久有效的匿名邮箱服务</h3>
 
   <p>
     <a href="#features"><strong>✨ 功能特点</strong></a> •

@@ -23,8 +23,10 @@ export async function handleEmail(message: any, env: Env): Promise<void> {
       attachmentsCount: email.attachments?.length || 0
     });
 
-    // 提取邮箱地址部分（从email.to获取 ）
-    const mailboxAddress = email.to[0].address.split('@')[0];
+    // 提取完整邮箱地址
+    const mailboxAddress = email.to[0].address;
+    
+    console.log('查找邮箱:', mailboxAddress);
     
     // 查找对应的邮箱（不检查过期时间）
     const mailbox = await getMailbox(env.DB, mailboxAddress);

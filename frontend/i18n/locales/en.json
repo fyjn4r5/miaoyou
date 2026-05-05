@@ -194,7 +194,8 @@
       "subtitle": "To protect your account security, please read the following tips",
       "warning1": "Keep your email address and password safe — this is the only way to recover your account",
       "warning2": "Mailbox content may be accessed by others, avoid including personal privacy information",
-      "warning3": "Do not enter your real account password in the password field to prevent leaks"
+      "warning3": "Do not enter your real account password in the password field to prevent leaks",
+      "warning4": "The system automatically deletes emails older than 24 hours. Please save important content promptly"
     },
     "faq": {
       "title": "FAQ",
@@ -208,8 +209,8 @@
         "answer": "Yes. As long as you remember your email address and password, you can log in from any browser on any device."
       },
       "q3": {
-        "question": "Is email content secure?",
-        "answer": "We regularly clean up read and long-unaccessed emails. It is recommended to save important content promptly."
+        "question": "How long are emails kept?",
+        "answer": "Emails are automatically deleted 24 hours after being received, to free up storage space. Please check and save important content promptly."
       },
       "q4": {
         "question": "What if I forget my password?",

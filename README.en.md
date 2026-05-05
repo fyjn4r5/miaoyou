@@ -1,4 +1,4 @@
-# <div align="center">🚀 ZMAIL - 24-hour Temporary Email Service</div>
+# <div align="center">🚀 Miaoyou - Permanent Anonymous Email Service</div>
 
 <div align="center">
   <p>
@@ -7,9 +7,9 @@
 
   <p>If you find this project helpful, please consider giving it a ⭐️ Star ⭐️. Your support is greatly appreciated!</p>
 
-  <img src="frontend/public/favicon.svg" alt="ZMAIL Logo" width="120" height="120" style="background-color: #4f46e5; padding: 20px; border-radius: 12px; margin: 20px 0;">
+  <img src="frontend/public/favicon.svg" alt="Miaoyou Logo" width="120" height="120" style="background-color: #4f46e5; padding: 20px; border-radius: 12px; margin: 20px 0;">
 
-  <h3>💌 Secure, Simple, Disposable Email Service</h3>
+  <h3>💌 Secure, Simple, Permanent Anonymous Email Service</h3>
 
   <p>
     <a href="#features"><strong>✨ Features</strong></a> •
