@@ -122,7 +122,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     }
     successTimeoutRef.current = window.setTimeout(() => {
       setSuccessMessage(null);
-    }, 3000);
+    }, 8000);
   };
 
   // feat: 创建显示错误消息的函数
