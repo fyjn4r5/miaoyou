@@ -75,7 +75,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background rounded-lg shadow-xl w-full max-w-2xl mx-4 p-6">
+      <div className="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {t('app.title')}
@@ -163,8 +163,10 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               >
                 {isLoading ? (
                   <span><i className="fas fa-spinner fa-spin mr-1"></i>{t('common.loading')}</span>
+                ) : copiedAll ? (
+                  <span><i className="fas fa-clipboard-check mr-1"></i>已复制，请粘贴保存</span>
                 ) : (
-                  <span><i className="fas fa-plus mr-1"></i>{t('mailbox.create')}</span>
+                  <span><i className="fas fa-plus mr-1"></i>{t('mailbox.createNew')}</span>
                 )}
               </button>
             </div>

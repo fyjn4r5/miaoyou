@@ -15,7 +15,7 @@ database_id = "7efbe74a-e91d-4b6a-9535-52bf08377d43"
 
 # 设置域名
 [vars]
-VITE_EMAIL_DOMAIN = "${VITE_EMAIL_DOMAIN}"
+VITE_EMAIL_DOMAIN = "alice7.eu.org,foodyard.eu.org,newgames.eu.org"
 
 # 配置邮件处理
 [triggers]
