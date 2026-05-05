@@ -33,7 +33,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     
     if (result) {
       const siteUrl = window.location.origin;
-      const text = `--------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${fullAddress}\n密码：\n${generatedPassword}\n--------------------------------`;
+      const text = `----------------------------------------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${fullAddress}\n密码：\n${generatedPassword}\n----------------------------------------------------------------\n`;
       
       // 后台静默复制，不阻塞 UI
       navigator.clipboard.writeText(text).catch(err => console.error("复制失败", err));
