@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import CreateLoginDialog from './CreateLoginDialog';
@@ -6,28 +6,21 @@ import CreateLoginDialog from './CreateLoginDialog';
 interface HeaderMailboxProps {
   mailbox: Mailbox | null;
   onMailboxChange: (mailbox: Mailbox) => void;
-  domain: string;
-  domains: string[];
   isLoading: boolean;
 }
 
 const HeaderMailbox: React.FC<HeaderMailboxProps> = ({ 
   mailbox, 
   onMailboxChange,
-  domain,
-  domains,
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog } = useContext(MailboxContext);
-  const [selectedDomain] = useState(domain);
-  const [showDialog, setShowDialog] = useState(false);
+  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog, selectedDomain } = useContext(MailboxContext);
 
-  // 如果未登录或正在加载，显示登录/创建按钮
   if (!mailbox || isLoading) {
     return (
       <button
-        onClick={() => setShowDialog(true)}
+        onClick={() => setShowPasswordDialog(true)}
         className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
       >
         <i className="fas fa-sign-in-alt mr-2"></i>
@@ -36,7 +29,6 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
     );
   }
 
-  // 复制邮箱地址
   const copyToClipboard = () => {
     const fullAddress = mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${selectedDomain}`;
     navigator.clipboard.writeText(fullAddress)
@@ -44,12 +36,10 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
       .catch(() => showErrorMessage(t('mailbox.copyFailed')));
   };
 
-  // 切换/创建新邮箱
   const handleCreateOrSwitch = () => {
     setShowPasswordDialog(true);
   };
 
-  // 复制密码
   const copyPassword = () => {
     if (currentMailbox?.password) {
       navigator.clipboard.writeText(currentMailbox.password)
@@ -61,12 +51,10 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   return (
     <>
       <div className="flex items-center space-x-2">
-        {/* 邮箱地址显示 */}
         <code className="hidden sm:block bg-muted px-2 py-1 rounded text-sm font-medium">
-          {mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${domain}`}
+          {mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${selectedDomain}`}
         </code>
         
-        {/* 操作按钮 */}
         <button onClick={copyToClipboard} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('common.copy')}>
           <i className="fas fa-copy text-sm"></i>
         </button>
@@ -75,7 +63,6 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
           <i className="fas fa-plus text-sm"></i>
         </button>
 
-        {/* 密码相关操作 */}
         {currentMailbox?.password && (
           <div className="flex items-center space-x-1 ml-2 pl-2 border-l border-muted-foreground/20">
             <button onClick={copyPassword} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.copyPassword')}>
@@ -85,8 +72,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
         )}
       </div>
 
-      {/* 创建/登录弹窗 */}
-      <CreateLoginDialog isOpen={showDialog || showPasswordDialog} onDismiss={() => { setShowDialog(false); setShowPasswordDialog(false); }} />
+      <CreateLoginDialog isOpen={showPasswordDialog} onDismiss={() => setShowPasswordDialog(false)} />
     </>
   );
 };

@@ -9,7 +9,7 @@ import {
   createMailboxWithCredentials
 } from '../utils/api';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_AUTO_REFRESH, AUTO_REFRESH_INTERVAL } from '../config';
+import { DEFAULT_AUTO_REFRESH, AUTO_REFRESH_INTERVAL, getEmailDomains, getDefaultEmailDomain, EMAIL_DOMAINS, DEFAULT_EMAIL_DOMAIN } from '../config';
 
 // 邮件详情缓存接口
 interface EmailCache {
@@ -48,6 +48,9 @@ interface MailboxContextType {
   showPasswordDialog: boolean;
   setShowPasswordDialog: (show: boolean) => void;
   createMailboxWithCredentials: (address: string, password: string) => Promise<boolean>;
+  emailDomains: string[];
+  selectedDomain: string;
+  setSelectedDomain: (domain: string) => void;
 }
 
 export const MailboxContext = createContext<MailboxContextType>({
@@ -97,6 +100,8 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [emailDomains, setEmailDomains] = useState<string[]>(EMAIL_DOMAINS);
+  const [selectedDomain, setSelectedDomain] = useState<string>(DEFAULT_EMAIL_DOMAIN);
   const errorTimeoutRef = useRef<number | null>(null);
   const successTimeoutRef = useRef<number | null>(null);
 
@@ -153,6 +158,21 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
       setMailbox(savedMailbox);
     }
     setIsLoading(false);
+  }, []);
+  
+  // 加载域名配置
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const domains = await getEmailDomains();
+        const defaultDom = await getDefaultEmailDomain();
+        setEmailDomains(domains.length > 0 ? domains : EMAIL_DOMAINS);
+        setSelectedDomain(defaultDom || DEFAULT_EMAIL_DOMAIN);
+      } catch (error) {
+        console.error('加载邮箱域名配置失败:', error);
+      }
+    };
+    loadConfig();
   }, []);
 
   // 使用指定的用户名和密码创建邮箱
@@ -380,6 +400,9 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
         showPasswordDialog,
         setShowPasswordDialog,
         createMailboxWithCredentials: createMailboxWithCredentialsFn,
+        emailDomains,
+        selectedDomain,
+        setSelectedDomain,
       }}
     >
       {/* [feat] 全局通知组件 */}
