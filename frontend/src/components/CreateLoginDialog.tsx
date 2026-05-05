@@ -30,7 +30,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   const handleCopyAll = () => {
     const siteUrl = window.location.origin;
-    const text = `----------------------------------------------\n永久匿名邮箱：\n${siteUrl}\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}----------------------------------------------\n`;
+    const text = `----------------------------------------------\n邮箱地址：\n${siteUrl}\n\n用户名：\n${generatedAddress}@${selectedDomain}\n密码：\n${generatedPassword}\n----------------------------------------------\n`;
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
