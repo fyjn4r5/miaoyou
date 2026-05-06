@@ -42,14 +42,13 @@ const Header: React.FC<HeaderProps> = ({
               <ThemeSwitcher />
               <LanguageSwitcher />
               <a
-                href="https://github.com/fyjn4r5/miaoyou"
+                href="https://ip.alice7.eu.org/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"
-                aria-label="GitHub"
-                title="GitHub"
+                className="px-2 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-105 ml-1 text-sm font-medium whitespace-nowrap"
+                title="虚拟IP身份"
               >
-                <i className="fab fa-github text-base"></i>
+                虚拟IP身份
               </a>
             </div>
           </div>
