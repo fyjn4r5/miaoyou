@@ -46,9 +46,9 @@ const Header: React.FC<HeaderProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-105 ml-1 text-sm font-medium whitespace-nowrap"
-                title="虚拟IP身份"
+                title="真实地址生成器"
               >
-                虚拟IP身份
+                真实地址生成器
               </a>
             </div>
           </div>
