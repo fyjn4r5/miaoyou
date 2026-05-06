@@ -252,7 +252,7 @@ export const removeMailboxFromLocalStorage = () => {
 };
 
 // 获取系统统计信息
-export const getStats = async () => {
+export const getStats = async (): Promise<{ success: boolean; stats?: { mailboxCount: number }; error?: any }> => {
   try {
     const response = await fetch(apiUrl('/api/stats'));
     

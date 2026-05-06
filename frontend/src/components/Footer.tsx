@@ -16,7 +16,7 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
   useEffect(() => {
     const fetchStats = async () => {
       const result = await getStats();
-      if (result.success) {
+      if (result.success && result.stats) {
         setMailboxCount(result.stats.mailboxCount);
       }
     };
