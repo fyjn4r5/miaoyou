@@ -309,12 +309,6 @@ const HomePage: React.FC = () => {
                 <p className="text-base leading-relaxed">{t('intro.security.warning1')}</p>
               </div>
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <i className="fas fa-info-circle text-xl text-blue-500"></i>
-                </div>
-                <p className="text-base leading-relaxed">{t('intro.security.warning2')}</p>
-              </div>
-              <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                   <i className="fas fa-trash-alt text-xl text-red-500"></i>
                 </div>
@@ -344,17 +338,19 @@ const HomePage: React.FC = () => {
           </section>
           
           {/* CTA */}
-          <section className="bg-gradient-to-br from-primary/10 to-blue-600/10 rounded-3xl p-12 md:p-16 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('intro.cta.title')}</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('intro.cta.subtitle')}</p>
-            <button
-              onClick={() => setShowPasswordDialog(true)}
-              className="px-14 py-5 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
-            >
-              <i className="fas fa-rocket mr-2"></i>
-              {t('intro.cta.btn')}
-            </button>
-          </section>
+          {!mailbox && (
+            <section className="bg-gradient-to-br from-primary/10 to-blue-600/10 rounded-3xl p-12 md:p-16 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('intro.cta.title')}</h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('intro.cta.subtitle')}</p>
+              <button
+                onClick={() => setShowPasswordDialog(true)}
+                className="px-14 py-5 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
+              >
+                <i className="fas fa-rocket mr-2"></i>
+                {t('intro.cta.btn')}
+              </button>
+            </section>
+          )}
         </div>
     </Container>
   );
