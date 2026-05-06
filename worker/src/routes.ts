@@ -11,7 +11,8 @@ import {
   deleteEmail,
   getAttachments,
   getAttachment,
-  getMailboxCount
+  getMailboxCount,
+  getMailboxCountByIpLast24h
 } from './database';
 import { generateRandomAddress, generatePassword } from './utils';
 
@@ -88,6 +89,14 @@ app.post('/api/mailboxes', async (c) => {
     
     // 获取客户端IP
     const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+    
+    // 检查 IP 频率限制：24小时内最多创建10个
+    if (ip !== 'unknown') {
+      const ipCount = await getMailboxCountByIpLast24h(c.env.DB, ip);
+      if (ipCount >= 10) {
+        return c.json({ success: false, error: '您的 IP 在 24 小时内创建邮箱数量已达上限 (10个)' }, 429);
+      }
+    }
     
     // 生成或使用提供的地址
     const address = body.address || generateRandomAddress();

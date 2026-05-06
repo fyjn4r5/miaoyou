@@ -543,3 +543,16 @@ export async function getMailboxCount(db: D1Database): Promise<number> {
   const result = await db.prepare(`SELECT COUNT(*) as count FROM mailboxes`).first<{ count: number }>();
   return result?.count || 0;
 }
+
+/**
+ * 获取指定IP在24小时内创建的邮箱数量
+ * @param db 数据库实例
+ * @param ipAddress IP地址
+ * @returns 邮箱数量
+ */
+export async function getMailboxCountByIpLast24h(db: D1Database, ipAddress: string): Promise<number> {
+  const now = getCurrentTimestamp();
+  const oneDayAgo = now - (24 * 60 * 60);
+  const result = await db.prepare(`SELECT COUNT(*) as count FROM mailboxes WHERE ip_address = ? AND created_at > ?`).bind(ipAddress, oneDayAgo).first<{ count: number }>();
+  return result?.count || 0;
+}
