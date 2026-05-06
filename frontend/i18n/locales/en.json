@@ -72,7 +72,9 @@
     "confirmClearAllMailboxes": "Are you sure you want to clear all saved mailboxes? (The currently used mailbox will not be deleted)",
     "clearAll": "Clear all",
     "clearAllSuccess": "All saved mailboxes cleared",
-    "clearAllFailed": "Failed to clear some mailboxes ({{count}})"
+    "clearAllFailed": "Failed to clear some mailboxes ({{count}})",
+    "logout": "Logout",
+    "logoutSuccess": "Logged out successfully"
   },
   "email": {
     "inbox": "Inbox",

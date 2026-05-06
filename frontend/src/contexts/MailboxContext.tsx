@@ -23,6 +23,7 @@ interface EmailCache {
 interface MailboxContextType {
   mailbox: (Mailbox & { password: string }) | null;
   setMailbox: (mailbox: Mailbox & { password: string }) => void;
+  logout: () => void;
   isLoading: boolean;
   emails: Email[];
   setEmails: (emails: Email[]) => void;
@@ -56,6 +57,7 @@ interface MailboxContextType {
 export const MailboxContext = createContext<MailboxContextType>({
   mailbox: null,
   setMailbox: () => {},
+  logout: () => {},
   isLoading: false,
   emails: [],
   setEmails: () => {},
@@ -265,6 +267,16 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     }
   };
 
+  // 注销登录（仅清除本地状态，不删除邮箱）
+  const logout = () => {
+    setMailboxState(null);
+    setEmails([]);
+    setSelectedEmail(null);
+    removeMailboxFromLocalStorage();
+    clearEmailCache();
+    showSuccessMessage(t('mailbox.logoutSuccess'));
+  };
+
   // feat: 增加 isManual 参数，只有手动点击刷新时才显示Toast
   const refreshEmails = async (isManual = false) => {
     if (!mailbox || isEmailsLoading) return;
@@ -378,6 +390,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
       value={{
         mailbox,
         setMailbox,
+        logout,
         isLoading,
         emails,
         setEmails,

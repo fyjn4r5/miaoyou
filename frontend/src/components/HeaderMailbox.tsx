@@ -15,7 +15,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog, selectedDomain } = useContext(MailboxContext);
+  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog, selectedDomain, logout } = useContext(MailboxContext);
 
   if (!mailbox || isLoading) {
     return (
@@ -66,6 +66,10 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
         
         <button onClick={handleCreateNew} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.createNew')}>
           <i className="fas fa-plus text-sm"></i>
+        </button>
+        
+        <button onClick={logout} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.logout')}>
+          <i className="fas fa-sign-out-alt text-sm"></i>
         </button>
       </div>
 
