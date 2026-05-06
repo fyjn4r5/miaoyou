@@ -6,6 +6,7 @@ import { MailboxContext } from '../contexts/MailboxContext';
 interface EmailDetailProps {
   emailId: string;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
 interface Attachment {
@@ -19,7 +20,7 @@ interface Attachment {
   chunksCount: number;
 }
 
-const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
+const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose, onRefresh }) => {
   const { t } = useTranslation();
   // fix: 从 context 中获取全局通知函数
   const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage } = useContext(MailboxContext);
@@ -125,10 +126,15 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
         // fix: 使用全局通知函数
         showSuccessMessage(t('email.deleteSuccess'));
         
-        // 2秒后关闭邮件详情
+        // 刷新邮件列表
+        if (onRefresh) {
+          onRefresh();
+        }
+
+        // 1秒后关闭邮件详情
         setTimeout(() => {
           onClose();
-        }, 2000);
+        }, 1000);
       } else {
         throw new Error(data.error || 'Unknown error');
       }
@@ -271,7 +277,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                 className="p-2 rounded-md hover:bg-muted"
                 title={t('common.close')}
               >
-                <i className="fas fa-times"></i>
+                <i className="fas fa-chevron-up"></i>
               </button>
               <button
                 onClick={handleDelete}
