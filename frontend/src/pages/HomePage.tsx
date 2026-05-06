@@ -356,7 +356,6 @@ const HomePage: React.FC = () => {
             </button>
           </section>
         </div>
-      )}
     </Container>
   );
 };
