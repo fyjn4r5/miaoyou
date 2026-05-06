@@ -113,51 +113,51 @@ const HomePage: React.FC = () => {
       )}
       
       {!mailbox && (
-        <div className="space-y-20 py-10">
-          {/* Hero 区域 */}
-          <section className="text-center space-y-8 py-16">
-            <div className="space-y-5">
-              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                {t('intro.hero.title')}
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                {t('intro.hero.subtitle')}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-4">
-              <div className="px-6 py-3 rounded-full bg-primary/10 text-primary font-semibold text-base">
-                <i className="fas fa-infinity mr-2"></i>
-                {t('intro.hero.stats.permanent')}
-              </div>
-              <div className="px-6 py-3 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-semibold text-base">
-                <i className="fas fa-key mr-2"></i>
-                {t('intro.hero.stats.secure')}
-              </div>
-              <div className="px-6 py-3 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold text-base">
-                <i className="fas fa-user-secret mr-2"></i>
-                {t('intro.hero.stats.anonymous')}
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <button
-                onClick={() => setShowPasswordDialog(true)}
-                className="w-full sm:w-auto px-12 py-4 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-semibold"
-              >
-                <i className="fas fa-plus mr-2"></i>
-                {t('intro.hero.createBtn')}
-              </button>
-              <button
-                onClick={openLogin}
-                className="w-full sm:w-auto px-12 py-4 text-xl rounded-2xl bg-card border-2 border-border hover:border-primary transition-all hover:shadow-xl font-semibold"
-              >
-                <i className="fas fa-sign-in-alt mr-2"></i>
-                {t('intro.hero.loginBtn')}
-              </button>
-            </div>
-          </section>
+        <div className="text-center space-y-8 py-16">
+          <div className="space-y-5">
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              {t('intro.hero.title')}
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {t('intro.hero.subtitle')}
+            </p>
+          </div>
           
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="px-6 py-3 rounded-full bg-primary/10 text-primary font-semibold text-base">
+              <i className="fas fa-infinity mr-2"></i>
+              {t('intro.hero.stats.permanent')}
+            </div>
+            <div className="px-6 py-3 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-semibold text-base">
+              <i className="fas fa-key mr-2"></i>
+              {t('intro.hero.stats.secure')}
+            </div>
+            <div className="px-6 py-3 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold text-base">
+              <i className="fas fa-user-secret mr-2"></i>
+              {t('intro.hero.stats.anonymous')}
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <button
+              onClick={() => setShowPasswordDialog(true)}
+              className="w-full sm:w-auto px-12 py-4 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-semibold"
+            >
+              <i className="fas fa-plus mr-2"></i>
+              {t('intro.hero.createBtn')}
+            </button>
+            <button
+              onClick={openLogin}
+              className="w-full sm:w-auto px-12 py-4 text-xl rounded-2xl bg-card border-2 border-border hover:border-primary transition-all hover:shadow-xl font-semibold"
+            >
+              <i className="fas fa-sign-in-alt mr-2"></i>
+              {t('intro.hero.loginBtn')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-20 py-10">
           {/* 功能介绍 - 2行2列 */}
           <section>
             <div className="text-center mb-10">
