@@ -112,9 +112,10 @@ const HomePage: React.FC = () => {
         />
       )}
       
-      <div className="space-y-20 py-10">
-        {/* Hero 区域 */}
-        <section className="text-center space-y-8 py-16">
+      {!mailbox && (
+        <div className="space-y-20 py-10">
+          {/* Hero 区域 */}
+          <section className="text-center space-y-8 py-16">
             <div className="space-y-5">
               <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 {t('intro.hero.title')}
@@ -343,20 +344,19 @@ const HomePage: React.FC = () => {
           </section>
           
           {/* CTA */}
-          {!mailbox && (
-            <section className="bg-gradient-to-br from-primary/10 to-blue-600/10 rounded-3xl p-12 md:p-16 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('intro.cta.title')}</h2>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('intro.cta.subtitle')}</p>
-              <button
-                onClick={() => setShowPasswordDialog(true)}
-                className="px-14 py-5 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
-              >
-                <i className="fas fa-rocket mr-2"></i>
-                {t('intro.cta.btn')}
-              </button>
-            </section>
-          )}
+          <section className="bg-gradient-to-br from-primary/10 to-blue-600/10 rounded-3xl p-12 md:p-16 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('intro.cta.title')}</h2>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('intro.cta.subtitle')}</p>
+            <button
+              onClick={() => setShowPasswordDialog(true)}
+              className="px-14 py-5 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
+            >
+              <i className="fas fa-rocket mr-2"></i>
+              {t('intro.cta.btn')}
+            </button>
+          </section>
         </div>
+      )}
     </Container>
   );
 };
