@@ -27,14 +27,14 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
     <footer className="border-t py-6">
       <Container>
         <div className="text-center text-sm text-muted-foreground">
-          <p className="mb-2">
-            © {year} {t("app.title")}
-          </p>
           {mailboxCount !== null && (
             <p className="mb-2 text-primary font-medium">
               {t("footer.mailboxCount", { count: mailboxCount })}
             </p>
           )}
+          <p className="mb-2">
+            © {year} {t("app.title")}
+          </p>
           <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
             {/* 将 Link 组件修改为 button，点击时调用 onShowInfo 函数显示弹窗 */}
             <button
