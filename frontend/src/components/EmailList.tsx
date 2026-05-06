@@ -184,7 +184,6 @@ const EmailList: React.FC<EmailListProps> = ({
                   <EmailDetail 
                     emailId={email.id} 
                     onClose={() => onSelectEmail(null)}
-                    onRefresh={() => refreshEmails()}
                   />
                 </li>
               )}

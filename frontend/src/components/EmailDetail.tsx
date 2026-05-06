@@ -6,7 +6,6 @@ import { MailboxContext } from '../contexts/MailboxContext';
 interface EmailDetailProps {
   emailId: string;
   onClose: () => void;
-  onRefresh?: () => void;
 }
 
 interface Attachment {
@@ -20,10 +19,9 @@ interface Attachment {
   chunksCount: number;
 }
 
-const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose, onRefresh }) => {
+const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const { t } = useTranslation();
-  // fix: 从 context 中获取全局通知函数
-  const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage } = useContext(MailboxContext);
+  const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage, emails, setEmails } = useContext(MailboxContext);
   const [email, setEmail] = useState<Email | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,9 +124,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose, onRefresh }
         // fix: 使用全局通知函数
         showSuccessMessage(t('email.deleteSuccess'));
         
-        // 刷新邮件列表
-        if (onRefresh) {
-          onRefresh();
+        // 更新列表，移除已删除的邮件（静默刷新）
+        if (setEmails && emails) {
+          setEmails(emails.filter(email => email.id !== emailId));
         }
 
         // 1秒后关闭邮件详情
