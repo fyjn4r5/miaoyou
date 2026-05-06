@@ -198,7 +198,9 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
         showSuccessMessage(t('mailbox.createSuccess'));
         return true;
       } else {
-        showErrorMessage(result.error || t('mailbox.createFailed'));
+        // 防御性检查：确保 error 是字符串，防止 React 渲染崩溃
+        const errorMsg = typeof result.error === 'string' ? result.error : t('mailbox.createFailed');
+        showErrorMessage(errorMsg);
         return false;
       }
     } catch (error) {

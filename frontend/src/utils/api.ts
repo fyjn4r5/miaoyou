@@ -49,13 +49,18 @@ export const createMailboxWithCredentials = async (address: string, password: st
       }),
     });
     
-    const data = await response.json();
+    // 尝试解析 JSON，防止服务器返回 HTML 错误页导致崩溃
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      return { success: false, error: `服务器响应错误 (${response.status})` };
+    }
     
+    // 统一处理非 200 状态码
     if (!response.ok) {
-      if (response.status === 400) {
-        return { success: false, error: data.error || '邮箱地址已存在' };
-      }
-      throw new Error(data.error || '创建失败');
+      // 优先使用后端返回的中文错误信息（如 IP 限制提示）
+      return { success: false, error: data.error || `创建失败 (${response.status})` };
     }
     
     if (data.success) {
@@ -65,7 +70,9 @@ export const createMailboxWithCredentials = async (address: string, password: st
     }
   } catch (error) {
     console.error('Error creating mailbox with credentials:', error);
-    return { success: false, error };
+    // 确保返回的 error 是字符串
+    const message = error instanceof Error ? error.message : '网络异常';
+    return { success: false, error: message };
   }
 };
 
@@ -242,7 +249,8 @@ export const loginMailbox = async (address: string, password: string) => {
     }
   } catch (error) {
     console.error('Error logging in:', error);
-    return { success: false, error };
+    const message = error instanceof Error ? error.message : '登录失败';
+    return { success: false, error: message };
   }
 };
 
