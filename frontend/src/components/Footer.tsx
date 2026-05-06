@@ -32,7 +32,7 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
           </p>
           {mailboxCount !== null && (
             <p className="mb-2 text-primary font-medium">
-              {t("footer.mailboxCount", { count: mailboxCount.toLocaleString() })}
+              {t("footer.mailboxCount", { count: mailboxCount })}
             </p>
           )}
           <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
