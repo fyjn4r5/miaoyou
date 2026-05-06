@@ -10,7 +10,8 @@ import {
   getEmail, 
   deleteEmail,
   getAttachments,
-  getAttachment
+  getAttachment,
+  getMailboxCount
 } from './database';
 import { generateRandomAddress, generatePassword } from './utils';
 
@@ -47,6 +48,26 @@ app.get('/api/config', (c) => {
     return c.json({ 
       success: false, 
       error: '获取配置失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 获取系统统计信息
+app.get('/api/stats', async (c) => {
+  try {
+    const count = await getMailboxCount(c.env.DB);
+    return c.json({ 
+      success: true, 
+      stats: {
+        mailboxCount: count
+      }
+    });
+  } catch (error) {
+    console.error('获取统计信息失败:', error);
+    return c.json({ 
+      success: false, 
+      error: '获取统计信息失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

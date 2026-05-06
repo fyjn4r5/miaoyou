@@ -249,4 +249,26 @@ export const loginMailbox = async (address: string, password: string) => {
 // 从本地存储删除邮箱信息
 export const removeMailboxFromLocalStorage = () => {
   localStorage.removeItem('tempMailbox');
+};
+
+// 获取系统统计信息
+export const getStats = async () => {
+  try {
+    const response = await fetch(apiUrl('/api/stats'));
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch stats');
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return { success: true, stats: data.stats };
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    return { success: false, error };
+  }
 }; 

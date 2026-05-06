@@ -533,3 +533,13 @@ export async function deleteEmail(db: D1Database, id: string): Promise<void> {
   // [refactor] 由于外键设置了 ON DELETE CASCADE，直接删除邮件即可
   await db.prepare(`DELETE FROM emails WHERE id = ?`).bind(id).run();
 }
+
+/**
+ * 获取邮箱总数
+ * @param db 数据库实例
+ * @returns 邮箱总数
+ */
+export async function getMailboxCount(db: D1Database): Promise<number> {
+  const result = await db.prepare(`SELECT COUNT(*) as count FROM mailboxes`).first<{ count: number }>();
+  return result?.count || 0;
+}

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Container from "./Container";
+import { getStats } from "../utils/api";
 
 // 定义 props 类型，允许父组件传递控制弹窗显示的函数
 interface FooterProps {
@@ -10,6 +11,17 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+  const [mailboxCount, setMailboxCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const result = await getStats();
+      if (result.success) {
+        setMailboxCount(result.stats.mailboxCount);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <footer className="border-t py-6">
@@ -18,6 +30,11 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
           <p className="mb-2">
             © {year} {t("app.title")}
           </p>
+          {mailboxCount !== null && (
+            <p className="mb-2 text-primary font-medium">
+              {t("footer.mailboxCount", { count: mailboxCount.toLocaleString() })}
+            </p>
+          )}
           <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
             {/* 将 Link 组件修改为 button，点击时调用 onShowInfo 函数显示弹窗 */}
             <button

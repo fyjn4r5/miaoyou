@@ -111,6 +111,9 @@
     "language": "Language",
     "toggleTheme": "Toggle Theme"
   },
+  "footer": {
+    "mailboxCount": "{{count}} mailboxes created"
+  },
   "errors": {
     "generic": "An error occurred, please try again later",
     "notFound": "The requested resource was not found"

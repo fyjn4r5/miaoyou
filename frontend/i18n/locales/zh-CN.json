@@ -120,6 +120,9 @@
     "language": "语言",
     "toggleTheme": "切换主题"
   },
+  "footer": {
+    "mailboxCount": "已创建 {{count}} 个邮箱"
+  },
   "errors": {
     "generic": "发生错误，请稍后重试",
     "notFound": "未找到请求的资源"
