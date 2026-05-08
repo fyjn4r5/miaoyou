@@ -4,7 +4,7 @@ import { deleteMailbox as apiDeleteMailbox } from '../utils/api';
 import { MailboxContext } from '../contexts/MailboxContext'; // feat: 导入 MailboxContext
 
 interface MailboxSwitcherProps {
-  currentMailbox: Mailbox;
+  currentMailbox: Mailbox | null;
   onSwitchMailbox: (mailbox: Mailbox & { password: string }) => void;
   domain: string;
 }
@@ -123,8 +123,10 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
   // 清空所有已保存的邮箱
   const handleClearAllMailboxes = async () => {
     if (window.confirm(t('mailbox.confirmClearAllMailboxes'))) {
-      // 找出所有需要删除的邮箱（即列表中，非当前正在使用的邮箱）
-      const mailboxesToDelete = savedMailboxes.filter(m => m.address !== currentMailbox.address);
+      // 找出所有需要删除的邮箱（未登录时删除全部）
+      const mailboxesToDelete = currentMailbox
+        ? savedMailboxes.filter(m => m.address !== currentMailbox.address)
+        : savedMailboxes;
       
       // 如果没有需要删除的，直接返回
       if(mailboxesToDelete.length === 0) {
@@ -137,9 +139,10 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
       // feat: 使用 Promise.allSettled 来处理部分失败的情况
       const results = await Promise.allSettled(deletePromises);
       
-      // 从前端列表中只保留当前使用的邮箱
-      const currentMailboxToKeep = savedMailboxes.find(m => m.address === currentMailbox.address);
-      const mailboxesToKeep = currentMailboxToKeep ? [currentMailboxToKeep] : [];
+      // 从前端列表中只保留当前使用的邮箱（未登录时清空所有）
+      const mailboxesToKeep = currentMailbox
+        ? (savedMailboxes.find(m => m.address === currentMailbox.address) ? [savedMailboxes.find(m => m.address === currentMailbox.address)!] : [])
+        : [];
       
       // 更新UI和localStorage
       setSavedMailboxes(mailboxesToKeep);
@@ -157,8 +160,8 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
   };
 
 
-  // 如果没有保存的邮箱或者只有当前邮箱，不显示切换按钮
-  if (savedMailboxes.length <= 1) {
+  // 如果没有保存的邮箱，或者有当前邮箱但只有它一个，不显示切换按钮
+  if (savedMailboxes.length === 0 || (currentMailbox && savedMailboxes.length <= 1)) {
     return null;
   }
 
@@ -193,12 +196,12 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
                 <button
                   onClick={() => handleSwitchMailbox(m)}
                   className={`w-full text-left text-sm px-2 py-1.5 transition-colors truncate ${
-                    m.address === currentMailbox.address ? 'bg-primary/10 text-primary font-medium' : ''
+                    currentMailbox && m.address === currentMailbox.address ? 'bg-primary/10 text-primary font-medium' : ''
                   }`}
                 >
-                  {m.address}@{domain}
+                  {m.address.includes('@') ? m.address : `${m.address}@${domain}`}
                 </button>
-                {m.address !== currentMailbox.address && (
+                {(!currentMailbox || m.address !== currentMailbox.address) && (
                   <button
                     onClick={() => handleDeleteMailbox(m.address)}
                     className="p-2 text-red-500 hover:text-red-700"

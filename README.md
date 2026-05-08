@@ -13,16 +13,17 @@
 
   <p>
     <a href="#features"><strong>✨ 功能特点</strong></a> •
+    <a href="#screenshots"><strong>📸 界面预览</strong></a> •
     <a href="#deployment"><strong>🚀 快速部署</strong></a> •
     <a href="#development"><strong>💻 本地开发</strong></a> •
-    <a href="#tech-stack"><strong>🔧 技术栈</strong></a>
+    <a href="#tech-stack"><strong>🔧 技术栈</strong></a> •
+    <a href="#project-structure"><strong>📁 项目结构</strong></a>
   </p>
 
 </div>
 
 ---
 ### **有人拿去批量薅羊毛，现在demo只能看，不能接收邮件**
-
 ---
 
 ## <a id="features"></a>✨ 功能特点
@@ -30,29 +31,53 @@
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
   <div>
     <h4>✨ 即时创建</h4>
-    <p>无需注册，立即获得一个临时邮箱地址</p>
+    <p>无需注册，一键生成永久匿名邮箱地址，即时可用</p>
   </div>
   <div>
     <h4>🔒 隐私保护</h4>
-    <p>保护您的真实邮箱，避免垃圾邮件和信息泄露</p>
+    <p>保护您的真实邮箱，避免垃圾邮件和信息泄露，完全匿名使用</p>
   </div>
   <div>
-    <h4>⚡ 高速接收</h4>
-    <p>实时接收邮件，无需刷新页面</p>
+    <h4>🔐 密码登录</h4>
+    <p>每个邮箱拥有独立高强度密码，可跨设备随时登录找回</p>
+  </div>
+  <div>
+    <h4>🔄 多账号切换</h4>
+    <p>登录过的邮箱自动保存到浏览器，顶部一键切换，管理多个账号更方便</p>
+  </div>
+  <div>
+    <h4>⚡ 实时接收</h4>
+    <p>实时接收邮件，支持自动刷新（10秒间隔），不错过任何邮件</p>
   </div>
   <div>
     <h4>🌐 全球可用</h4>
     <p>基于Cloudflare构建，全球边缘网络加速</p>
   </div>
   <div>
-    <h4>🔄 自动刷新</h4>
-    <p>自动检查新邮件，确保不错过任何重要信息</p>
+    <h4>🌙 深色模式</h4>
+    <p>支持深色/浅色主题切换，保护视力</p>
+  </div>
+  <div>
+    <h4>🌍 多语言</h4>
+    <p>支持中英文界面，满足不同用户需求</p>
   </div>
   <div>
     <h4>📱 响应式设计</h4>
     <p>完美适配各种设备，从手机到桌面</p>
   </div>
 </div>
+
+---
+
+## <a id="screenshots"></a>📸 界面预览
+
+> 截图待补充
+
+| 页面 | 说明 |
+|------|------|
+| 🏠 **首页** | 引导用户创建或登录邮箱，展示功能介绍、使用场景、FAQ |
+| 📬 **收件箱** | 登录后显示邮件列表，支持查看邮件详情、附件 |
+| 🔄 **多账号切换** | 顶部下拉菜单，在多个已保存邮箱间快速切换 |
 
 ---
 
@@ -164,33 +189,64 @@ ZMAIL 现在采用全新的一体化部署方式，前端和后端整合为一�
 
 ## <a id="development"></a>💻 本地开发
 
-### 🚀 开发
+### 前置要求
 
-<div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
+- **Node.js** >= 18
+- **pnpm** >= 8（推荐使用 `npm install -g pnpm` 安装）
+- **Cloudflare 账户**（用于后端开发和部署）
+
+### 环境变量配置
+
+在 `frontend/` 目录下创建 `.env` 文件（参考 `.env.example`）：
 
 ```bash
-# 安装依赖
-pnpm install
+# 邮箱域名配置（多域名以逗号分隔）
+VITE_EMAIL_DOMAIN=example.com,abc.com,def.com
 
-# 启动前端开发服务器
-pnpm dev:frontend
-
-# 启动后端开发服务器
-pnpm dev:backend
+# API地址配置（本地开发指向 wrangler 代理地址）
+VITE_API_BASE_URL=/api
 ```
 
-</div>
-
-### ⚙️ 部署
-
-<div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
+### 🚀 启动开发服务器
 
 ```bash
-# 部署
+# 1. 安装所有依赖
+pnpm install
+
+# 2. 启动前端开发服务器（默认端口 5173）
+pnpm dev:frontend
+
+# 3. 启动后端开发服务器（默认端口 8787，需要 wrangler）
+pnpm dev:backend
+
+# 前端开发服务器会自动将 /api 请求代理到后端
+```
+
+### 前端构建
+
+```bash
+# 构建生产版本
+pnpm run build
+
+# 预览构建结果
+pnpm run preview
+```
+
+### ⚙️ 部署到 Cloudflare
+
+```bash
+# 部署 Worker（需要配置 wrangler.toml）
 pnpm run deploy
 ```
 
-</div>
+### 前端访问
+
+| 环境 | 地址 |
+|------|------|
+| 本地开发 | http://localhost:5173 |
+| API 地址 | /api（通过 Vite proxy） |
+
+> **注意**：本地开发时，邮件接收功能需要 Cloudflare Email Routing 配合，仅在生产环境可用。
 
 ---
 
@@ -200,21 +256,92 @@ pnpm run deploy
   <div>
     <h3>🎨 前端</h3>
     <ul>
-      <li><strong>React</strong> - 用户界面库</li>
+      <li><strong>React 18</strong> - 用户界面库</li>
       <li><strong>TypeScript</strong> - 类型安全的JavaScript超集</li>
       <li><strong>Tailwind CSS</strong> - 实用优先的CSS框架</li>
       <li><strong>Vite</strong> - 现代前端构建工具</li>
+      <li><strong>React Router v6</strong> - 前端路由</li>
+      <li><strong>i18next</strong> - 国际化解决方案</li>
+      <li><strong>Font Awesome</strong> - 图标库</li>
     </ul>
   </div>
   <div>
     <h3>⚙️ 后端</h3>
     <ul>
       <li><strong>Cloudflare Workers</strong> - 边缘计算平台</li>
-      <li><strong>Cloudflare D1</strong> - 边缘SQL数据库</li>
+      <li><strong>Hono</strong> - 轻量级Web框架</li>
+      <li><strong>Cloudflare D1</strong> - 边缘SQL数据库（SQLite）</li>
       <li><strong>Cloudflare Email Workers</strong> - 邮件处理服务</li>
     </ul>
   </div>
 </div>
+
+## <a id="project-structure"></a>📁 项目结构
+
+```
+zmail/
+├── frontend/                    # 前端 React 应用
+│   ├── i18n/locales/            # 国际化翻译文件
+│   │   ├── zh-CN.json           #   中文翻译
+│   │   └── en.json              #   英文翻译
+│   ├── public/                  # 静态资源
+│   └── src/
+│       ├── components/          # 通用组件
+│       │   ├── Header.tsx       #   页面顶部导航栏
+│       │   ├── HeaderMailbox.tsx #   邮箱操作栏（复制、切换、注销）
+│       │   ├── MailboxSwitcher.tsx #   多账号切换下拉菜单
+│       │   ├── CreateLoginDialog.tsx #   创建/登录弹窗
+│       │   ├── EmailList.tsx    #   邮件列表
+│       │   ├── EmailDetail.tsx  #   邮件详情
+│       │   ├── Layout.tsx       #   页面布局
+│       │   └── ...
+│       ├── contexts/
+│       │   └── MailboxContext.tsx #   全局邮箱状态管理
+│       ├── pages/
+│       │   ├── HomePage.tsx     #   首页
+│       │   ├── MailboxPage.tsx  #   邮箱详情页
+│       │   └── ...
+│       ├── utils/
+│       │   ├── api.ts           #   后端 API 调用封装
+│       │   └── helpers.ts       #   工具函数（生成地址/密码）
+│       ├── config.ts            #   前端配置
+│       ├── types.d.ts           #   TypeScript 类型定义
+│       └── App.tsx              #   应用入口
+├── worker/                      # 后端 Cloudflare Worker
+│   └── src/
+│       ├── index.ts             #   Worker 入口
+│       ├── routes.ts            #   API 路由处理
+│       ├── database.ts          #   D1 数据库操作
+│       ├── email-handler.ts     #   邮件接收处理
+│       ├── types.ts             #   类型定义
+│       └── utils.ts             #   工具函数
+├── wrangler.toml                # Cloudflare Worker 配置
+├── package.json                 # 项目根配置
+└── README.md                    # 项目说明
+```
+
+## 🔑 核心功能详解
+
+### 邮箱创建
+- **随机创建**：系统自动生成12位随机用户名和30+位高强度密码
+- **自定义创建**：用户可自定义用户名和密码
+- **多域名支持**：支持配置多个邮箱域名供用户选择
+
+### 邮箱登录
+- 通过完整邮箱地址和密码登录
+- 登录信息保存到浏览器 localStorage，下次自动恢复会话
+
+### 多账号管理（v2 新增）
+- 所有登录过的邮箱自动保存在浏览器本地
+- 顶部导航栏显示切换按钮（至少2个账号时出现）
+- 下拉列表展示所有已保存账号，当前账号高亮显示
+- 支持单个删除或一键清空所有已保存账号（保留当前账号）
+
+### 邮件功能
+- 实时接收邮件（自动刷新每10秒）
+- 查看邮件详情（发件人、主题、正文、附件）
+- 邮件缓存机制，减少重复请求
+- 24小时后自动清理邮件
 
 ---
 
