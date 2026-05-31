@@ -297,25 +297,7 @@ html.starry .starry-bg {
   animation: toast-in 0.8s cubic-bezier(0.22, 1.5, 0.36, 1) both;
 }
 
-/* Security warning text dynamic effects */
-@keyframes text-drift {
-  0% { transform: translateY(0) rotate(0deg); }
-  20% { transform: translateY(-14px) rotate(-1deg) scale(1.03); }
-  40% { transform: translateY(-8px) rotate(0.5deg) scale(1.01); }
-  60% { transform: translateY(-18px) rotate(1deg) scale(1.04); }
-  80% { transform: translateY(-6px) rotate(-0.5deg) scale(1.02); }
-  100% { transform: translateY(0) rotate(0deg); }
-}
-@keyframes text-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(250, 204, 21, 0.1), 0 0 0px rgba(250, 204, 21, 0); }
-  50% { box-shadow: 0 0 25px rgba(250, 204, 21, 0.3), 0 0 50px rgba(250, 204, 21, 0.1); }
-}
-.security-text {
-  animation: text-drift 4s ease-in-out infinite;
-}
-.security-glow {
-  animation: text-glow 3s ease-in-out infinite;
-}
+
 
 /* Starry theme: override yellow warning card to use theme colors */
 html.starry .security-warning-card {
