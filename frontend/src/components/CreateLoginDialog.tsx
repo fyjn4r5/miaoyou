@@ -35,9 +35,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
       const siteUrl = window.location.origin;
       const text = `-----------------------------------------------\n永久匿名邮箱：\n${siteUrl}\n\n用户名：\n${fullAddress}\n密码：\n${generatedPassword}\n-----------------------------------------------\n`;
       
-      navigator.clipboard.writeText(text)
-        .then(() => showSuccessMessage(t('mailbox.copySuccess')))
-        .catch(err => console.error("复制失败", err));
+      // 后台静默复制，不阻塞 UI
+      navigator.clipboard.writeText(text).catch(err => console.error("复制失败", err));
       
       // 立即关闭弹窗，显示收件箱
       onDismiss();
@@ -191,7 +190,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 {t('mailbox.password')}
               </label>
               <input
-                type="password"
+                type="text"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"

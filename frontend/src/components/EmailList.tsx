@@ -1,9 +1,7 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
-import { generateRandomName } from '../utils/nameGenerator';
-
 
 interface EmailListProps {
   emails: Email[];
@@ -19,9 +17,8 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
-  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
+  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
-  const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -64,13 +61,6 @@ const EmailList: React.FC<EmailListProps> = ({
     }
   };
   
-  const copyIdentity = async () => {
-    try {
-      await navigator.clipboard.writeText(`${randomName.fullName} (${randomName.username})`);
-      showSuccessMessage(t('common.copied'));
-    } catch {}
-  };
-
   const handleRefresh = () => {
     // feat: 调用 context 中的 refreshEmails，并传入 true 表示是手动刷新
     refreshEmails(true);
@@ -108,9 +98,9 @@ const EmailList: React.FC<EmailListProps> = ({
   
   return (
     <div className="border rounded-lg">
-      <div className="flex items-center gap-2 p-4 border-b flex-wrap">
-        <span className="text-lg font-semibold whitespace-nowrap">{t('email.inboxLabel')}</span>
-        <div className="flex items-center space-x-1 ml-auto">
+      <div className="flex justify-between items-center p-4 border-b">
+        <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
+        <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
             className="p-2 rounded-md hover:bg-muted"
@@ -129,26 +119,38 @@ const EmailList: React.FC<EmailListProps> = ({
       </div>
 
       {mailbox && (
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
+        <div className="px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground">
+          <div className="flex justify-between items-center mb-1">
+            <span>{t('mailbox.created')}:</span>
+            <span>{formatFullDate(mailbox.createdAt)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>{t('mailbox.expiresAt')}:</span>
             <span>{formatFullDate(mailbox.expiresAt)}</span>
-            <span className="text-muted-foreground/30">&middot;</span>
+          </div>
+          <div className="flex justify-between items-center mt-1">
+            <span>{t('mailbox.timeLeft')}:</span>
             <span>{calculateTimeLeft(mailbox.expiresAt)}</span>
           </div>
-          <button
-            onClick={handleDeleteMailbox}
-            className="text-red-500 hover:text-red-600 flex items-center gap-1"
-            title={t('mailbox.delete')}
-          >
-            <i className="fas fa-trash-alt"></i>
-            <span>{t('mailbox.delete')}</span>
-          </button>
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={handleDeleteMailbox}
+              className="text-red-500 hover:text-red-600 text-xs flex items-center gap-1"
+              title={t('mailbox.delete')}
+            >
+              <i className="fas fa-trash-alt"></i>
+              <span>{t('mailbox.delete')}</span>
+            </button>
+          </div>
         </div>
       )}
       
       <div className="flex justify-between items-center px-4 py-2 bg-muted/30">
         <span className="text-sm text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
         </span>
       </div>
       
@@ -188,21 +190,6 @@ const EmailList: React.FC<EmailListProps> = ({
             </React.Fragment>
           ))}
         </ul>
-      )}
-
-      {mailbox && (
-        <div className="flex items-center gap-2 px-4 py-2 border-t text-sm text-muted-foreground">
-          <span>🎭</span>
-          <span className="font-medium text-foreground">{randomName.fullName}</span>
-          <span>({randomName.username})</span>
-          <button
-            onClick={copyIdentity}
-            className="ml-auto p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-primary"
-            title="复制虚拟身份"
-          >
-            <i className="fas fa-copy text-xs"></i>
-          </button>
-        </div>
       )}
     </div>
   );

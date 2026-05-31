@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
             {t('app.title')}
           </Link>
           
-          <div className={`flex items-center ${mailbox ? 'bg-muted/70 rounded-md px-3 py-1.5' : ''}`}>
+          <div className="flex items-center bg-muted/70 rounded-md px-3 py-1.5">
             {mailbox && (
               <HeaderMailbox 
                 mailbox={mailbox} 
@@ -41,7 +41,15 @@ const Header: React.FC<HeaderProps> = ({
             <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-muted-foreground/20' : ''}`}>
               <ThemeSwitcher />
               <LanguageSwitcher />
-
+              <a
+                href="https://ip.alice7.eu.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-105 ml-1 text-sm font-medium whitespace-nowrap"
+                title="真实地址生成器"
+              >
+                真实地址生成器
+              </a>
             </div>
           </div>
         </div>

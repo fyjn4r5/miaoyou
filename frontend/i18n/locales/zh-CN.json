@@ -115,9 +115,21 @@
     "selectEmailPrompt": "请选择一封邮件查看详情",
     "message": "封邮件",
     "messages": "封邮件",
-    "inboxLabel": "📫 收件箱",
-    "dear": "嗨，",
-    "inboxBelow": "，这是你的虚拟身份，放心收邮件吧~",
+    "dear": "尊敬的",
+    "inboxBelow": "你的收件箱如下：",
+    "randomAlias": "你的随机化名为",
+    "firstName": "名",
+    "lastName": "姓",
+    "fullName": "姓名",
+    "username": "用户名",
+    "copyFirstName": "复制名",
+    "copyLastName": "复制姓",
+    "copyFullName": "复制姓名",
+    "copyUsername": "复制用户名（小写+数字）",
+    "copiedFirstName": "名已复制",
+    "copiedLastName": "姓已复制",
+    "copiedFullName": "姓名已复制",
+    "copiedUsername": "用户名已复制",
     "markAsUnread": "标记为未读",
     "markAsUnreadHint": "标记为未读后可防止被自动清理",
     "markedAsUnread": "邮件已标记为未读",
@@ -231,7 +243,7 @@
       },
       "q3": {
         "question": "邮件会被保存多久？",
-        "answer": "系统仅自动清理24小时前的已读邮件，以释放存储空间。未读邮件不会被删除——这意味着您无需时刻守在屏幕前，稍后回来也不会错过任何重要邮件。对于已读但希望保留的邮件，您只需点击「标记为未读」，即可让它免于自动清理。请记得及时查看和保存重要内容哦。"
+        "answer": "系统仅自动清理24小时前的已读邮件，以释放存储空间。未读邮件不会被删除——这意味着您无需时刻守在屏幕前，稍后回来也不会错过任何重要邮件。对于已读但希望保留的邮件，您只需点击"标记为未读"，即可让它免于自动清理。请记得及时查看和保存重要内容哦。"
       },
       "q4": {
         "question": "忘记密码怎么办？",

@@ -26,6 +26,14 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
       .catch(() => showErrorMessage(t('mailbox.copyFailed')));
   };
 
+  const copyPassword = () => {
+    if (currentMailbox?.password) {
+      navigator.clipboard.writeText(currentMailbox.password)
+        .then(() => showSuccessMessage(t('mailbox.copyPasswordSuccess')))
+        .catch(() => showErrorMessage(t('mailbox.copyPasswordFailed')));
+    }
+  };
+
   const handleCreateNew = () => {
     setShowPasswordDialog(true);
   };
@@ -55,11 +63,15 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             <button onClick={copyToClipboard} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.copyMailbox')}>
               <i className="fas fa-copy text-sm"></i>
             </button>
-
+        
+            <button onClick={copyPassword} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.copyPassword')}>
+              <i className="fas fa-key text-sm"></i>
+            </button>
+        
             <button onClick={handleCreateNew} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.createNew')}>
               <i className="fas fa-plus text-sm"></i>
             </button>
-
+        
             <button onClick={logout} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/20 hover:text-primary transition-colors" title={t('mailbox.logout')}>
               <i className="fas fa-sign-out-alt text-sm"></i>
             </button>

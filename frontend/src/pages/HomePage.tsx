@@ -157,8 +157,7 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
-      {!mailbox && (
-        <div className="space-y-20 py-10">
+      <div className="space-y-20 py-10">
           {/* 功能介绍 - 2行2列 */}
           <section>
             <div className="text-center mb-10">
@@ -353,7 +352,6 @@ const HomePage: React.FC = () => {
             </section>
           )}
         </div>
-      )}
     </Container>
   );
 };
