@@ -54,7 +54,7 @@ export function generateRandomName(): RandomName {
   const firstName = isMale ? pick(MALE_FIRST_NAMES) : pick(FEMALE_FIRST_NAMES);
   const lastName = pick(LAST_NAMES);
   const fullName = `${firstName} ${lastName}`;
-  const username = `${firstName}${lastName}`.toLowerCase() + Math.floor(10 + Math.random() * 90);
+  const username = `${firstName}${lastName}`.toLowerCase() + Math.floor(1998 + Math.random() * 10);
 
   return { firstName, lastName, fullName, username, isMale };
 }
