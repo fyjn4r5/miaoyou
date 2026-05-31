@@ -243,14 +243,6 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-[10px]"></i>
           </button>
         </div>
-        <a
-          href="https://ip.alice7.eu.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          真实地址生成器
-        </a>
       </div>
     </div>
   );
