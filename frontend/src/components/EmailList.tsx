@@ -111,7 +111,7 @@ const EmailList: React.FC<EmailListProps> = ({
     <div className="border rounded-lg">
       <div className="flex items-center gap-3 p-4 border-b flex-wrap">
         <h2 className="text-lg font-semibold whitespace-nowrap">{t('email.inbox')}</h2>
-        <div className="flex items-center gap-1.5 text-xs flex-wrap">
+        <div className="flex items-center gap-1.5 text-sm flex-wrap">
           <span className="text-muted-foreground whitespace-nowrap">{t('email.randomAlias')}:</span>
           <span className="text-foreground">{randomName.firstName}</span>
           <button
