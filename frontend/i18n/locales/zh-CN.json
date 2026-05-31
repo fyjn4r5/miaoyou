@@ -115,6 +115,7 @@
     "selectEmailPrompt": "请选择一封邮件查看详情",
     "message": "封邮件",
     "messages": "封邮件",
+    "randomAlias": "你的随机化名为",
     "firstName": "名",
     "lastName": "姓",
     "fullName": "姓名",

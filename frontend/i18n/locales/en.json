@@ -106,6 +106,7 @@
     "selectEmailPrompt": "Select an email to view details",
     "message": "message",
     "messages": "messages",
+    "randomAlias": "Your random alias",
     "firstName": "First",
     "lastName": "Last",
     "fullName": "Full",

@@ -312,21 +312,21 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             <div className="flex space-x-2">
               <button
                 onClick={handleMarkAsUnread}
-                className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+                className="p-3 rounded-md hover:bg-muted text-muted-foreground"
                 title={`${t('email.markAsUnread')} (${t('email.markAsUnreadHint')})`}
               >
                 <i className="fas fa-envelope"></i>
               </button>
               <button
                 onClick={onClose}
-                className="p-2 rounded-md hover:bg-muted"
+                className="p-3 rounded-md hover:bg-muted"
                 title={t('common.close')}
               >
                 <i className="fas fa-chevron-up"></i>
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 rounded-md hover:bg-red-100 text-red-600"
+                className="p-3 rounded-md hover:bg-red-100 text-red-600"
                 title={t('common.delete')}
               >
                 <i className="fas fa-trash-alt"></i>
