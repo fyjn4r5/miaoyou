@@ -111,39 +111,47 @@ const EmailList: React.FC<EmailListProps> = ({
     <div className="border rounded-lg">
       <div className="flex items-center gap-3 p-4 border-b flex-wrap">
         <h2 className="text-lg font-semibold whitespace-nowrap">{t('email.inbox')}</h2>
-        <div className="flex items-center gap-1.5 text-xs flex-wrap">
+        <div className="flex items-center gap-2 text-xs flex-wrap">
           <span className="text-muted-foreground">
             {randomName.isMale ? '♂' : '♀'}
           </span>
           <span className="font-medium text-foreground whitespace-nowrap">{randomName.fullName}</span>
           <span className="text-muted-foreground">|</span>
+          <span className="text-muted-foreground">名:</span>
+          <span className="text-foreground">{randomName.firstName}</span>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="hover:text-primary cursor-pointer"
+            className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyFirstName')}
           >
-            {t('email.firstName')}
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
+          <span className="text-muted-foreground">姓:</span>
+          <span className="text-foreground">{randomName.lastName}</span>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="hover:text-primary cursor-pointer"
+            className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyLastName')}
           >
-            {t('email.lastName')}
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
+          <span className="text-muted-foreground hidden sm:inline">姓名:</span>
+          <span className="text-foreground hidden sm:inline">{randomName.fullName}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="hover:text-primary cursor-pointer"
+            className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyFullName')}
           >
-            {t('email.fullName')}
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
+          <span className="text-muted-foreground">用户:</span>
+          <span className="text-foreground">{randomName.username}</span>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="hover:text-primary cursor-pointer"
+            className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyUsername')}
           >
-            {t('email.username')}
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
         </div>
         <div className="flex items-center space-x-2 ml-auto">
