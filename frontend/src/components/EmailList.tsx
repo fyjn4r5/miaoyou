@@ -110,47 +110,46 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <div className="border rounded-lg">
       <div className="flex items-center gap-2 p-4 border-b flex-wrap">
-        <h2 className="text-lg font-semibold whitespace-nowrap">{t('email.inbox')}</h2>
-        <span className="text-muted-foreground hidden sm:inline">|</span>
-        <div className="flex items-center gap-1.5 text-sm flex-wrap">
-          <span className="text-muted-foreground whitespace-nowrap">{t('email.randomAlias')}:</span>
+        <span className="text-lg font-semibold whitespace-nowrap">{t('email.dear')}{randomName.firstName}</span>
+        <div className="flex items-center gap-1 text-sm flex-wrap">
           <span className="text-foreground">{randomName.firstName}</span>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyFirstName')}
           >
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
           <span className="text-muted-foreground">/</span>
           <span className="text-foreground">{randomName.lastName}</span>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyLastName')}
           >
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
           <span className="text-muted-foreground">/</span>
           <span className="text-foreground hidden sm:inline">{randomName.fullName}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-primary hidden sm:inline-flex"
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary hidden sm:inline-flex"
             title={t('email.copyFullName')}
           >
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
           <span className="text-muted-foreground">/</span>
           <span className="text-foreground">{randomName.username}</span>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-primary"
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"
             title={t('email.copyUsername')}
           >
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-[10px]"></i>
           </button>
         </div>
-        <span className="text-muted-foreground hidden sm:inline">|</span>
+        <span className="text-muted-foreground">|</span>
+        <span className="text-lg font-semibold whitespace-nowrap">{t('email.belowInbox')}</span>
         <div className="flex items-center space-x-1 ml-auto">
           <button
             onClick={handleRefresh}
