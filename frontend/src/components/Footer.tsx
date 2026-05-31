@@ -39,12 +39,6 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
     } catch {}
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {}
-  };
-
   useEffect(() => {
     const fetchStats = async () => {
       const result = await getStats();
@@ -95,7 +89,7 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
               >
                 真实地址生成器
               </button>
-              {showNameGen && (
+              {showNameGen && footerName && (
                 <div className="absolute bottom-full right-0 mb-2 bg-card border rounded-xl shadow-xl p-4 text-left whitespace-nowrap z-50">
                   <div className="flex items-center justify-between gap-4 mb-2">
                     <span className="text-xs text-muted-foreground">你的随机化名为：</span>
