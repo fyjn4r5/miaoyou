@@ -20,7 +20,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const { t } = useTranslation();
   const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
-  const randomName = useMemo(() => generateRandomName(), []);
+  const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
 
   const copyToClipboard = async (text: string, messageKey: string) => {
     try {
@@ -110,7 +110,7 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <div className="border rounded-lg">
       <div className="flex items-center gap-2 p-4 border-b flex-wrap">
-        <span className="text-lg font-semibold whitespace-nowrap">{t('email.dear')}{randomName.firstName}</span>
+        <span className="text-lg font-semibold whitespace-nowrap">{t('email.dear')}{randomName.firstName}，（</span>
         <div className="flex items-center gap-1 text-sm flex-wrap">
           <span className="text-foreground">{randomName.firstName}</span>
           <button
@@ -148,8 +148,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-[10px]"></i>
           </button>
         </div>
-        <span className="text-muted-foreground">|</span>
-        <span className="text-lg font-semibold whitespace-nowrap">{t('email.belowInbox')}</span>
+        <span className="text-lg font-semibold whitespace-nowrap">{t('email.inboxBelow')}</span>
         <div className="flex items-center space-x-1 ml-auto">
           <button
             onClick={handleRefresh}

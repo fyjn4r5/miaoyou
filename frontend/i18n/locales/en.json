@@ -107,7 +107,7 @@
     "message": "message",
     "messages": "messages",
     "dear": "Dear ",
-    "belowInbox": "Below is your inbox:",
+    "inboxBelow": ") your inbox is as follows:",
     "randomAlias": "Your random alias",
     "firstName": "First",
     "lastName": "Last",

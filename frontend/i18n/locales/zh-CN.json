@@ -116,7 +116,7 @@
     "message": "封邮件",
     "messages": "封邮件",
     "dear": "尊敬的",
-    "belowInbox": "以下是你的收件箱：",
+    "inboxBelow": "）你的收件箱如下：",
     "randomAlias": "你的随机化名为",
     "firstName": "名",
     "lastName": "姓",
