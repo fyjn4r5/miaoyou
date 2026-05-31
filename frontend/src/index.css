@@ -271,6 +271,23 @@ html.starry .starry-bg {
 .starry-particle-3::before {
   animation-delay: -2s;
 }
+
+/* Security warning text dynamic effects */
+@keyframes text-drift {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+@keyframes text-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(250, 204, 21, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.3); }
+}
+.security-text {
+  animation: text-drift 4s ease-in-out infinite;
+}
+.security-glow {
+  animation: text-glow 3s ease-in-out infinite;
+}
  
 @layer base {
   * {
