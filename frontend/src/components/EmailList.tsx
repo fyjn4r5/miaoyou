@@ -109,8 +109,9 @@ const EmailList: React.FC<EmailListProps> = ({
   
   return (
     <div className="border rounded-lg">
-      <div className="flex items-center gap-3 p-4 border-b flex-wrap">
+      <div className="flex items-center gap-2 p-4 border-b flex-wrap">
         <h2 className="text-lg font-semibold whitespace-nowrap">{t('email.inbox')}</h2>
+        <span className="text-muted-foreground hidden sm:inline">|</span>
         <div className="flex items-center gap-1.5 text-sm flex-wrap">
           <span className="text-muted-foreground whitespace-nowrap">{t('email.randomAlias')}:</span>
           <span className="text-foreground">{randomName.firstName}</span>
@@ -121,6 +122,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <i className="fas fa-copy text-xs"></i>
           </button>
+          <span className="text-muted-foreground">/</span>
           <span className="text-foreground">{randomName.lastName}</span>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
@@ -129,6 +131,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <i className="fas fa-copy text-xs"></i>
           </button>
+          <span className="text-muted-foreground">/</span>
           <span className="text-foreground hidden sm:inline">{randomName.fullName}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
@@ -137,6 +140,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <i className="fas fa-copy text-xs"></i>
           </button>
+          <span className="text-muted-foreground">/</span>
           <span className="text-foreground">{randomName.username}</span>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
@@ -146,7 +150,8 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-xs"></i>
           </button>
         </div>
-        <div className="flex items-center space-x-2 ml-auto">
+        <span className="text-muted-foreground hidden sm:inline">|</span>
+        <div className="flex items-center space-x-1 ml-auto">
           <button
             onClick={handleRefresh}
             className="p-2 rounded-md hover:bg-muted"
