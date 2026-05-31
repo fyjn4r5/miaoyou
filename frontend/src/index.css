@@ -288,6 +288,15 @@ html.starry .starry-bg {
 .security-glow {
   animation: text-glow 3s ease-in-out infinite;
 }
+
+/* Starry theme: override yellow warning card to use theme colors */
+html.starry .security-warning-card {
+  background: hsl(var(--card));
+  border-color: hsl(var(--primary) / 0.3);
+}
+html.starry .security-warning-card .text-base {
+  color: hsl(var(--card-foreground));
+}
  
 @layer base {
   * {

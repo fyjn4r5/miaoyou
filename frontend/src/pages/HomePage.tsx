@@ -301,7 +301,7 @@ const HomePage: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-bold mb-3">{t('intro.security.title')}</h2>
               <p className="text-lg text-muted-foreground">{t('intro.security.subtitle')}</p>
             </div>
-            <div className="bg-yellow-50 dark:bg-yellow-950/20 border-2 border-yellow-500/30 rounded-2xl p-8 space-y-5 security-glow">
+            <div className="bg-yellow-50 dark:bg-yellow-950/20 border-2 border-yellow-500/30 rounded-2xl p-8 space-y-5 security-glow security-warning-card">
               <div className="flex items-start gap-4 security-text" style={{ animationDelay: '0s' }}>
                 <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                   <i className="fas fa-exclamation-triangle text-xl text-yellow-500"></i>
