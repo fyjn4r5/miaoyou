@@ -306,19 +306,19 @@ const HomePage: React.FC = () => {
                 <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                   <i className="fas fa-exclamation-triangle text-xl text-yellow-500"></i>
                 </div>
-                <p className="text-base leading-relaxed">{t('intro.security.warning1')}</p>
+                <p className="text-base leading-relaxed break-words">{t('intro.security.warning1')}</p>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                   <i className="fas fa-trash-alt text-xl text-red-500"></i>
                 </div>
-                <p className="text-base leading-relaxed">{t('intro.security.warning3')}</p>
+                <p className="text-base leading-relaxed break-words">{t('intro.security.warning3')}</p>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                   <i className="fas fa-clock text-xl text-orange-500"></i>
                 </div>
-                <p className="text-base leading-relaxed">{t('intro.security.warning4')}</p>
+                <p className="text-base leading-relaxed break-words">{t('intro.security.warning4')}</p>
               </div>
             </div>
           </section>

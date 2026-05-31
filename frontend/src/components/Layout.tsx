@@ -53,7 +53,11 @@ const Layout: React.FC = () => {
   
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="starry-bg" />
+      <div className="starry-bg">
+        <div className="starry-particle starry-particle-1" />
+        <div className="starry-particle starry-particle-2" />
+        <div className="starry-particle starry-particle-3" />
+      </div>
       <SEO {...getSEOProps()} />
       <Header 
         mailbox={mailbox} 

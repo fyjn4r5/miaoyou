@@ -66,33 +66,33 @@
   }
 
   .starry {
-    --background: 230 35% 7%;
-    --foreground: 210 40% 96%;
+    --background: 255 30% 6%;
+    --foreground: 210 40% 95%;
   
-    --card: 230 30% 12%;
-    --card-foreground: 210 40% 96%;
+    --card: 250 25% 14%;
+    --card-foreground: 210 40% 95%;
   
-    --popover: 230 30% 12%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 250 25% 14%;
+    --popover-foreground: 210 40% 95%;
   
-    --primary: 200 90% 60%;
-    --primary-foreground: 230 35% 7%;
+    --primary: 190 90% 55%;
+    --primary-foreground: 255 30% 6%;
   
-    --secondary: 230 30% 16%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 250 25% 18%;
+    --secondary-foreground: 210 40% 95%;
   
-    --muted: 230 30% 16%;
-    --muted-foreground: 215 20% 75%;
+    --muted: 250 20% 16%;
+    --muted-foreground: 215 15% 70%;
   
-    --accent: 200 60% 30%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 280 60% 45%;
+    --accent-foreground: 210 40% 95%;
   
-    --destructive: 0 80% 50%;
-    --destructive-foreground: 210 40% 96%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 40% 95%;
   
-    --border: 230 25% 20%;
-    --input: 230 25% 20%;
-    --ring: 200 90% 60%;
+    --border: 250 20% 24%;
+    --input: 250 20% 18%;
+    --ring: 190 90% 55%;
   }
 }
 
@@ -101,9 +101,21 @@
   50% { opacity: 1; }
 }
 
-@keyframes drift {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-100vh); }
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
 }
 
 .starry-bg {
@@ -121,6 +133,7 @@ html.starry .starry-bg {
   opacity: 1;
 }
 
+/* Static twinkling stars background */
 .starry-bg::before {
   content: '';
   position: absolute;
@@ -163,6 +176,100 @@ html.starry .starry-bg {
     radial-gradient(1.2px 1.2px at 18% 82%, rgba(255,255,255,0.6), transparent),
     radial-gradient(1.2px 1.2px at 55% 38%, rgba(200,220,255,0.7), transparent);
   animation: twinkle 6s ease-in-out infinite alternate-reverse;
+}
+
+/* Floating particle layers */
+.starry-particle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Layer 1: tiny dim dots, slowest */
+.starry-particle-1::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(180, 200, 255, 0.5);
+  box-shadow:
+    5vw  95vh 0 0 rgba(180,200,255,0.4),
+    12vw 80vh 0 0 rgba(200,220,255,0.3),
+    20vw 60vh 0 0 rgba(180,200,255,0.5),
+    28vw 70vh 0 0 rgba(200,220,255,0.3),
+    35vw 85vh 0 0 rgba(180,200,255,0.4),
+    42vw 50vh 0 0 rgba(200,220,255,0.5),
+    50vw 90vh 0 0 rgba(180,200,255,0.3),
+    58vw 65vh 0 0 rgba(200,220,255,0.4),
+    65vw 75vh 0 0 rgba(180,200,255,0.5),
+    72vw 55vh 0 0 rgba(200,220,255,0.3),
+    78vw 88vh 0 0 rgba(180,200,255,0.4),
+    85vw 45vh 0 0 rgba(200,220,255,0.5),
+    92vw 78vh 0 0 rgba(180,200,255,0.3),
+    48vw 30vh 0 0 rgba(200,220,255,0.4);
+  animation: float-up 18s linear infinite;
+}
+
+/* Layer 2: medium dots, medium speed */
+.starry-particle-2::before {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(200, 220, 255, 0.7);
+  box-shadow:
+    8vw  92vh 0 0 rgba(200,220,255,0.6),
+    18vw 72vh 0 0 rgba(180,200,255,0.5),
+    25vw 88vh 0 0 rgba(200,220,255,0.7),
+    33vw 58vh 0 0 rgba(220,240,255,0.5),
+    40vw 82vh 0 0 rgba(200,220,255,0.6),
+    48vw 62vh 0 0 rgba(180,200,255,0.7),
+    55vw 78vh 0 0 rgba(200,220,255,0.5),
+    63vw 52vh 0 0 rgba(220,240,255,0.6),
+    70vw 68vh 0 0 rgba(200,220,255,0.7),
+    78vw 86vh 0 0 rgba(180,200,255,0.5),
+    88vw 56vh 0 0 rgba(200,220,255,0.6),
+    95vw 74vh 0 0 rgba(220,240,255,0.5),
+    15vw 42vh 0 0 rgba(200,220,255,0.6),
+    60vw 38vh 0 0 rgba(180,200,255,0.5);
+  animation: float-up 12s linear infinite;
+}
+
+/* Layer 3: larger bright dots, fastest */
+.starry-particle-3::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(220, 235, 255, 0.9);
+  box-shadow:
+    10vw 85vh 0 0 rgba(220,235,255,0.7),
+    22vw 95vh 0 0 rgba(200,220,255,0.6),
+    30vw 65vh 0 0 rgba(220,235,255,0.8),
+    38vw 75vh 0 0 rgba(200,220,255,0.7),
+    45vw 90vh 0 0 rgba(220,235,255,0.6),
+    52vw 70vh 0 0 rgba(200,220,255,0.8),
+    60vw 80vh 0 0 rgba(220,235,255,0.7),
+    68vw 60vh 0 0 rgba(200,220,255,0.6),
+    75vw 87vh 0 0 rgba(220,235,255,0.8),
+    82vw 68vh 0 0 rgba(200,220,255,0.7),
+    90vw 77vh 0 0 rgba(220,235,255,0.6),
+    55vw 48vh 0 0 rgba(200,220,255,0.7),
+    3vw  40vh 0 0 rgba(220,235,255,0.8),
+    40vw 20vh 0 0 rgba(200,220,255,0.7);
+  animation: float-up 7s linear infinite;
+}
+
+/* Staggered animation delays for continuous stream */
+.starry-particle-2::before {
+  animation-delay: -4s;
+}
+.starry-particle-3::before {
+  animation-delay: -2s;
 }
  
 @layer base {
