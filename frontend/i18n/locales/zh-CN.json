@@ -114,7 +114,10 @@
     "notFound": "邮件不存在或已被删除",
     "selectEmailPrompt": "请选择一封邮件查看详情",
     "message": "封邮件",
-    "messages": "封邮件"
+    "messages": "封邮件",
+    "markAsUnread": "标记为未读",
+    "markedAsUnread": "邮件已标记为未读",
+    "markAsUnreadFailed": "标记为未读失败"
   },
   "settings": {
     "language": "语言",

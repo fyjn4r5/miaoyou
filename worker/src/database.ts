@@ -224,10 +224,9 @@ export async function cleanupExpiredMailboxes(db: D1Database): Promise<number> {
  */
 export async function cleanupExpiredMails(db: D1Database): Promise<number> {
   const now = getCurrentTimestamp();
-  const oneDayAgo = now - 24 * 60 * 60; // 24小时前的时间戳（秒）
+  const oneDayAgo = now - 24 * 60 * 60;
   
-  // [refactor] 同样利用 ON DELETE CASCADE 特性简化逻辑
-  const result = await db.prepare(`DELETE FROM emails WHERE received_at <= ?`).bind(oneDayAgo).run();
+  const result = await db.prepare(`DELETE FROM emails WHERE received_at <= ? AND is_read = 1`).bind(oneDayAgo).run();
   
   await cleanupOrphanedAttachments(db);
   
@@ -532,6 +531,15 @@ async function getAttachmentContent(db: D1Database, attachmentId: string, chunks
 export async function deleteEmail(db: D1Database, id: string): Promise<void> {
   // [refactor] 由于外键设置了 ON DELETE CASCADE，直接删除邮件即可
   await db.prepare(`DELETE FROM emails WHERE id = ?`).bind(id).run();
+}
+
+/**
+ * 将邮件标记为未读
+ * @param db 数据库实例
+ * @param id 邮件ID
+ */
+export async function markEmailAsUnread(db: D1Database, id: string): Promise<void> {
+  await db.prepare(`UPDATE emails SET is_read = 0 WHERE id = ?`).bind(id).run();
 }
 
 /**

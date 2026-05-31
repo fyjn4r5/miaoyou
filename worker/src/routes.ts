@@ -9,6 +9,7 @@ import {
   getEmails, 
   getEmail, 
   deleteEmail,
+  markEmailAsUnread,
   getAttachments,
   getAttachment,
   getMailboxCount,
@@ -331,6 +332,23 @@ app.delete('/api/emails/:id', async (c) => {
     return c.json({ 
       success: false, 
       error: '删除邮件失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 将邮件标记为未读
+app.put('/api/emails/:id/unread', async (c) => {
+  try {
+    const id = c.req.param('id');
+    await markEmailAsUnread(c.env.DB, id);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('标记邮件为未读失败:', error);
+    return c.json({ 
+      success: false, 
+      error: '标记邮件为未读失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

@@ -109,6 +109,35 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     }
   };
   
+  const handleMarkAsUnread = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/unread`, {
+        method: 'PUT',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark email as unread');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        showSuccessMessage(t('email.markedAsUnread'));
+
+        if (setEmails && emails) {
+          setEmails(emails.map(email =>
+            email.id === emailId ? { ...email, isRead: false } : email
+          ));
+        }
+
+        onClose();
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error) {
+      showErrorMessage(t('email.markAsUnreadFailed'));
+    }
+  };
+
   const handleDelete = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
@@ -270,6 +299,13 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
               </div>
             </div>
             <div className="flex space-x-2">
+              <button
+                onClick={handleMarkAsUnread}
+                className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+                title={t('email.markAsUnread')}
+              >
+                <i className="fas fa-envelope"></i>
+              </button>
               <button
                 onClick={onClose}
                 className="p-2 rounded-md hover:bg-muted"

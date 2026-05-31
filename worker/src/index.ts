@@ -1,5 +1,5 @@
 import { Env } from './types';
-import { initializeDatabase, cleanupExpiredMailboxes, cleanupExpiredMails, cleanupReadMails } from './database';
+import { initializeDatabase, cleanupExpiredMailboxes, cleanupExpiredMails } from './database';
 import { handleEmail } from './email-handler';
 import app from './routes';
 
@@ -57,8 +57,6 @@ export default {
       console.log(`已清理 ${deleted} 个过期邮箱`);
       const deletedMail = await cleanupExpiredMails(env.DB);
       console.log(`已清理 ${deletedMail} 个过期邮件`);
-      const deletedReadMail = await cleanupReadMails(env.DB);
-      console.log(`已清理 ${deletedReadMail} 个已被阅读的邮件`);
     } catch (error) {
       console.error('定时任务执行失败:', error);
     }

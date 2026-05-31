@@ -22,9 +22,6 @@
 
 </div>
 
----
-### **有人拿去批量薅羊毛，现在demo只能看，不能接收邮件**
----
 
 ## <a id="features"></a>✨ 功能特点
 
@@ -83,7 +80,7 @@
 
 ## <a id="deployment"></a>🚀 快速部署
 
-ZMAIL 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
+Miaoyou 现在采用全新的一体化部署方式，前端和后端整合为一个 Cloudflare Worker，部署更加简单！
 
 ### 🎯 部署方式选择
 
@@ -279,7 +276,7 @@ pnpm run deploy
 ## <a id="project-structure"></a>📁 项目结构
 
 ```
-zmail/
+Miaoyou/
 ├── frontend/                    # 前端 React 应用
 │   ├── i18n/locales/            # 国际化翻译文件
 │   │   ├── zh-CN.json           #   中文翻译

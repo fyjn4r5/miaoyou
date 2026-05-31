@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "秒邮-Permanent Anonymous Email"
+    "title": "Miaoyou-Permanent Anonymous Email"
   },
   "common": {
     "loading": "Loading...",
@@ -105,7 +105,10 @@
     "notFound": "Email not found or has been deleted",
     "selectEmailPrompt": "Select an email to view details",
     "message": "message",
-    "messages": "messages"
+    "messages": "messages",
+    "markAsUnread": "Mark as unread",
+    "markedAsUnread": "Email marked as unread",
+    "markAsUnreadFailed": "Failed to mark as unread"
   },
   "settings": {
     "language": "Language",

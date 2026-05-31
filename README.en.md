@@ -86,7 +86,7 @@
 
 ## <a id="deployment"></a>🚀 Quick Deployment
 
-ZMAIL now adopts a brand new integrated deployment approach, with frontend and backend integrated into a single Cloudflare Worker, making deployment even simpler!
+Miaoyou now adopts a brand new integrated deployment approach, with frontend and backend integrated into a single Cloudflare Worker, making deployment even simpler!
 
 ### 🎯 Deployment Options
 
@@ -281,7 +281,7 @@ pnpm run deploy
 ## <a id="project-structure"></a>📁 Project Structure
 
 ```
-zmail/
+Miaoyou/
 ├── frontend/                    # React frontend
 │   ├── i18n/locales/            # Translation files
 │   │   ├── zh-CN.json           #   Chinese
