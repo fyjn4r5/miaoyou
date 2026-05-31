@@ -1,7 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
+import { generateRandomName } from '../utils/nameGenerator';
 
 interface EmailListProps {
   emails: Email[];
@@ -17,8 +18,18 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
-  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox } = useContext(MailboxContext);
+  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
+  const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
+
+  const copyToClipboard = async (text: string, messageKey: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccessMessage(t(messageKey));
+    } catch {
+      showSuccessMessage(t('common.copied'));
+    }
+  };
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -99,6 +110,40 @@ const EmailList: React.FC<EmailListProps> = ({
     <div className="border rounded-lg">
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
+        <div className="flex items-center gap-1.5 text-xs flex-wrap">
+          <button
+            onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
+            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
+            title={t('email.copyFirstName')}
+          >
+            <span>{t('email.firstName')}</span>
+            <i className="fas fa-copy text-[10px]"></i>
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
+            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
+            title={t('email.copyLastName')}
+          >
+            <span>{t('email.lastName')}</span>
+            <i className="fas fa-copy text-[10px]"></i>
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
+            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
+            title={t('email.copyFullName')}
+          >
+            <span>{t('email.fullName')}</span>
+            <i className="fas fa-copy text-[10px]"></i>
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
+            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
+            title={t('email.copyUsername')}
+          >
+            <span>{t('email.username')}</span>
+            <i className="fas fa-copy text-[10px]"></i>
+          </button>
+        </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
