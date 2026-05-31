@@ -109,9 +109,44 @@ const EmailList: React.FC<EmailListProps> = ({
   
   return (
     <div className="border rounded-lg">
-      <div className="flex justify-between items-center p-4 border-b">
-        <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
-        <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-3 p-4 border-b flex-wrap">
+        <h2 className="text-lg font-semibold whitespace-nowrap">{t('email.inbox')}</h2>
+        <div className="flex items-center gap-1.5 text-xs flex-wrap">
+          <span className="text-muted-foreground">
+            {randomName.isMale ? '♂' : '♀'}
+          </span>
+          <span className="font-medium text-foreground whitespace-nowrap">{randomName.fullName}</span>
+          <span className="text-muted-foreground">|</span>
+          <button
+            onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
+            className="hover:text-primary cursor-pointer"
+            title={t('email.copyFirstName')}
+          >
+            {t('email.firstName')}
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
+            className="hover:text-primary cursor-pointer"
+            title={t('email.copyLastName')}
+          >
+            {t('email.lastName')}
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
+            className="hover:text-primary cursor-pointer"
+            title={t('email.copyFullName')}
+          >
+            {t('email.fullName')}
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
+            className="hover:text-primary cursor-pointer"
+            title={t('email.copyUsername')}
+          >
+            {t('email.username')}
+          </button>
+        </div>
+        <div className="flex items-center space-x-2 ml-auto">
           <button
             onClick={handleRefresh}
             className="p-1 rounded-md hover:bg-muted"
@@ -127,42 +162,6 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-clock text-sm"></i>
           </button>
         </div>
-      </div>
-      
-      <div className="px-4 py-2 bg-muted/30 border-b text-xs flex items-center gap-2 flex-wrap">
-        <span className="text-muted-foreground">
-          {randomName.isMale ? '♂' : '♀'}
-        </span>
-        <span className="font-medium text-foreground">{randomName.fullName}</span>
-        <span className="text-muted-foreground">|</span>
-        <button
-          onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-          className="hover:text-primary cursor-pointer"
-          title={t('email.copyFirstName')}
-        >
-          {t('email.firstName')}
-        </button>
-        <button
-          onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-          className="hover:text-primary cursor-pointer"
-          title={t('email.copyLastName')}
-        >
-          {t('email.lastName')}
-        </button>
-        <button
-          onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-          className="hover:text-primary cursor-pointer"
-          title={t('email.copyFullName')}
-        >
-          {t('email.fullName')}
-        </button>
-        <button
-          onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-          className="hover:text-primary cursor-pointer"
-          title={t('email.copyUsername')}
-        >
-          {t('email.username')}
-        </button>
       </div>
 
       {mailbox && (
