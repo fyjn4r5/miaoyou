@@ -151,10 +151,11 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
-            className="p-2 rounded-md hover:bg-muted"
+            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
             title={t('email.refresh')}
           >
-            <i className="fas fa-sync-alt text-sm"></i>
+            <i className="fas fa-sync-alt text-xs"></i>
+            <span>{t('email.refresh')}</span>
           </button>
           <button
             onClick={toggleAutoRefresh}
