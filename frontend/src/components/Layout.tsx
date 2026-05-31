@@ -53,6 +53,7 @@ const Layout: React.FC = () => {
   
   return (
     <div className="flex min-h-screen flex-col">
+      <div className="starry-bg" />
       <SEO {...getSEOProps()} />
       <Header 
         mailbox={mailbox} 
