@@ -426,12 +426,13 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
       {/* [feat] 全局通知组件 */}
       {(errorMessage || successMessage) && (
         <div
-          className={`fixed bottom-4 right-4 z-50 p-3 rounded-md shadow-lg max-w-md ${
+          className={`fixed bottom-4 right-4 z-50 p-3 rounded-md shadow-lg max-w-md animate-slide-up ${
             errorMessage
               ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
               : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
           }`}
         >
+          <i className={`fas ${errorMessage ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2`}></i>
           {errorMessage || successMessage}
         </div>
       )}
