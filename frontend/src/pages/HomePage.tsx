@@ -164,7 +164,7 @@ const HomePage: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-bold mb-3">{t('intro.features.title')}</h2>
               <p className="text-lg text-muted-foreground">{t('intro.features.subtitle')}</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-card rounded-2xl p-8 border hover:shadow-xl transition-shadow">
                 <div className="flex items-start gap-5">
                   <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -329,7 +329,7 @@ const HomePage: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-bold mb-3">{t('intro.faq.title')}</h2>
               <p className="text-lg text-muted-foreground">{t('intro.faq.subtitle')}</p>
             </div>
-            <div className="bg-card rounded-2xl border-2 p-8 max-w-3xl mx-auto">
+            <div className="bg-card rounded-2xl border-2 p-8">
               <FAQItem question={t('intro.faq.q1.question')} answer={t('intro.faq.q1.answer')} />
               <FAQItem question={t('intro.faq.q2.question')} answer={t('intro.faq.q2.answer')} />
               <FAQItem question={t('intro.faq.q3.question')} answer={t('intro.faq.q3.answer')} />

@@ -28,8 +28,8 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
   
   const syncEmailReadStatus = (read: boolean) => {
-    if (setEmails) {
-      setEmails(prev => prev.map(email =>
+    if (setEmails && emails) {
+      setEmails(emails.map(email =>
         email.id === emailId ? { ...email, isRead: read } : email
       ));
     }
