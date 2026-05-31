@@ -1,8 +1,8 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
-import { generateRandomName } from '../utils/nameGenerator';
+
 
 interface EmailListProps {
   emails: Email[];
@@ -18,18 +18,8 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
-  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
+  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
-  const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
-
-  const copyToClipboard = async (text: string, messageKey: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showSuccessMessage(t(messageKey));
-    } catch {
-      showSuccessMessage(t('common.copied'));
-    }
-  };
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -111,7 +101,6 @@ const EmailList: React.FC<EmailListProps> = ({
     <div className="border rounded-lg">
       <div className="flex items-center gap-2 p-4 border-b flex-wrap">
         <span className="text-lg font-semibold whitespace-nowrap">{t('email.inboxLabel')}</span>
-        <span className="text-lg font-semibold text-primary whitespace-nowrap">{t('email.funnyInbox')}</span>
         <div className="flex items-center space-x-1 ml-auto">
           <button
             onClick={handleRefresh}
@@ -203,47 +192,6 @@ const EmailList: React.FC<EmailListProps> = ({
           ))}
         </ul>
       )}
-
-      <div className="flex items-center gap-3 p-4 border-t bg-muted/20 text-sm flex-wrap">
-        <span className="text-muted-foreground whitespace-nowrap">{t('email.randomAlias')}:</span>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <button
-            onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
-            title={t('email.copyFirstName')}
-          >
-            <span className="font-medium text-foreground">{randomName.firstName}</span>
-            <i className="fas fa-copy text-[10px]"></i>
-          </button>
-          <span className="text-muted-foreground">/</span>
-          <button
-            onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
-            title={t('email.copyLastName')}
-          >
-            <span className="font-medium text-foreground">{randomName.lastName}</span>
-            <i className="fas fa-copy text-[10px]"></i>
-          </button>
-          <span className="text-muted-foreground">/</span>
-          <button
-            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
-            title={t('email.copyFullName')}
-          >
-            <span className="font-medium text-foreground">{randomName.fullName}</span>
-            <i className="fas fa-copy text-[10px]"></i>
-          </button>
-          <span className="text-muted-foreground">/</span>
-          <button
-            onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-2 py-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1"
-            title={t('email.copyUsername')}
-          >
-            <span className="font-medium text-foreground">{randomName.username}</span>
-            <i className="fas fa-copy text-[10px]"></i>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

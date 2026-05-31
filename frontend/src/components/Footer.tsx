@@ -62,7 +62,6 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
             © {year} {t("app.title")}
           </p>
           <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
-            {/* 将 Link 组件修改为 button，点击时调用 onShowInfo 函数显示弹窗 */}
             <button
               onClick={() => onShowInfo("privacy")}
               className="hover:text-primary transition-colors"
@@ -81,18 +80,18 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
             >
               {t("common.about", "关于我们")}
             </button>
-            <span className="text-muted-foreground/30">|</span>
-            <div className="relative inline-block" ref={genRef}>
+          </div>
+          <div className="relative inline-block mb-2">
+            <div className="relative" ref={genRef}>
               <button
                 onClick={() => setShowNameGen(!showNameGen)}
-                className="hover:text-primary transition-colors"
+                className="text-xs underline underline-offset-2 hover:text-primary transition-colors"
               >
                 真实地址生成器
               </button>
               {showNameGen && footerName && (
-                <div className="absolute bottom-full right-0 mb-2 bg-card border rounded-xl shadow-xl p-4 text-left whitespace-nowrap z-50">
-                  <div className="flex items-center justify-between gap-4 mb-2">
-                    <span className="text-xs text-muted-foreground">你的随机化名为：</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-card border rounded-xl shadow-xl p-4 text-left whitespace-nowrap z-50">
+                  <div className="flex justify-end gap-4 mb-2">
                     <button onClick={regenerate} className="text-xs text-primary hover:text-primary/80" title="换一个">
                       <i className="fas fa-sync-alt"></i>
                     </button>
