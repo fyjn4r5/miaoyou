@@ -157,6 +157,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-sync-alt text-xs"></i>
             <span>{t('email.refresh')}</span>
           </button>
+          <span className="text-sm text-muted-foreground">{t('email.autoRefresh')}</span>
           <button
             onClick={toggleAutoRefresh}
             className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${autoRefresh ? 'bg-primary' : 'bg-muted-foreground/30'}`}
