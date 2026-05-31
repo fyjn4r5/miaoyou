@@ -106,6 +106,8 @@
     "selectEmailPrompt": "Select an email to view details",
     "message": "message",
     "messages": "messages",
+    "inboxLabel": "Your inbox: ",
+    "funnyInbox": "Secret Letter Hut 📬",
     "dear": "Hey ",
     "inboxBelow": ", this is your virtual identity, feel free to receive emails~",
     "randomAlias": "Your random alias",

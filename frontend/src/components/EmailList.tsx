@@ -110,7 +110,8 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <div className="border rounded-lg">
       <div className="flex items-center gap-2 p-4 border-b flex-wrap">
-        <span className="text-lg font-semibold whitespace-nowrap">{randomName.fullName}{t('email.inboxBelow')}</span>
+        <span className="text-lg font-semibold whitespace-nowrap">{t('email.inboxLabel')}</span>
+        <span className="text-lg font-semibold text-primary whitespace-nowrap">{t('email.funnyInbox')}</span>
         <div className="flex items-center space-x-1 ml-auto">
           <button
             onClick={handleRefresh}
@@ -242,6 +243,14 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-[10px]"></i>
           </button>
         </div>
+        <a
+          href="https://ip.alice7.eu.org/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-muted-foreground hover:text-primary transition-colors"
+        >
+          真实地址生成器
+        </a>
       </div>
     </div>
   );

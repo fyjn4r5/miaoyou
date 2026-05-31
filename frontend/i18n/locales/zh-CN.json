@@ -115,6 +115,8 @@
     "selectEmailPrompt": "请选择一封邮件查看详情",
     "message": "封邮件",
     "messages": "封邮件",
+    "inboxLabel": "你的收件箱为：",
+    "funnyInbox": "秘密信件屋 📬",
     "dear": "嗨，",
     "inboxBelow": "，这是你的虚拟身份，放心收邮件吧~",
     "randomAlias": "你的随机化名为",
