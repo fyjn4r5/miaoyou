@@ -149,14 +149,6 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
         </div>
         <div className="flex items-center space-x-2">
-          <button
-            onClick={handleRefresh}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
-            title={t('email.refresh')}
-          >
-            <i className="fas fa-sync-alt text-xs"></i>
-            <span>{t('email.refresh')}</span>
-          </button>
           <span className="text-sm text-muted-foreground">{t('email.autoRefresh')}</span>
           <button
             onClick={toggleAutoRefresh}
@@ -199,7 +191,14 @@ const EmailList: React.FC<EmailListProps> = ({
         <span className="text-sm text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
-
+        <button
+          onClick={handleRefresh}
+          className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+          title={t('email.refresh')}
+        >
+          <i className="fas fa-sync-alt text-xs"></i>
+          <span>{t('email.refresh')}</span>
+        </button>
       </div>
       
       {emails.length === 0 ? (
