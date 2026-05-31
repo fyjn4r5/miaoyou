@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Container from "./Container";
 import { getStats } from "../utils/api";
-import { generateRandomName } from "../utils/nameGenerator";
 
+// 定义 props 类型，允许父组件传递控制弹窗显示的函数
 interface FooterProps {
   onShowInfo: (infoType: "privacy" | "terms" | "about") => void;
 }
@@ -12,8 +12,6 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
   const [mailboxCount, setMailboxCount] = useState<number | null>(null);
-  const [copied, setCopied] = useState(false);
-  const randomName = useMemo(() => generateRandomName(), []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -24,14 +22,6 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
     };
     fetchStats();
   }, []);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(randomName.username);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {}
-  };
 
   return (
     <footer className="border-t py-6">
@@ -45,20 +35,8 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
           <p className="mb-2">
             © {year} {t("app.title")}
           </p>
-          <p className="mb-2">
-            <span className="text-muted-foreground">{t("email.randomAlias")}: </span>
-            <button
-              onClick={handleCopy}
-              className="text-primary hover:text-primary/80 transition-colors underline underline-offset-2"
-              title={t("email.copyUsername")}
-            >
-              {randomName.fullName} · {randomName.username}
-            </button>
-            {copied && (
-              <span className="ml-1 text-green-500 text-xs">{t('common.copied')}</span>
-            )}
-          </p>
           <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
+            {/* 将 Link 组件修改为 button，点击时调用 onShowInfo 函数显示弹窗 */}
             <button
               onClick={() => onShowInfo("privacy")}
               className="hover:text-primary transition-colors"

@@ -219,7 +219,7 @@
       "warning1": "Keep your email address and password safe — this is the only way to recover your account",
       "warning2": "Mailbox content may be accessed by others, avoid including personal privacy information",
       "warning3": "Do not enter your real account password in the password field to prevent leaks",
-      "warning4": "Only read emails older than 24 hours are automatically cleaned up. Unread emails are kept permanently, so you can take your time without missing anything important. You can also mark read emails as unread to protect them from auto-deletion."
+      "warning4": "Read emails older than 24 hours are automatically deleted. Unread emails will not be deleted. Marking an email as unread prevents it from being auto-cleaned."
     },
     "faq": {
       "title": "FAQ",
@@ -234,7 +234,7 @@
       },
       "q3": {
         "question": "How long are emails kept?",
-        "answer": "Only read emails older than 24 hours are automatically deleted to free up storage space. Unread emails are kept safe — so you don't have to rush, and won't miss anything important. For read emails you'd like to keep, just mark them as unread, and they'll be protected from auto-cleanup. Please remember to check and save important content in time."
+        "answer": "Read emails are automatically deleted 24 hours after being received to free up storage space. Unread emails will not be automatically deleted. You can mark important emails as unread to prevent them from being auto-cleaned. Please check and save important content promptly."
       },
       "q4": {
         "question": "What if I forget my password?",
