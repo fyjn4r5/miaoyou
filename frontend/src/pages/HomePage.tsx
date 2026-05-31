@@ -213,7 +213,7 @@ const HomePage: React.FC = () => {
           </section>
           
           {/* 使用步骤 */}
-          <section className="bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-3xl p-10 md:p-14">
+          <section>
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold mb-3">{t('intro.steps.title')}</h2>
               <p className="text-lg text-muted-foreground">{t('intro.steps.subtitle')}</p>
