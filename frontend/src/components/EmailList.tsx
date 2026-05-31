@@ -110,42 +110,42 @@ const EmailList: React.FC<EmailListProps> = ({
     <div className="border rounded-lg">
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
-        <div className="flex items-center gap-1.5 text-xs flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-2 py-1 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border"
+            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
-            <span className="text-foreground font-medium">{randomName.firstName}</span>
-            <i className="fas fa-copy text-[10px] opacity-60"></i>
+            <span className="text-foreground font-semibold">{randomName.firstName}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-2 py-1 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border"
+            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
-            <span className="text-foreground font-medium">{randomName.lastName}</span>
-            <i className="fas fa-copy text-[10px] opacity-60"></i>
+            <span className="text-foreground font-semibold">{randomName.lastName}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-2 py-1 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary hidden sm:flex items-center gap-1.5 border"
+            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary hidden sm:flex items-center gap-2 border text-sm"
             title={t('email.copyFullName')}
           >
             <span className="text-muted-foreground">{t('email.fullName')}:</span>
-            <span className="text-foreground font-medium">{randomName.fullName}</span>
-            <i className="fas fa-copy text-[10px] opacity-60"></i>
+            <span className="text-foreground font-semibold">{randomName.fullName}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-2 py-1 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border"
+            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
-            <span className="text-foreground font-medium">{randomName.username}</span>
-            <i className="fas fa-copy text-[10px] opacity-60"></i>
+            <span className="text-foreground font-semibold">{randomName.username}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
         </div>
         <div className="flex items-center space-x-2">
