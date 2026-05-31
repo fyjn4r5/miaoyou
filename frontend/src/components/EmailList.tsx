@@ -113,7 +113,7 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
@@ -122,7 +122,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
@@ -131,7 +131,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary hidden sm:flex items-center gap-2 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary hidden sm:flex items-center gap-1.5 border text-sm"
             title={t('email.copyFullName')}
           >
             <span className="text-muted-foreground">{t('email.fullName')}:</span>
@@ -140,7 +140,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
@@ -151,7 +151,7 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
-            className="px-4 py-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.refresh')}
           >
             <i className="fas fa-sync-alt text-xs"></i>
