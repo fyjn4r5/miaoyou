@@ -1,7 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
+import { generateRandomName } from '../utils/nameGenerator';
 
 interface EmailListProps {
   emails: Email[];
@@ -17,8 +18,18 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
-  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox } = useContext(MailboxContext);
+  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
+  const randomName = useMemo(() => generateRandomName(), []);
+
+  const copyToClipboard = async (text: string, messageKey: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccessMessage(t(messageKey));
+    } catch {
+      showSuccessMessage(t('common.copied'));
+    }
+  };
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -118,6 +129,42 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       </div>
       
+      <div className="px-4 py-2 bg-muted/30 border-b text-xs flex items-center gap-2 flex-wrap">
+        <span className="text-muted-foreground">
+          {randomName.isMale ? '♂' : '♀'}
+        </span>
+        <span className="font-medium text-foreground">{randomName.fullName}</span>
+        <span className="text-muted-foreground">|</span>
+        <button
+          onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
+          className="hover:text-primary cursor-pointer"
+          title={t('email.copyFirstName')}
+        >
+          {t('email.firstName')}
+        </button>
+        <button
+          onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
+          className="hover:text-primary cursor-pointer"
+          title={t('email.copyLastName')}
+        >
+          {t('email.lastName')}
+        </button>
+        <button
+          onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
+          className="hover:text-primary cursor-pointer"
+          title={t('email.copyFullName')}
+        >
+          {t('email.fullName')}
+        </button>
+        <button
+          onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
+          className="hover:text-primary cursor-pointer"
+          title={t('email.copyUsername')}
+        >
+          {t('email.username')}
+        </button>
+      </div>
+
       {mailbox && (
         <div className="px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground">
           <div className="flex justify-between items-center mb-1">
