@@ -315,7 +315,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                 className="p-3 rounded-md hover:bg-muted text-muted-foreground"
                 title={`${t('email.markAsUnread')} (${t('email.markAsUnreadHint')})`}
               >
-                <i className="fas fa-envelope"></i>
+                <i className="fas fa-eye-slash"></i>
               </button>
               <button
                 onClick={onClose}

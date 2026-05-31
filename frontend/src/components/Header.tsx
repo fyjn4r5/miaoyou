@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
             {t('app.title')}
           </Link>
           
-          <div className="flex items-center bg-muted/70 rounded-md px-3 py-1.5">
+          <div className={`flex items-center ${mailbox ? 'bg-muted/70 rounded-md px-3 py-1.5' : ''}`}>
             {mailbox && (
               <HeaderMailbox 
                 mailbox={mailbox} 
