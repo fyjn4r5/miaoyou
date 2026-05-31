@@ -27,14 +27,24 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
   
+  const syncEmailReadStatus = (read: boolean) => {
+    if (setEmails) {
+      setEmails(prev => prev.map(email =>
+        email.id === emailId ? { ...email, isRead: read } : email
+      ));
+    }
+  };
+
   useEffect(() => {
     const fetchEmail = async () => {
       try {
         // 首先检查缓存中是否有该邮件
         if (emailCache[emailId]) {
-          setEmail(emailCache[emailId].email);
-          setAttachments(emailCache[emailId].attachments);
+          const cached = emailCache[emailId];
+          setEmail(cached.email);
+          setAttachments(cached.attachments);
           setIsLoading(false);
+          syncEmailReadStatus(true);
           return;
         }
         
@@ -54,6 +64,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
         const data = await response.json();
         if (data.success) {
           setEmail(data.email);
+          syncEmailReadStatus(true);
           
           // 如果邮件有附件，获取附件列表
           if (data.email.hasAttachments) {
@@ -302,7 +313,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
               <button
                 onClick={handleMarkAsUnread}
                 className="p-2 rounded-md hover:bg-muted text-muted-foreground"
-                title={t('email.markAsUnread')}
+                title={`${t('email.markAsUnread')} (${t('email.markAsUnreadHint')})`}
               >
                 <i className="fas fa-envelope"></i>
               </button>

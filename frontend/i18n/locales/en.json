@@ -107,6 +107,7 @@
     "message": "message",
     "messages": "messages",
     "markAsUnread": "Mark as unread",
+    "markAsUnreadHint": "Marking as unread prevents auto-deletion",
     "markedAsUnread": "Email marked as unread",
     "markAsUnreadFailed": "Failed to mark as unread"
   },
@@ -203,7 +204,7 @@
       "warning1": "Keep your email address and password safe — this is the only way to recover your account",
       "warning2": "Mailbox content may be accessed by others, avoid including personal privacy information",
       "warning3": "Do not enter your real account password in the password field to prevent leaks",
-      "warning4": "The system automatically deletes emails older than 24 hours. Please save important content promptly"
+      "warning4": "Read emails older than 24 hours are automatically deleted. Unread emails will not be deleted. Marking an email as unread prevents it from being auto-cleaned."
     },
     "faq": {
       "title": "FAQ",
@@ -218,7 +219,7 @@
       },
       "q3": {
         "question": "How long are emails kept?",
-        "answer": "Emails are automatically deleted 24 hours after being received, to free up storage space. Please check and save important content promptly."
+        "answer": "Read emails are automatically deleted 24 hours after being received to free up storage space. Unread emails will not be automatically deleted. You can mark important emails as unread to prevent them from being auto-cleaned. Please check and save important content promptly."
       },
       "q4": {
         "question": "What if I forget my password?",
