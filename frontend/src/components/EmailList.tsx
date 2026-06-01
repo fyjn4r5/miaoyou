@@ -178,7 +178,7 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center">
           <button
             onClick={handleRefresh}
-            className="px-4 py-2 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
+            className="h-9 px-4 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.refresh')}
           >
             <i className="fas fa-sync-alt text-xs"></i>
@@ -186,7 +186,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={toggleAutoRefresh}
-            className={`px-3 py-2 rounded-r-xl border text-sm font-medium transition-all hover:shadow-sm flex items-center ${
+            className={`h-9 px-3 rounded-r-xl border text-sm font-medium transition-all hover:shadow-sm flex items-center ${
               autoRefresh
                 ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
                 : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'

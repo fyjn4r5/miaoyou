@@ -105,7 +105,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
             <InfoRow label={t('email.city')} value={randomName.city} />
             <InfoRow label={t('email.state')} value={`${randomName.state} (${randomName.stateFull})`} />
             <InfoRow label={t('email.zipCode')} value={randomName.zipCode} />
-            <InfoRow label={t('email.country')} value={`${countries.find(c => c.code === selectedCountry)?.englishName || randomName.countryName} / ${randomName.countryCode}`} />
+            <InfoRow label={t('email.country')} value={countries.find(c => c.code === selectedCountry)?.englishName || randomName.countryName} />
             <div className="flex items-start justify-between py-2 border-b border-muted/50 last:border-0">
               <span className="text-sm text-muted-foreground min-w-[90px]">{t('email.fullAddress')}</span>
               <div className="flex items-start gap-2 flex-1 justify-end">
