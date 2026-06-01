@@ -57,7 +57,7 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 const StepCard: React.FC<{ step: string; title: string; description: string; icon: string; color: string }> = ({ step, title, description, icon, color }) => (
   <div className="flex flex-col items-center text-center group">
     <div className={`w-20 h-20 rounded-2xl ${color} flex items-center justify-center mb-4 relative group-hover:scale-110 transition-transform`}>
-      <i className={`fas ${icon} text-2xl`}></i>
+      <i className={`fas ${icon} text-4xl`}></i>
       <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-sm">
         {step}
       </span>
@@ -118,7 +118,7 @@ const HomePage: React.FC = () => {
             <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-primary via-blue-500 to-indigo-500 bg-clip-text text-transparent leading-tight">
               {t('intro.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-4xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {t('intro.hero.subtitle')}
             </p>
           </div>
@@ -167,8 +167,8 @@ const HomePage: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-5">
               <div className="bg-card rounded-2xl p-7 border hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
                 <div className="flex items-start gap-5">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <i className="fas fa-shield-alt text-2xl text-primary"></i>
+                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <i className="fas fa-shield-alt text-4xl text-primary"></i>
                   </div>
                   <div>
                     <h3 className="text-lg font-bold mb-2">{t('intro.features.privacy.title')}</h3>
@@ -178,8 +178,8 @@ const HomePage: React.FC = () => {
               </div>
               <div className="bg-card rounded-2xl p-7 border hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
                 <div className="flex items-start gap-5">
-                  <div className="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <i className="fas fa-infinity text-2xl text-green-500"></i>
+                  <div className="w-20 h-20 rounded-2xl bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <i className="fas fa-infinity text-4xl text-green-500"></i>
                   </div>
                   <div>
                     <h3 className="text-lg font-bold mb-2">{t('intro.features.permanent.title')}</h3>
@@ -189,8 +189,8 @@ const HomePage: React.FC = () => {
               </div>
               <div className="bg-card rounded-2xl p-7 border hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
                 <div className="flex items-start gap-5">
-                  <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <i className="fas fa-user-secret text-2xl text-purple-500"></i>
+                  <div className="w-20 h-20 rounded-2xl bg-purple-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <i className="fas fa-user-secret text-4xl text-purple-500"></i>
                   </div>
                   <div>
                     <h3 className="text-lg font-bold mb-2">{t('intro.features.anonymous.title')}</h3>
@@ -200,8 +200,8 @@ const HomePage: React.FC = () => {
               </div>
               <div className="bg-card rounded-2xl p-7 border hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
                 <div className="flex items-start gap-5">
-                  <div className="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <i className="fas fa-key text-2xl text-orange-500"></i>
+                  <div className="w-20 h-20 rounded-2xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <i className="fas fa-key text-4xl text-orange-500"></i>
                   </div>
                   <div>
                     <h3 className="text-lg font-bold mb-2">{t('intro.features.secure.title')}</h3>
@@ -251,43 +251,43 @@ const HomePage: React.FC = () => {
             </div>
             <div className="grid md:grid-cols-3 gap-5">
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-check-circle text-2xl text-blue-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-check-circle text-4xl text-blue-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.verification.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.verification.description')}</p>
               </div>
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-download text-2xl text-green-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-download text-4xl text-green-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.downloads.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.downloads.description')}</p>
               </div>
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-user-shield text-2xl text-purple-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-user-shield text-4xl text-purple-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.privacy.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.privacy.description')}</p>
               </div>
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-code text-2xl text-orange-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-code text-4xl text-orange-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.testing.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.testing.description')}</p>
               </div>
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-pink-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-comments text-2xl text-pink-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-pink-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-comments text-4xl text-pink-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.forum.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.forum.description')}</p>
               </div>
               <div className="bg-card rounded-2xl p-7 border text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-0.5 group">
-                <div className="w-16 h-16 rounded-xl bg-yellow-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-shopping-cart text-2xl text-yellow-500"></i>
+                <div className="w-20 h-20 rounded-2xl bg-yellow-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <i className="fas fa-shopping-cart text-4xl text-yellow-500"></i>
                 </div>
                 <h3 className="text-lg font-bold mb-2">{t('intro.useCases.shopping.title')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t('intro.useCases.shopping.description')}</p>

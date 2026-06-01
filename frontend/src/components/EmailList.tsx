@@ -120,7 +120,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
             <span className="text-foreground font-semibold">{randomName.firstName}</span>
-            <i className="fas fa-copy text-xs opacity-50"></i>
+            <i className="fas fa-copy text-xs"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
@@ -129,7 +129,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
             <span className="text-foreground font-semibold">{randomName.lastName}</span>
-            <i className="fas fa-copy text-xs opacity-50"></i>
+            <i className="fas fa-copy text-xs"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
@@ -138,7 +138,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
             <span className="text-foreground font-semibold">{randomName.username}</span>
-            <i className="fas fa-copy text-xs opacity-50"></i>
+            <i className="fas fa-copy text-xs"></i>
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
@@ -155,15 +155,15 @@ const EmailList: React.FC<EmailListProps> = ({
       {mailbox && (
         <div className="px-5 py-3 bg-muted/20 border-b text-sm text-muted-foreground">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div className="flex flex-col gap-0.5">
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
               <span className="font-medium">{t('mailbox.created')}</span>
               <span>{formatFullDate(mailbox.createdAt)}</span>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
               <span className="font-medium">{t('mailbox.expiresAt')}</span>
               <span>{formatFullDate(mailbox.expiresAt)}</span>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
               <span className="font-medium">{t('mailbox.timeLeft')}</span>
               <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
             </div>

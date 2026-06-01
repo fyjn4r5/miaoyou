@@ -27,6 +27,10 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
   
+  const processHtmlContent = (html: string) => {
+    return html.replace(/<a\s(?![^>]*target=)/gi, '<a target="_blank" rel="noopener noreferrer" ');
+  };
+
   const syncEmailReadStatus = (read: boolean) => {
     if (setEmails && emails) {
       setEmails(emails.map(email =>
@@ -343,7 +347,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             {email.htmlContent ? (
               <div 
                 className="prose max-w-none border rounded-md p-4 bg-white"
-                dangerouslySetInnerHTML={{ __html: email.htmlContent }}
+                dangerouslySetInnerHTML={{ __html: processHtmlContent(email.htmlContent) }}
               />
             ) : email.textContent ? (
               <pre className="whitespace-pre-wrap border rounded-md p-4 bg-white font-sans">
