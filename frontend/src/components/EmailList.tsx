@@ -113,6 +113,7 @@ const EmailList: React.FC<EmailListProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground/60 mr-1 select-none">{t('email.userInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
             className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
@@ -155,17 +156,17 @@ const EmailList: React.FC<EmailListProps> = ({
       {mailbox && (
         <div className="px-5 py-3 bg-muted/20 border-b text-sm text-muted-foreground">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+            <div className="flex flex-col gap-0.5">
               <span className="font-medium">{t('mailbox.created')}</span>
               <span>{formatFullDate(mailbox.createdAt)}</span>
             </div>
-            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+            <div className="flex flex-col gap-0.5">
               <span className="font-medium">{t('mailbox.expiresAt')}</span>
               <span>{formatFullDate(mailbox.expiresAt)}</span>
             </div>
-            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+            <div className="flex flex-col gap-0.5">
               <span className="font-medium">{t('mailbox.timeLeft')}</span>
-                  <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
+              <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
             </div>
           </div>
         </div>
