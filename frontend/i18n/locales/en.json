@@ -111,6 +111,7 @@
     "randomAlias": "Your random alias",
     "firstName": "First",
     "lastName": "Last",
+    "regInfo": "For Registration",
     "fullName": "Full",
     "username": "Username",
     "copyFirstName": "Copy first name",

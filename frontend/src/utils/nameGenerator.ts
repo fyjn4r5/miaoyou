@@ -22,11 +22,15 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function randomBirthday(): string {
-  const year = randomInt(1960, 2002);
+function randomBirthdayYear(): number {
+  return randomInt(1965, 2002);
+}
+
+function randomBirthday(year?: number): string {
+  const y = year ?? randomBirthdayYear();
   const month = String(randomInt(1, 12)).padStart(2, "0");
   const day = String(randomInt(1, 28)).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return `${y}-${month}-${day}`;
 }
 
 function generateSSN(): string {
@@ -98,7 +102,8 @@ export function generateRandomName(countryCode?: string): RandomName {
   const firstName = isMale ? pick(country.maleFirstNames) : pick(country.femaleFirstNames);
   const lastName = pick(country.lastNames);
   const fullName = `${firstName} ${lastName}`;
-  const username = `${firstName}${lastName}`.toLowerCase() + Math.floor(1998 + Math.random() * 10);
+  const birthYear = randomBirthdayYear();
+  const username = `${firstName}${lastName}`.toLowerCase() + birthYear;
 
   const stateData = pick(country.states);
   const streetNum = randomInt(100, 9999);
@@ -111,7 +116,7 @@ export function generateRandomName(countryCode?: string): RandomName {
   const fullAddress = `${streetAddress}\n${city}, ${stateData.abbr} ${zipCode}\n${country.englishName}`;
   const title = isMale ? country.titleMale : country.titleFemale;
   const gender = isMale ? "Male" : "Female";
-  const birthday = randomBirthday();
+  const birthday = randomBirthday(birthYear);
   const company = pick(COMPANIES);
   const occupation = pick(OCCUPATIONS);
   const ssn = generateSSN();
@@ -146,7 +151,9 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
   const firstName = userData?.name.first || (isMale ? pick(country.maleFirstNames) : pick(country.femaleFirstNames));
   const lastName = userData?.name.last || pick(country.lastNames);
   const fullName = `${firstName} ${lastName}`;
-  const username = `${firstName}${lastName}`.toLowerCase() + randomInt(1998, 2008);
+  const apiBirthYear = userData?.dob.date ? new Date(userData.dob.date).getFullYear() : null;
+  const birthYear = apiBirthYear || randomBirthdayYear();
+  const username = `${firstName}${lastName}`.toLowerCase() + birthYear;
 
   const stateData = country.states.find(s =>
     addressData.stateFull.toLowerCase().includes(s.name.toLowerCase())
@@ -165,7 +172,7 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     username,
     isMale,
     gender: isMale ? "Male" : "Female",
-    birthday: userData?.dob.date?.split("T")[0] || randomBirthday(),
+    birthday: userData?.dob.date?.split("T")[0] || randomBirthday(birthYear),
     streetAddress: addressData.streetAddress,
     city: addressData.city,
     state: stateAbbr,
