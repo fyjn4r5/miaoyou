@@ -32,7 +32,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   };
 
   const syncEmailReadStatus = (read: boolean) => {
-    setEmails(prev => prev.map(email =>
+    setEmails((prev: Email[]) => prev.map((email: Email) =>
       email.id === emailId ? { ...email, isRead: read } : email
     ));
   };
@@ -135,7 +135,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       const data = await response.json();
       if (data.success) {
         showSuccessMessage(t('email.markedAsUnread'));
-        setEmails(prev => prev.map(email =>
+        setEmails((prev: Email[]) => prev.map((email: Email) =>
           email.id === emailId ? { ...email, isRead: false } : email
         ));
         onClose();
@@ -160,7 +160,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       const data = await response.json();
       if (data.success) {
         showSuccessMessage(t('email.deleteSuccess'));
-        setEmails(prev => prev.filter(email => email.id !== emailId));
+        setEmails((prev: Email[]) => prev.filter((email: Email) => email.id !== emailId));
         onClose();
       } else {
         throw new Error(data.error || 'Unknown error');
