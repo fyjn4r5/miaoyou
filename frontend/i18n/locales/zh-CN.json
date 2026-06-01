@@ -158,7 +158,10 @@
     "creditCardNumber": "信用卡号",
     "cvv2": "CVV2",
     "expires": "有效期",
-    "regenerate": "随机生成"
+    "regenerate": "随机生成",
+    "fullAddress": "完整地址",
+    "copyFullAddress": "复制完整地址",
+    "country": "国家"
   },
   "settings": {
     "language": "语言",

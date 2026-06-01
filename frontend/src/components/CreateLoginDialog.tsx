@@ -25,6 +25,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const handleRegenerate = () => {
     setGeneratedAddress(generateRandomAddress());
     setGeneratedPassword(generatePassword());
+    const randomDomain = emailDomains[Math.floor(Math.random() * emailDomains.length)];
+    setSelectedDomain(randomDomain);
   };
 
   const handleCreate = async () => {
@@ -68,7 +70,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-background rounded-2xl shadow-2xl w-[480px] max-w-[95vw] mx-4 p-6 border">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-2xl font-bold">
@@ -108,7 +110,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         </div>
 
         {activeTab === 'create' && (
-          <div className="space-y-4 min-h-[240px]">
+          <div className="space-y-4 min-h-[280px] flex flex-col">
             <div className="bg-muted/30 rounded-xl p-5 space-y-4 border">
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
@@ -166,11 +168,12 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
             <p className="text-xs text-muted-foreground text-center">
               {t('mailbox.createPasswordTip')}
             </p>
+            <div className="flex-1"></div>
           </div>
         )}
 
         {activeTab === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4 min-h-[240px] flex flex-col justify-center">
+          <form onSubmit={handleLogin} className="space-y-4 min-h-[280px] flex flex-col">
             <div>
               <label className="block text-sm font-semibold mb-1.5">
                 {t('mailbox.address')}
@@ -216,6 +219,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
                 <span><i className="fas fa-sign-in-alt mr-1.5"></i>{t('mailbox.login')}</span>
               )}
             </button>
+
+            <div className="flex-1"></div>
           </form>
         )}
       </div>

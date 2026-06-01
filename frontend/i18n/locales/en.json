@@ -149,7 +149,10 @@
     "creditCardNumber": "Card Number",
     "cvv2": "CVV2",
     "expires": "Expires",
-    "regenerate": "Regenerate"
+    "regenerate": "Regenerate",
+    "fullAddress": "Full Address",
+    "copyFullAddress": "Copy full address",
+    "country": "Country"
   },
   "settings": {
     "language": "Language",

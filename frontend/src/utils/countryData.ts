@@ -1,6 +1,7 @@
 export interface CountryInfo {
   code: string;
   name: string;
+  phoneCountryPrefix: string;
   maleFirstNames: string[];
   femaleFirstNames: string[];
   lastNames: string[];
@@ -19,14 +20,14 @@ function randomInt(min: number, max: number): number {
 }
 
 function usPhone(): string {
-  return `(${randomInt(200, 999)}) ${randomInt(200, 999)}-${randomInt(1000, 9999)}`;
+  return `${randomInt(200, 999)}${randomInt(200, 999)}${randomInt(1000, 9999)}`;
 }
 function usZip(): string {
   return String(randomInt(10000, 99999));
 }
 
 function ukPhone(): string {
-  return `07${randomInt(100, 999)} ${randomInt(100, 999)} ${randomInt(100, 999)}`;
+  return `7${randomInt(100, 999)}${randomInt(100, 999)}${randomInt(100, 999)}`;
 }
 function ukZip(): string {
   const out = String(randomInt(10, 99)) + " " + String.fromCharCode(65 + randomInt(0, 25)) + String.fromCharCode(65 + randomInt(0, 25));
@@ -34,7 +35,7 @@ function ukZip(): string {
 }
 
 function caPhone(): string {
-  return `(${randomInt(200, 999)}) ${randomInt(200, 999)}-${randomInt(1000, 9999)}`;
+  return `${randomInt(200, 999)}${randomInt(200, 999)}${randomInt(1000, 9999)}`;
 }
 function caZip(): string {
   const letter = String.fromCharCode(65 + randomInt(0, 25));
@@ -44,42 +45,42 @@ function caZip(): string {
 }
 
 function auPhone(): string {
-  return `04${randomInt(10, 99)} ${randomInt(100, 999)} ${randomInt(100, 999)}`;
+  return `4${randomInt(10, 99)}${randomInt(100, 999)}${randomInt(100, 999)}`;
 }
 function auZip(): string {
   return String(randomInt(2000, 2999));
 }
 
 function jpPhone(): string {
-  return `0${randomInt(10, 99)}-${randomInt(1000, 9999)}-${randomInt(1000, 9999)}`;
+  return `${randomInt(10, 99)}${randomInt(1000, 9999)}${randomInt(1000, 9999)}`;
 }
 function jpZip(): string {
   return `${String(randomInt(100, 999))}-${String(randomInt(1000, 9999))}`;
 }
 
 function dePhone(): string {
-  return `+49 ${randomInt(100, 999)} ${randomInt(100000, 999999)}`;
+  return `${randomInt(100, 999)}${randomInt(100000, 999999)}`;
 }
 function deZip(): string {
   return String(randomInt(10000, 99999));
 }
 
 function frPhone(): string {
-  return `0${randomInt(6, 7)} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))}`;
+  return `${randomInt(6, 7)}${String(randomInt(10, 99))}${String(randomInt(10, 99))}${String(randomInt(10, 99))}${String(randomInt(10, 99))}`;
 }
 function frZip(): string {
   return String(randomInt(10000, 99999));
 }
 
 function sgPhone(): string {
-  return `+65 ${randomInt(1000, 9999)} ${randomInt(1000, 9999)}`;
+  return `${randomInt(1000, 9999)}${randomInt(1000, 9999)}`;
 }
 function sgZip(): string {
   return String(randomInt(100000, 999999));
 }
 
 function krPhone(): string {
-  return `0${randomInt(10, 11)}-${randomInt(1000, 9999)}-${randomInt(1000, 9999)}`;
+  return `${randomInt(10, 11)}${randomInt(1000, 9999)}${randomInt(1000, 9999)}`;
 }
 function krZip(): string {
   return String(randomInt(10000, 99999));
@@ -89,6 +90,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "US",
     name: "美国",
+    phoneCountryPrefix: "1",
     maleFirstNames: [
       "Benjamin", "Matthew", "Alexander", "Andrew", "Samuel", "Ethan", "Daniel", "Anthony", "Henry", "Joseph",
       "David", "Lucas", "Ian", "Ryan", "Nathan", "Adrian", "Kyle", "Tyler", "Aaron", "Brandon",
@@ -142,6 +144,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "GB",
     name: "英国",
+    phoneCountryPrefix: "44",
     maleFirstNames: [
       "Oliver", "George", "Harry", "Noah", "Jack", "Leo", "Oscar", "Charlie", "James", "William",
       "Henry", "Thomas", "Freddie", "Alfie", "Arthur", "Jacob", "Ethan", "Archie", "Joshua", "Alexander",
@@ -177,6 +180,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "CA",
     name: "加拿大",
+    phoneCountryPrefix: "1",
     maleFirstNames: [
       "Liam", "Noah", "Benjamin", "Ethan", "William", "Lucas", "James", "Oliver", "Henry", "Jack",
       "Alexander", "Jacob", "Daniel", "Logan", "Matthew", "David", "Samuel", "Owen", "Nathan", "Thomas",
@@ -215,6 +219,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "AU",
     name: "澳大利亚",
+    phoneCountryPrefix: "61",
     maleFirstNames: [
       "Oliver", "Noah", "William", "Jack", "James", "Henry", "Lucas", "Ethan", "Leo", "Thomas",
       "Lachlan", "Charlie", "Hugo", "Alexander", "Max", "Benjamin", "Harrison", "Sebastian", "Oscar", "Archie",
@@ -252,6 +257,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "JP",
     name: "日本",
+    phoneCountryPrefix: "81",
     maleFirstNames: [
       "Haruto", "Sota", "Yuto", "Riku", "Minato", "Itsuki", "Yamato", "Takumi", "Sora", "Kaito",
       "Hiroshi", "Takeshi", "Kenji", "Satoshi", "Taro", "Ichiro", "Shinji", "Yuki", "Daiki", "Shota",
@@ -309,6 +315,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "DE",
     name: "德国",
+    phoneCountryPrefix: "49",
     maleFirstNames: [
       "Felix", "Maximilian", "Leon", "Lukas", "Jonas", "Tim", "Niklas", "Finn", "Julian", "Luis",
       "Paul", "Alexander", "David", "Simon", "Erik", "Jan", "Ben", "Luca", "Tom", "Max",
@@ -350,6 +357,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "FR",
     name: "法国",
+    phoneCountryPrefix: "33",
     maleFirstNames: [
       "Gabriel", "Raphael", "Louis", "Arthur", "Jules", "Adam", "Lucas", "Hugo", "Leo", "Paul",
       "Nathan", "Tom", "Mathis", "Mael", "Ethan", "Antoine", "Alexandre", "Pierre", "Nicolas", "Jean",
@@ -390,6 +398,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "SG",
     name: "新加坡",
+    phoneCountryPrefix: "65",
     maleFirstNames: [
       "Wei Ming", "Jun Wei", "Kai Xiang", "Zhi Hao", "Yi Feng", "Jie Ren", "Yi Zhong", "Wen Hao", "Jian Wei", "Yi Kang",
       "Li Wei", "Jia Ming", "Yun Feng", "Wei Jie", "Sheng Yuan", "Guo Liang", "Hao Ran", "Ming Yang", "Jun Kai", "Yi Yang"
@@ -422,6 +431,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "KR",
     name: "韩国",
+    phoneCountryPrefix: "82",
     maleFirstNames: [
       "Min-jun", "Seo-jun", "Ji-ho", "Ha-joon", "Si-woo", "Yun-woo", "Ji-hoon", "Hyun-woo", "Sung-min", "Jae-won",
       "Kyung-ho", "Tae-hyun", "Sang-hyun", "Jin-ho", "Young-ho", "Dong-hyun", "Jung-ho", "Ki-young", "Chang-ho", "Hyung-soo"

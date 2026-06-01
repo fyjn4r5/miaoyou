@@ -75,7 +75,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
           <div className="flex items-center gap-2">
             <button
               onClick={() => onRegenerate?.(selectedCountry)}
-              className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-sm rounded-md border border-muted-foreground/30 hover:border-muted-foreground/60 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
               title={t('email.regenerate')}
             >
               <i className="fas fa-shuffle"></i>
@@ -101,10 +101,24 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
           </Section>
 
           <Section title={t('email.sectionAddress')}>
+            <div className="flex items-start justify-between py-2 border-b border-muted/50">
+              <span className="text-sm text-muted-foreground min-w-[90px]">{t('email.fullAddress')}</span>
+              <div className="flex items-start gap-2 flex-1 justify-end">
+                <pre className="text-base font-mono text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
+                <button
+                  onClick={() => copyToClipboard(randomName.fullAddress)}
+                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
+                  title={t('email.copyFullAddress')}
+                >
+                  <i className="fas fa-copy text-sm"></i>
+                </button>
+              </div>
+            </div>
             <InfoRow label={t('email.streetAddress')} value={randomName.streetAddress} />
             <InfoRow label={t('email.city')} value={randomName.city} />
             <InfoRow label={t('email.state')} value={`${randomName.state} (${randomName.stateFull})`} />
             <InfoRow label={t('email.zipCode')} value={randomName.zipCode} />
+            <InfoRow label={t('email.country')} value={randomName.countryName} />
           </Section>
 
           <Section title={t('email.sectionContact')}>

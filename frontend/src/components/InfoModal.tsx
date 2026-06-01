@@ -48,7 +48,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, type }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+      <div className="bg-card rounded-lg shadow-xl w-full max-w-xl max-h-[80vh] flex flex-col">
         {/* 弹窗头部 */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-semibold">{title}</h2>

@@ -78,6 +78,7 @@ export interface RandomName {
   stateFull: string;
   zipCode: string;
   telephone: string;
+  fullAddress: string;
   title: string;
   company: string;
   occupation: string;
@@ -105,7 +106,8 @@ export function generateRandomName(countryCode?: string): RandomName {
   const streetAddress = `${streetNum} ${streetName} ${streetType}`;
   const city = pick(country.cities);
   const zipCode = country.zipFormat();
-  const telephone = country.phoneFormat();
+  const telephone = `+${country.phoneCountryPrefix}${country.phoneFormat()}`;
+  const fullAddress = `${streetAddress}\n${city}, ${stateData.abbr} ${zipCode}\n${country.name}`;
   const title = isMale ? country.titleMale : country.titleFemale;
   const gender = isMale ? "Male" : "Female";
   const birthday = randomBirthday();
@@ -124,7 +126,7 @@ export function generateRandomName(countryCode?: string): RandomName {
     firstName, lastName, fullName, username, isMale,
     gender, birthday, streetAddress, city,
     state: stateData.abbr, stateFull: stateData.name,
-    zipCode, telephone, title, company, occupation,
+    zipCode, telephone, fullAddress, title, company, occupation,
     ssn, creditCardType, creditCardNumber, cvv2, expires, password
   };
 }

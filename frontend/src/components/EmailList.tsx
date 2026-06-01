@@ -186,18 +186,18 @@ const EmailList: React.FC<EmailListProps> = ({
             </div>
             <div className="flex justify-between sm:flex-col sm:gap-0.5">
               <span className="font-medium">{t('mailbox.timeLeft')}</span>
-              <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
+              <span className="flex items-center gap-2">
+                <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
+                <button
+                  onClick={handleDeleteMailbox}
+                  className="text-red-500 hover:text-red-600 flex items-center gap-1 px-2 py-0.5 rounded hover:bg-red-500/10 transition-colors text-xs font-medium"
+                  title={t('mailbox.delete')}
+                >
+                  <i className="fas fa-trash-alt"></i>
+                  <span>{t('mailbox.delete')}</span>
+                </button>
+              </span>
             </div>
-          </div>
-          <div className="flex justify-end mt-2 pt-2 border-t border-border/50">
-            <button
-              onClick={handleDeleteMailbox}
-              className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1.5 px-3 py-1 rounded-lg hover:bg-red-500/10 transition-colors font-medium"
-              title={t('mailbox.delete')}
-            >
-              <i className="fas fa-trash-alt"></i>
-              <span>{t('mailbox.delete')}</span>
-            </button>
           </div>
         </div>
       )}
