@@ -26,7 +26,7 @@ interface MailboxContextType {
   logout: () => void;
   isLoading: boolean;
   emails: Email[];
-  setEmails: (emails: Email[]) => void;
+  setEmails: React.Dispatch<React.SetStateAction<Email[]>>;
   selectedEmail: string | null;
   setSelectedEmail: (id: string | null) => void;
   isEmailsLoading: boolean;
