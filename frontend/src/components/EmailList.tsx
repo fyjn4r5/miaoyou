@@ -161,16 +161,7 @@ const EmailList: React.FC<EmailListProps> = ({
             <span>{t('email.showMore')}</span>
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">{t('email.autoRefresh')}</span>
-          <button
-            onClick={toggleAutoRefresh}
-            className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${autoRefresh ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-            title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${autoRefresh ? 'translate-x-6' : 'translate-x-0'}`} />
-          </button>
-        </div>
+
       </div>
 
       {mailbox && (
@@ -206,14 +197,27 @@ const EmailList: React.FC<EmailListProps> = ({
         <span className="text-sm font-medium text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
-        <button
-          onClick={handleRefresh}
-          className="px-4 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm font-medium transition-all hover:shadow-sm"
-          title={t('email.refresh')}
-        >
-          <i className="fas fa-sync-alt text-xs"></i>
-          <span>{t('email.refresh')}</span>
-        </button>
+        <div className="flex items-center">
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
+            title={t('email.refresh')}
+          >
+            <i className="fas fa-sync-alt text-xs"></i>
+            <span>{t('email.refresh')}</span>
+          </button>
+          <button
+            onClick={toggleAutoRefresh}
+            className={`px-3 py-2 rounded-r-xl border text-sm font-medium transition-all hover:shadow-sm flex items-center ${
+              autoRefresh
+                ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
+                : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'
+            }`}
+            title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
+          >
+            <span className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500' : 'bg-gray-400'}`} />
+          </button>
+        </div>
       </div>
       
       {emails.length === 0 ? (

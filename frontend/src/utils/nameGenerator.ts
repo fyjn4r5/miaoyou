@@ -107,7 +107,7 @@ export function generateRandomName(countryCode?: string): RandomName {
   const city = pick(country.cities);
   const zipCode = country.zipFormat();
   const telephone = `+${country.phoneCountryPrefix}${country.phoneFormat()}`;
-  const fullAddress = `${streetAddress}\n${city}, ${stateData.abbr} ${zipCode}\n${country.name}`;
+  const fullAddress = `${streetAddress}\n${city}, ${stateData.abbr} ${zipCode}\n${country.englishName}`;
   const title = isMale ? country.titleMale : country.titleFemale;
   const gender = isMale ? "Male" : "Female";
   const birthday = randomBirthday();
