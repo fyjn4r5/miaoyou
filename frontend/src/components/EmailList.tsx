@@ -131,46 +131,46 @@ const EmailList: React.FC<EmailListProps> = ({
           <span className="text-xs text-muted-foreground font-medium mr-1">{t('email.regInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm"
             title={t('email.copyFullName')}
           >
             <span className="text-primary/70">{t('email.fullName')}:</span>
             <span className="text-primary font-semibold">{randomName.fullName}</span>
-            <i className="fas fa-copy text-sm"></i>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
             <span className="text-foreground font-semibold">{randomName.firstName}</span>
-            <i className="fas fa-copy text-sm"></i>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
             <span className="text-foreground font-semibold">{randomName.lastName}</span>
-            <i className="fas fa-copy text-sm"></i>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
             <span className="text-foreground font-semibold">{randomName.username}</span>
-            <i className="fas fa-copy text-sm"></i>
+            <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
             title={t('email.showMore')}
           >
-            <i className="fas fa-ellipsis-h text-sm"></i>
+            <i className="fas fa-ellipsis-h text-xs opacity-60"></i>
             <span>{t('email.showMore')}</span>
           </button>
           {isNameLoading && (
@@ -203,21 +203,21 @@ const EmailList: React.FC<EmailListProps> = ({
         <span className="text-sm font-medium text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            className="h-9 px-4 rounded-l-xl bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-2 border border-primary/20 text-sm font-medium transition-all hover:shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm"
             title={t('email.refresh')}
           >
-            <i className="fas fa-sync-alt text-sm"></i>
+            <i className="fas fa-sync-alt text-xs"></i>
             <span>{t('email.refresh')}</span>
           </button>
           <button
             onClick={toggleAutoRefresh}
-            className={`h-9 px-3 rounded-r-xl border text-sm font-medium transition-all hover:shadow-sm flex items-center ${
+            className={`px-3 py-1.5 rounded-full border text-sm flex items-center gap-1.5 ${
               autoRefresh
                 ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
-                : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'
+                : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary border'
             }`}
             title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
           >
