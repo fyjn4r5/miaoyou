@@ -172,9 +172,9 @@ const EmailList: React.FC<EmailListProps> = ({
               <span className="font-medium">{t('mailbox.expiresAt')}</span>
               <span>{formatFullDate(mailbox.expiresAt)}</span>
             </div>
-            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+            <div className="flex justify-between sm:flex-col sm:gap-0.5 sm:text-right">
               <span className="font-medium">{t('mailbox.timeLeft')}</span>
-              <span className={`sm:text-right ${mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}`}>{calculateTimeLeft(mailbox.expiresAt)}</span>
+              <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
             </div>
           </div>
         </div>

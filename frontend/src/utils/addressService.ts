@@ -21,7 +21,7 @@ interface NominatimResult {
 export async function searchCity(city: string, country: string): Promise<NominatimResult | null> {
   try {
     const res = await fetch(
-      `${NOMINATIM_BASE}/search?q=${encodeURIComponent(city + "," + country)}&format=json&limit=1`,
+      `${NOMINATIM_BASE}/search?q=${encodeURIComponent(city + "," + country)}&format=json&limit=1&accept-language=en`,
       { headers: { "User-Agent": "Zmail/1.0" } }
     );
     if (!res.ok) return null;
@@ -35,7 +35,7 @@ export async function searchCity(city: string, country: string): Promise<Nominat
 export async function reverseGeocode(lat: number, lon: number): Promise<NominatimResult | null> {
   try {
     const res = await fetch(
-      `${NOMINATIM_BASE}/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`,
+      `${NOMINATIM_BASE}/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1&accept-language=en`,
       { headers: { "User-Agent": "Zmail/1.0" } }
     );
     if (!res.ok) return null;
