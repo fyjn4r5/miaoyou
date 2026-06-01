@@ -110,7 +110,7 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <>
     <div className="border rounded-xl shadow-sm overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-center p-5 border-b bg-card gap-3">
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -170,22 +170,22 @@ const EmailList: React.FC<EmailListProps> = ({
                 <div className="flex items-center">
                   <button
                     onClick={handleRefresh}
-                    className="px-2 py-1 rounded-l-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1 border border-r-0 text-xs font-medium transition-all"
+                    className="px-3 py-1.5 rounded-l-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-r-0 text-sm font-medium transition-all"
                     title={t('email.refresh')}
                   >
-                    <i className="fas fa-sync-alt text-[10px]"></i>
+                    <i className="fas fa-sync-alt text-xs"></i>
                     <span>{t('email.refresh')}</span>
                   </button>
                   <button
                     onClick={toggleAutoRefresh}
-                    className={`px-2 py-1 rounded-r-md border text-xs font-medium transition-all flex items-center ${
+                    className={`px-2.5 py-1.5 rounded-r-md border text-sm font-medium transition-all flex items-center ${
                       autoRefresh
                         ? 'bg-primary/10 border-primary/30 text-primary'
                         : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'
                     }`}
                     title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    <span className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500' : 'bg-gray-400'}`} />
                   </button>
                 </div>
               </span>
