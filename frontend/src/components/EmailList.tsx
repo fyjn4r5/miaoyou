@@ -4,6 +4,7 @@ import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
 import UserInfoModal from './UserInfoModal';
 import { generateRandomName } from '../utils/nameGenerator';
+import { COUNTRIES } from '../utils/countryData';
 
 interface EmailListProps {
   emails: Email[];
@@ -22,10 +23,16 @@ const EmailList: React.FC<EmailListProps> = ({
   const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [randomName, setRandomName] = useState(() => generateRandomName());
+  const [selectedCountry, setSelectedCountry] = useState("US");
+  const [randomName, setRandomName] = useState(() => generateRandomName("US"));
 
-  const regenerateName = () => {
-    setRandomName(generateRandomName());
+  const regenerateName = (countryCode?: string) => {
+    setRandomName(generateRandomName(countryCode || selectedCountry));
+  };
+
+  const handleCountryChange = (countryCode: string) => {
+    setSelectedCountry(countryCode);
+    setRandomName(generateRandomName(countryCode));
   };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
@@ -249,6 +256,9 @@ const EmailList: React.FC<EmailListProps> = ({
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}
         randomName={randomName}
+        countries={COUNTRIES}
+        selectedCountry={selectedCountry}
+        onCountryChange={handleCountryChange}
         onRegenerate={regenerateName}
       />
     </>

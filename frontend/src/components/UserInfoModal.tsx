@@ -1,20 +1,24 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { RandomName } from '../utils/nameGenerator';
+import { CountryInfo } from '../utils/countryData';
 
 interface UserInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   randomName: RandomName;
-  onRegenerate?: () => void;
+  countries: CountryInfo[];
+  selectedCountry: string;
+  onCountryChange: (countryCode: string) => void;
+  onRegenerate?: (countryCode?: string) => void;
 }
 
-const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, onRegenerate }) => {
+const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate }) => {
   const { t } = useTranslation();
 
   if (!isOpen) return null;
 
-  const copyToClipboard = async (text: string, label: string) => {
+  const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -32,7 +36,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
       <div className="flex items-center gap-2 flex-1 justify-end">
         <span className="text-base font-mono text-right truncate max-w-[280px]">{value}</span>
         <button
-          onClick={() => copyToClipboard(value, label)}
+          onClick={() => copyToClipboard(value)}
           className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0"
           title={label}
         >
@@ -56,10 +60,21 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b shrink-0">
-          <h2 className="text-lg font-bold">{t('email.userInfo')}</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold">{t('email.userInfo')}</h2>
+            <select
+              value={selectedCountry}
+              onChange={(e) => onCountryChange(e.target.value)}
+              className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+            >
+              {countries.map(c => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={onRegenerate}
+              onClick={() => onRegenerate?.(selectedCountry)}
               className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors flex items-center gap-1.5"
               title={t('email.regenerate')}
             >
