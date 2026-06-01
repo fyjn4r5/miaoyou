@@ -9,7 +9,7 @@ interface UserInfoModalProps {
   randomName: RandomName;
   countries: CountryInfo[];
   selectedCountry: string;
-  onCountryChange: (countryCode: string) => void;
+  onCountryChange: (countryCode: string) => void | Promise<void>;
   onRegenerate?: (countryCode?: string) => void | Promise<void>;
 }
 
