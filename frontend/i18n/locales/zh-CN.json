@@ -157,7 +157,8 @@
     "creditCardType": "信用卡类型",
     "creditCardNumber": "信用卡号",
     "cvv2": "CVV2",
-    "expires": "有效期"
+    "expires": "有效期",
+    "regenerate": "随机生成"
   },
   "settings": {
     "language": "语言",

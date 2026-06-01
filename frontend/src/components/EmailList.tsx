@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
@@ -22,7 +22,11 @@ const EmailList: React.FC<EmailListProps> = ({
   const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
+  const [randomName, setRandomName] = useState(() => generateRandomName());
+
+  const regenerateName = () => {
+    setRandomName(generateRandomName());
+  };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
     try {
@@ -236,6 +240,7 @@ const EmailList: React.FC<EmailListProps> = ({
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}
         randomName={randomName}
+        onRegenerate={regenerateName}
       />
     </>
   );

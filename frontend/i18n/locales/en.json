@@ -148,7 +148,8 @@
     "creditCardType": "Card Type",
     "creditCardNumber": "Card Number",
     "cvv2": "CVV2",
-    "expires": "Expires"
+    "expires": "Expires",
+    "regenerate": "Regenerate"
   },
   "settings": {
     "language": "Language",
