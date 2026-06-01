@@ -116,6 +116,15 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
             <div className="flex items-start justify-between py-2 border-b border-muted/50 last:border-0">
               <span className="text-sm text-muted-foreground min-w-[90px]">{t('email.fullAddress')}</span>
               <div className="flex items-start gap-2 flex-1 justify-end">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(randomName.fullAddress.replace(/\n/g, ", "))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
+                  title="在 Google Maps 中查看"
+                >
+                  <i className="fas fa-map-marker-alt text-sm"></i>
+                </a>
                 <pre className="text-base font-mono text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
                 <button
                   onClick={() => copyToClipboard(randomName.fullAddress)}
