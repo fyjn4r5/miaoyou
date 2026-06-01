@@ -129,6 +129,15 @@ const EmailList: React.FC<EmailListProps> = ({
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
+            className="px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm font-medium transition-all hover:shadow-sm"
+            title={t('email.copyFullName')}
+          >
+            <span className="text-primary/70">{t('email.fullName')}:</span>
+            <span className="text-primary font-semibold">{randomName.fullName}</span>
+            <i className="fas fa-copy text-sm"></i>
+          </button>
+          <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
             className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.copyFirstName')}
