@@ -2,6 +2,7 @@ import React, { useContext, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
+import UserInfoModal from './UserInfoModal';
 import { generateRandomName } from '../utils/nameGenerator';
 
 interface EmailListProps {
@@ -20,6 +21,7 @@ const EmailList: React.FC<EmailListProps> = ({
   const { t } = useTranslation();
   const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const randomName = useMemo(() => generateRandomName(), [mailbox?.id]);
 
   const copyToClipboard = async (text: string, messageKey: string) => {
@@ -107,6 +109,7 @@ const EmailList: React.FC<EmailListProps> = ({
   }
   
   return (
+    <>
     <div className="border rounded-lg">
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
@@ -130,22 +133,12 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
-            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary hidden sm:flex items-center gap-1.5 border text-sm"
-            title={t('email.copyFullName')}
-          >
-            <span className="text-muted-foreground">{t('email.fullName')}:</span>
-            <span className="text-foreground font-semibold">{randomName.fullName}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
-          </button>
-          <button
-            onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
+            onClick={() => setIsInfoModalOpen(true)}
             className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
-            title={t('email.copyUsername')}
+            title={t('email.showMore')}
           >
-            <span className="text-muted-foreground">{t('email.username')}:</span>
-            <span className="text-foreground font-semibold">{randomName.username}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
+            <i className="fas fa-ellipsis-h text-xs"></i>
+            <span>{t('email.showMore')}</span>
           </button>
         </div>
         <div className="flex items-center space-x-2">
@@ -239,6 +232,12 @@ const EmailList: React.FC<EmailListProps> = ({
         </ul>
       )}
     </div>
+      <UserInfoModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        randomName={randomName}
+      />
+    </>
   );
 };
 
