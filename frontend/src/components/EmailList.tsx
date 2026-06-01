@@ -110,7 +110,7 @@ const EmailList: React.FC<EmailListProps> = ({
   return (
     <>
     <div className="border rounded-xl shadow-sm overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-center p-5 border-b bg-card gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button
