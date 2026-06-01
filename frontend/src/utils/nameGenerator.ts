@@ -146,10 +146,15 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
   const firstName = userData?.name.first || (isMale ? pick(country.maleFirstNames) : pick(country.femaleFirstNames));
   const lastName = userData?.name.last || pick(country.lastNames);
   const fullName = `${firstName} ${lastName}`;
+  const username = `${firstName}${lastName}`.toLowerCase() + randomInt(1998, 2008);
 
   const stateData = country.states.find(s =>
     addressData.stateFull.toLowerCase().includes(s.name.toLowerCase())
   );
+  const stateAbbr = stateData?.abbr || addressData.stateFull;
+
+  const telephone = `+${country.phoneCountryPrefix}${country.phoneFormat()}`;
+  const fullAddress = `${addressData.streetAddress}\n${addressData.city}, ${stateAbbr} ${addressData.zipCode}\n${country.englishName}`;
 
   return {
     countryCode: code,
@@ -157,17 +162,17 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     firstName,
     lastName,
     fullName,
-    username: userData?.login.username || `${firstName}${lastName}`.toLowerCase() + randomInt(1998, 2008),
+    username,
     isMale,
     gender: isMale ? "Male" : "Female",
     birthday: userData?.dob.date?.split("T")[0] || randomBirthday(),
     streetAddress: addressData.streetAddress,
     city: addressData.city,
-    state: stateData?.abbr || addressData.stateFull,
+    state: stateAbbr,
     stateFull: addressData.stateFull,
     zipCode: addressData.zipCode,
-    telephone: userData?.phone || `+${country.phoneCountryPrefix}${country.phoneFormat()}`,
-    fullAddress: addressData.fullAddress,
+    telephone,
+    fullAddress,
     title: isMale ? country.titleMale : country.titleFemale,
     company: pick(COMPANIES),
     occupation: pick(OCCUPATIONS),
@@ -176,6 +181,6 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     creditCardNumber: generateCreditCardNumber(),
     cvv2: String(randomInt(100, 999)),
     expires: generateExpiry(),
-    password: userData?.login.password || generatePassword(),
+    password: generatePassword(),
   };
 }

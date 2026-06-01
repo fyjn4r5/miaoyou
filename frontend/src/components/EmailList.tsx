@@ -25,23 +25,29 @@ const EmailList: React.FC<EmailListProps> = ({
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("US");
   const [randomName, setRandomName] = useState(() => generateRandomName("US"));
+  const [isNameLoading, setIsNameLoading] = useState(true);
 
   useEffect(() => {
     generateFromOSM("US").then(result => {
       if (result) setRandomName(result);
+      setIsNameLoading(false);
     });
   }, []);
 
   const regenerateName = async (countryCode?: string) => {
     const code = countryCode || selectedCountry;
+    setIsNameLoading(true);
     const apiResult = await generateFromOSM(code);
     setRandomName(apiResult || generateRandomName(code));
+    setIsNameLoading(false);
   };
 
   const handleCountryChange = async (countryCode: string) => {
     setSelectedCountry(countryCode);
+    setIsNameLoading(true);
     const apiResult = await generateFromOSM(countryCode);
     setRandomName(apiResult || generateRandomName(countryCode));
+    setIsNameLoading(false);
   };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
@@ -157,6 +163,9 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-ellipsis-h text-xs"></i>
             <span>{t('email.showMore')}</span>
           </button>
+          {isNameLoading && (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+          )}
         </div>
 
       </div>
@@ -257,6 +266,7 @@ const EmailList: React.FC<EmailListProps> = ({
         selectedCountry={selectedCountry}
         onCountryChange={handleCountryChange}
         onRegenerate={regenerateName}
+        generating={isNameLoading}
       />
     </>
   );

@@ -11,9 +11,10 @@ interface UserInfoModalProps {
   selectedCountry: string;
   onCountryChange: (countryCode: string) => void | Promise<void>;
   onRegenerate?: (countryCode?: string) => void | Promise<void>;
+  generating?: boolean;
 }
 
-const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate }) => {
+const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate, generating }) => {
   const { t, i18n } = useTranslation();
 
   if (!isOpen) return null;
@@ -65,7 +66,8 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
             <select
               value={selectedCountry}
               onChange={(e) => onCountryChange(e.target.value)}
-              className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+              disabled={generating}
+              className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background disabled:opacity-50"
             >
               {countries.map(c => (
                 <option key={c.code} value={c.code}>{i18n.language?.startsWith('zh') ? c.name : c.englishName} / {c.code}</option>
@@ -75,11 +77,16 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
           <div className="flex items-center gap-2">
             <button
               onClick={() => onRegenerate?.(selectedCountry)}
-              className="px-3 py-1.5 text-sm rounded-md border border-muted-foreground/30 hover:border-muted-foreground/60 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              disabled={generating}
+              className="px-3 py-1.5 text-sm rounded-md border border-muted-foreground/30 hover:border-muted-foreground/60 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 disabled:opacity-50"
               title={t('email.regenerate')}
             >
-              <i className="fas fa-shuffle"></i>
-              <span>{t('email.regenerate')}</span>
+              {generating ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+              ) : (
+                <i className="fas fa-shuffle"></i>
+              )}
+              <span>{generating ? '' : t('email.regenerate')}</span>
             </button>
             <button
               onClick={onClose}
