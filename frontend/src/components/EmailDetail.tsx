@@ -21,7 +21,7 @@ interface Attachment {
 
 const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const { t } = useTranslation();
-  const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage, emails, setEmails } = useContext(MailboxContext);
+  const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage, setEmails } = useContext(MailboxContext);
   const [email, setEmail] = useState<Email | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,11 +32,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   };
 
   const syncEmailReadStatus = (read: boolean) => {
-    if (setEmails && emails) {
-      setEmails(emails.map(email =>
-        email.id === emailId ? { ...email, isRead: read } : email
-      ));
-    }
+    setEmails(prev => prev.map(email =>
+      email.id === emailId ? { ...email, isRead: read } : email
+    ));
   };
 
   useEffect(() => {
@@ -137,13 +135,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       const data = await response.json();
       if (data.success) {
         showSuccessMessage(t('email.markedAsUnread'));
-
-        if (setEmails && emails) {
-          setEmails(emails.map(email =>
-            email.id === emailId ? { ...email, isRead: false } : email
-          ));
-        }
-
+        setEmails(prev => prev.map(email =>
+          email.id === emailId ? { ...email, isRead: false } : email
+        ));
         onClose();
       } else {
         throw new Error(data.error || 'Unknown error');
@@ -165,18 +159,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       
       const data = await response.json();
       if (data.success) {
-        // fix: 使用全局通知函数
         showSuccessMessage(t('email.deleteSuccess'));
-        
-        // 更新列表，移除已删除的邮件（静默刷新）
-        if (setEmails && emails) {
-          setEmails(emails.filter(email => email.id !== emailId));
-        }
-
-        // 1秒后关闭邮件详情
-        setTimeout(() => {
-          onClose();
-        }, 1000);
+        setEmails(prev => prev.filter(email => email.id !== emailId));
+        onClose();
       } else {
         throw new Error(data.error || 'Unknown error');
       }
