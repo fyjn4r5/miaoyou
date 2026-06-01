@@ -196,7 +196,7 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center">
           <button
             onClick={handleRefresh}
-            className="h-9 px-4 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
+            className="h-9 px-4 rounded-l-xl bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-2 border border-primary/20 text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.refresh')}
           >
             <i className="fas fa-sync-alt text-sm"></i>
