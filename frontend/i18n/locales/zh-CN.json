@@ -87,7 +87,7 @@
   },
   "email": {
     "inbox": "收件箱",
-    "refresh": "刷新邮件",
+    "refresh": "刷新收件箱",
     "refreshSuccess": "邮件列表已刷新",
     "autoRefresh": "自动刷新",
     "autoRefreshOn": "自动刷新: 开",

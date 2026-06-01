@@ -68,26 +68,26 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background rounded-lg shadow-xl w-[460px] max-w-[95vw] mx-4 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-background rounded-2xl shadow-2xl w-[480px] max-w-[95vw] mx-4 p-6 border">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-bold">
             {t('app.title')}
           </h2>
           <button
             onClick={onDismiss}
-            className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
           >
             <i className="fas fa-times"></i>
           </button>
         </div>
 
-        <div className="flex border-b mb-4">
+        <div className="flex bg-muted/60 rounded-xl p-1 mb-5">
           <button
             data-tab="create"
-            className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-4 text-sm font-semibold transition-all rounded-lg ${
               activeTab === 'create' 
-                ? 'border-b-2 border-primary text-primary' 
+                ? 'bg-background text-foreground shadow-sm' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => handleTabSwitch('create')}
@@ -96,9 +96,9 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
           </button>
           <button
             data-tab="login"
-            className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-4 text-sm font-semibold transition-all rounded-lg ${
               activeTab === 'login' 
-                ? 'border-b-2 border-primary text-primary' 
+                ? 'bg-background text-foreground shadow-sm' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => handleTabSwitch('login')}
@@ -109,20 +109,20 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
         {activeTab === 'create' && (
           <div className="space-y-4 min-h-[240px]">
-            <div className="bg-muted/50 rounded-md p-4 space-y-3">
+            <div className="bg-muted/30 rounded-xl p-5 space-y-4 border">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-semibold mb-1.5">
                   {t('mailbox.address')}
                 </label>
-                <div className="flex items-center space-x-2">
-                  <code className="flex-1 bg-background rounded-md px-3 py-2 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis" title={generatedAddress}>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedAddress}>
                     {generatedAddress}
                   </code>
-                  <span className="text-muted-foreground">@</span>
+                  <span className="text-muted-foreground font-bold text-lg">@</span>
                   <select 
                     value={selectedDomain}
                     onChange={(e) => setSelectedDomain(e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                    className="flex-1 px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm"
                   >
                     {emailDomains.map(d => (
                       <option key={d} value={d}>{d}</option>
@@ -132,33 +132,33 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-semibold mb-1.5">
                   {t('mailbox.password')}
                 </label>
-                <code className="block bg-background rounded-md px-3 py-2 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis" title={generatedPassword}>
+                <code className="block bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedPassword}>
                   {generatedPassword}
                 </code>
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleRegenerate}
-                className="flex-1 px-4 py-2 text-sm rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm rounded-xl bg-muted hover:bg-muted/80 transition-all font-medium"
                 disabled={isLoading}
               >
-                <i className="fas fa-sync-alt mr-1"></i>
+                <i className="fas fa-sync-alt mr-1.5"></i>
                 {t('mailbox.refresh')}
               </button>
               <button
                 onClick={handleCreate}
-                className="flex-1 px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-sm"
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <span><i className="fas fa-spinner fa-spin mr-1"></i>{t('common.loading')}</span>
+                  <span><i className="fas fa-spinner fa-spin mr-1.5"></i>{t('common.loading')}</span>
                 ) : (
-                  <span><i className="fas fa-plus mr-1"></i>创建并复制帐号</span>
+                  <span><i className="fas fa-plus mr-1.5"></i>创建并复制帐号</span>
                 )}
               </button>
             </div>
@@ -172,48 +172,48 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         {activeTab === 'login' && (
           <form onSubmit={handleLogin} className="space-y-4 min-h-[240px] flex flex-col justify-center">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-semibold mb-1.5">
                 {t('mailbox.address')}
               </label>
               <input
                 type="text"
                 value={loginFullAddress}
                 onChange={(e) => setLoginFullAddress(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                className="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm"
                 placeholder={`${t('mailbox.address')} (如: abc123456789@example.com)`}
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-semibold mb-1.5">
                 {t('mailbox.password')}
               </label>
               <input
                 type="text"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                className="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm"
                 placeholder={t('mailbox.password')}
                 disabled={isLoading}
               />
             </div>
 
             {loginError && (
-              <div className="text-red-500 text-sm">
+              <div className="text-red-500 text-sm font-medium bg-red-500/10 rounded-lg px-4 py-2">
                 {loginError}
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
+              className="w-full px-4 py-2.5 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-sm"
               disabled={isLoading}
             >
               {isLoading ? (
-                <span><i className="fas fa-spinner fa-spin mr-1"></i>{t('common.loading')}</span>
+                <span><i className="fas fa-spinner fa-spin mr-1.5"></i>{t('common.loading')}</span>
               ) : (
-                <span><i className="fas fa-sign-in-alt mr-1"></i>{t('mailbox.login')}</span>
+                <span><i className="fas fa-sign-in-alt mr-1.5"></i>{t('mailbox.login')}</span>
               )}
             </button>
           </form>

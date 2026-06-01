@@ -50,6 +50,41 @@ function auZip(): string {
   return String(randomInt(2000, 2999));
 }
 
+function jpPhone(): string {
+  return `0${randomInt(10, 99)}-${randomInt(1000, 9999)}-${randomInt(1000, 9999)}`;
+}
+function jpZip(): string {
+  return `${String(randomInt(100, 999))}-${String(randomInt(1000, 9999))}`;
+}
+
+function dePhone(): string {
+  return `+49 ${randomInt(100, 999)} ${randomInt(100000, 999999)}`;
+}
+function deZip(): string {
+  return String(randomInt(10000, 99999));
+}
+
+function frPhone(): string {
+  return `0${randomInt(6, 7)} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))} ${String(randomInt(10, 99))}`;
+}
+function frZip(): string {
+  return String(randomInt(10000, 99999));
+}
+
+function sgPhone(): string {
+  return `+65 ${randomInt(1000, 9999)} ${randomInt(1000, 9999)}`;
+}
+function sgZip(): string {
+  return String(randomInt(100000, 999999));
+}
+
+function krPhone(): string {
+  return `0${randomInt(10, 11)}-${randomInt(1000, 9999)}-${randomInt(1000, 9999)}`;
+}
+function krZip(): string {
+  return String(randomInt(10000, 99999));
+}
+
 export const COUNTRIES: CountryInfo[] = [
   {
     code: "US",
@@ -211,6 +246,215 @@ export const COUNTRIES: CountryInfo[] = [
     streetTypes: ["St", "Rd", "Ave", "Dr", "Blvd", "Ln", "Way", "Ct", "Pl", "Pde"],
     phoneFormat: auPhone,
     zipFormat: auZip,
+    titleMale: "Mr.",
+    titleFemale: "Ms.",
+  },
+  {
+    code: "JP",
+    name: "日本",
+    maleFirstNames: [
+      "Haruto", "Sota", "Yuto", "Riku", "Minato", "Itsuki", "Yamato", "Takumi", "Sora", "Kaito",
+      "Hiroshi", "Takeshi", "Kenji", "Satoshi", "Taro", "Ichiro", "Shinji", "Yuki", "Daiki", "Shota",
+      "Kazuki", "Ryo", "Koji", "Akira", "Jun", "Makoto", "Noboru", "Isamu", "Osamu", "Hajime"
+    ],
+    femaleFirstNames: [
+      "Himari", "Yui", "Akari", "Sakura", "Mei", "Riko", "Mio", "Rin", "Aoi", "Yuna",
+      "Yuki", "Hana", "Aya", "Miyu", "Nao", "Yoshiko", "Keiko", "Rie", "Asuka", "Moe",
+      "Saki", "Nana", "Miki", "Eri", "Kana", "Mai", "Chihiro", "Yoko", "Tomoko", "Mari"
+    ],
+    lastNames: [
+      "Sato", "Suzuki", "Takahashi", "Tanaka", "Watanabe", "Ito", "Yamamoto", "Nakamura", "Kobayashi", "Kato",
+      "Yoshida", "Yamada", "Sasaki", "Yamaguchi", "Matsumoto", "Inoue", "Kimura", "Shimizu", "Hayashi", "Saito",
+      "Abe", "Mori", "Ishikawa", "Nakajima", "Ogawa", "Fujita", "Okada", "Hashimoto", "Maeda", "Murakami"
+    ],
+    cities: [
+      "Tokyo", "Osaka", "Yokohama", "Nagoya", "Sapporo", "Fukuoka", "Kobe", "Kyoto",
+      "Kawasaki", "Saitama", "Hiroshima", "Sendai", "Chiba", "Kitakyushu", "Niigata", "Hamamatsu",
+      "Kumamoto", "Sagamihara", "Okayama", "Shizuoka", "Kagoshima", "Funabashi", "Matsuyama", "Hachioji"
+    ],
+    states: [
+      { abbr: "HKD", name: "Hokkaido" }, { abbr: "AOM", name: "Aomori" },
+      { abbr: "IWT", name: "Iwate" }, { abbr: "MYG", name: "Miyagi" },
+      { abbr: "AKT", name: "Akita" }, { abbr: "YGT", name: "Yamagata" },
+      { abbr: "FKS", name: "Fukushima" }, { abbr: "IBR", name: "Ibaraki" },
+      { abbr: "TCH", name: "Tochigi" }, { abbr: "GNM", name: "Gunma" },
+      { abbr: "STM", name: "Saitama" }, { abbr: "CHB", name: "Chiba" },
+      { abbr: "TKY", name: "Tokyo" }, { abbr: "KNW", name: "Kanagawa" },
+      { abbr: "NGT", name: "Niigata" }, { abbr: "TYM", name: "Toyama" },
+      { abbr: "ISK", name: "Ishikawa" }, { abbr: "FKI", name: "Fukui" },
+      { abbr: "YMN", name: "Yamanashi" }, { abbr: "NGN", name: "Nagano" },
+      { abbr: "GIF", name: "Gifu" }, { abbr: "SZO", name: "Shizuoka" },
+      { abbr: "AIC", name: "Aichi" }, { abbr: "MIE", name: "Mie" },
+      { abbr: "SIG", name: "Shiga" }, { abbr: "KYO", name: "Kyoto" },
+      { abbr: "OSK", name: "Osaka" }, { abbr: "HYG", name: "Hyogo" },
+      { abbr: "NAR", name: "Nara" }, { abbr: "WKY", name: "Wakayama" },
+      { abbr: "TTR", name: "Tottori" }, { abbr: "SMN", name: "Shimane" },
+      { abbr: "OAY", name: "Okayama" }, { abbr: "HSH", name: "Hiroshima" },
+      { abbr: "YGC", name: "Yamaguchi" }, { abbr: "TKS", name: "Tokushima" },
+      { abbr: "KGW", name: "Kagawa" }, { abbr: "EHM", name: "Ehime" },
+      { abbr: "KCH", name: "Kochi" }, { abbr: "FUK", name: "Fukuoka" },
+      { abbr: "SAG", name: "Saga" }, { abbr: "NGS", name: "Nagasaki" },
+      { abbr: "KMM", name: "Kumamoto" }, { abbr: "OIT", name: "Oita" },
+      { abbr: "MYZ", name: "Miyazaki" }, { abbr: "KGS", name: "Kagoshima" },
+      { abbr: "OKN", name: "Okinawa" }
+    ],
+    streets: ["Sakura", "Midori", "Yamato", "Asahi", "Hinode", "Fuji", "Taka", "Naka", "Kita", "Minami",
+      "Higashi", "Nishi", "Aoyama", "Ueno", "Ginza", "Shinjuku", "Shibuya", "Ikebukuro", "Akasaka", "Roppongi"],
+    streetTypes: ["Cho", "Dori", "Machi", "Ku", "Chome", "Banchi"],
+    phoneFormat: jpPhone,
+    zipFormat: jpZip,
+    titleMale: "Sama",
+    titleFemale: "Sama",
+  },
+  {
+    code: "DE",
+    name: "德国",
+    maleFirstNames: [
+      "Felix", "Maximilian", "Leon", "Lukas", "Jonas", "Tim", "Niklas", "Finn", "Julian", "Luis",
+      "Paul", "Alexander", "David", "Simon", "Erik", "Jan", "Ben", "Luca", "Tom", "Max",
+      "Peter", "Michael", "Thomas", "Andreas", "Stefan", "Christian", "Markus", "Daniel", "Klaus", "Hans"
+    ],
+    femaleFirstNames: [
+      "Emma", "Mia", "Hanna", "Sophie", "Lea", "Lena", "Lina", "Emilia", "Anna", "Lilly",
+      "Marie", "Amelie", "Maja", "Nele", "Laura", "Sarah", "Julia", "Lisa", "Katharina", "Sandra",
+      "Nicole", "Sabine", "Stefanie", "Melanie", "Heike", "Birgit", "Monika", "Angelika", "Ute", "Renate"
+    ],
+    lastNames: [
+      "Muller", "Schmidt", "Schneider", "Fischer", "Weber", "Wagner", "Becker", "Hoffmann", "Schafer", "Koch",
+      "Bauer", "Richter", "Klein", "Wolf", "Schroder", "Neumann", "Schwarz", "Zimmermann", "Braun", "Kruger",
+      "Hofmann", "Hartmann", "Lange", "Schmitt", "Werner", "Schmitz", "Krause", "Meier", "Lehmann", "Schmid"
+    ],
+    cities: [
+      "Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Dusseldorf", "Leipzig",
+      "Dortmund", "Essen", "Bremen", "Dresden", "Hanover", "Nuremberg", "Duisburg", "Bochum",
+      "Bonn", "Munster", "Karlsruhe", "Augsburg", "Wiesbaden", "Aachen", "Braunschweig", "Kiel"
+    ],
+    states: [
+      { abbr: "BW", name: "Baden-Wurttemberg" }, { abbr: "BY", name: "Bavaria" },
+      { abbr: "BE", name: "Berlin" }, { abbr: "BB", name: "Brandenburg" },
+      { abbr: "HB", name: "Bremen" }, { abbr: "HH", name: "Hamburg" },
+      { abbr: "HE", name: "Hesse" }, { abbr: "MV", name: "Mecklenburg-Vorpommern" },
+      { abbr: "NI", name: "Lower Saxony" }, { abbr: "NW", name: "North Rhine-Westphalia" },
+      { abbr: "RP", name: "Rhineland-Palatinate" }, { abbr: "SL", name: "Saarland" },
+      { abbr: "SN", name: "Saxony" }, { abbr: "ST", name: "Saxony-Anhalt" },
+      { abbr: "SH", name: "Schleswig-Holstein" }, { abbr: "TH", name: "Thuringia" }
+    ],
+    streets: ["Haupt", "Schul", "Garten", "Berg", "Wald", "Muhlen", "Kirch", "Dorf", "Ring", "Park",
+      "Friedrich", "Goethe", "Schiller", "Bismarck", "Hindenburg", "Berliner", "Munchner", "Leipziger", "Kaiser", "Bahnhof"],
+    streetTypes: ["Str", "Weg", "Allee", "Platz", "Ring", "Gasse", "Damm", "Steig", "Bogen", "Hof"],
+    phoneFormat: dePhone,
+    zipFormat: deZip,
+    titleMale: "Herr",
+    titleFemale: "Frau",
+  },
+  {
+    code: "FR",
+    name: "法国",
+    maleFirstNames: [
+      "Gabriel", "Raphael", "Louis", "Arthur", "Jules", "Adam", "Lucas", "Hugo", "Leo", "Paul",
+      "Nathan", "Tom", "Mathis", "Mael", "Ethan", "Antoine", "Alexandre", "Pierre", "Nicolas", "Jean",
+      "Philippe", "Francois", "Michel", "Christophe", "Laurent", "Olivier", "David", "Stephane", "Sebastien", "Frederic"
+    ],
+    femaleFirstNames: [
+      "Emma", "Louise", "Alice", "Chloe", "Lina", "Rose", "Lea", "Mila", "Lena", "Maeva",
+      "Jade", "Manon", "Sarah", "Camille", "Julie", "Marine", "Laura", "Marie", "Sophie", "Isabelle",
+      "Celine", "Nathalie", "Elodie", "Audrey", "Amelie", "Pauline", "Emilie", "Virginie", "Helene", "Sandrine"
+    ],
+    lastNames: [
+      "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit", "Durand", "Leroy", "Moreau",
+      "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier",
+      "Morel", "Girard", "Andre", "Mercier", "Dupont", "Lambert", "Bonnet", "Francois", "Martinez", "Legrand"
+    ],
+    cities: [
+      "Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier",
+      "Bordeaux", "Lille", "Rennes", "Reims", "Saint-Etienne", "Le Havre", "Toulon", "Grenoble",
+      "Dijon", "Angers", "Clermont-Ferrand", "Limoges", "Aix-en-Provence", "Brest", "Tours", "Amiens"
+    ],
+    states: [
+      { abbr: "ARA", name: "Auvergne-Rhone-Alpes" }, { abbr: "BFC", name: "Bourgogne-Franche-Comte" },
+      { abbr: "BRE", name: "Brittany" }, { abbr: "CVL", name: "Centre-Val de Loire" },
+      { abbr: "COR", name: "Corsica" }, { abbr: "GES", name: "Grand Est" },
+      { abbr: "HDF", name: "Hauts-de-France" }, { abbr: "IDF", name: "Ile-de-France" },
+      { abbr: "NOR", name: "Normandy" }, { abbr: "NAQ", name: "Nouvelle-Aquitaine" },
+      { abbr: "OCC", name: "Occitanie" }, { abbr: "PDL", name: "Pays de la Loire" },
+      { abbr: "PAC", name: "Provence-Alpes-Cote d'Azur" }
+    ],
+    streets: ["Rue de la Republique", "Rue du General", "Avenue de la Liberte", "Boulevard Saint", "Place de la", "Rue des Fleurs", "Chemin du", "Alle des", "Impasse du", "Route de",
+      "Rue Victor", "Avenue Jean", "Boulevard Haussmann", "Rue de Rivoli", "Champs-Elysees", "Rue du Faubourg", "Place Vendome", "Rue de la Paix", "Avenue Montaigne", "Boulevard de Sebastopol"],
+    streetTypes: ["Rue", "Av", "Bd", "Pl", "Chem", "All", "Imp", "Rte", "Pass", "Sq"],
+    phoneFormat: frPhone,
+    zipFormat: frZip,
+    titleMale: "M.",
+    titleFemale: "Mme",
+  },
+  {
+    code: "SG",
+    name: "新加坡",
+    maleFirstNames: [
+      "Wei Ming", "Jun Wei", "Kai Xiang", "Zhi Hao", "Yi Feng", "Jie Ren", "Yi Zhong", "Wen Hao", "Jian Wei", "Yi Kang",
+      "Li Wei", "Jia Ming", "Yun Feng", "Wei Jie", "Sheng Yuan", "Guo Liang", "Hao Ran", "Ming Yang", "Jun Kai", "Yi Yang"
+    ],
+    femaleFirstNames: [
+      "Xin Yi", "Jia Ling", "Mei Ling", "Xiu Ying", "Li Hua", "Yue Ling", "Fang Ning", "Jing Wen", "Pei Qi", "Hui Min",
+      "Shu Fen", "Wen Jing", "Xiu Juan", "Li Na", "Yun Xuan", "Ming Zhu", "Ya Ting", "Jia Qi", "Xiao Yun", "Pei Ling"
+    ],
+    lastNames: [
+      "Tan", "Lim", "Lee", "Ng", "Ong", "Wong", "Goh", "Chua", "Chan", "Koh",
+      "Teo", "Ang", "Yeo", "Ho", "Low", "Tay", "Toh", "Chia", "Loh", "Sim",
+      "Pang", "Seah", "Teh", "Chong", "Neo", "Fong", "Chin", "Liew", "Yong", "Wee"
+    ],
+    cities: [
+      "Singapore"
+    ],
+    states: [
+      { abbr: "CENTRAL", name: "Central" }, { abbr: "EAST", name: "East" },
+      { abbr: "NORTH", name: "North" }, { abbr: "NE", name: "North-East" },
+      { abbr: "WEST", name: "West" }
+    ],
+    streets: ["Orchard", "Serangoon", "Bukit Timah", "Thomson", "Dunlop", "Rochor", "Jalan", "Geylang", "Balestier", "Newton",
+      "Tanglin", "River Valley", "Holland", "Clementi", "Bedok", "Tampines", "Woodlands", "Jurong", "Pasir", "Toa Payoh"],
+    streetTypes: ["Rd", "St", "Ave", "Ln", "Dr", "Way", "Walk", "Link", "Cres", "View"],
+    phoneFormat: sgPhone,
+    zipFormat: sgZip,
+    titleMale: "Mr.",
+    titleFemale: "Ms.",
+  },
+  {
+    code: "KR",
+    name: "韩国",
+    maleFirstNames: [
+      "Min-jun", "Seo-jun", "Ji-ho", "Ha-joon", "Si-woo", "Yun-woo", "Ji-hoon", "Hyun-woo", "Sung-min", "Jae-won",
+      "Kyung-ho", "Tae-hyun", "Sang-hyun", "Jin-ho", "Young-ho", "Dong-hyun", "Jung-ho", "Ki-young", "Chang-ho", "Hyung-soo"
+    ],
+    femaleFirstNames: [
+      "Seo-yeon", "Ji-woo", "Ha-yoon", "Ji-yeon", "Min-seo", "Soo-bin", "Eun-ji", "Na-eun", "Ye-ji", "Hyun-ji",
+      "Mi-young", "Eun-jung", "Hye-jin", "Kyung-ah", "Sook-hee", "Jung-hee", "Myung-sook", "Young-mi", "Ok-hee", "In-sook"
+    ],
+    lastNames: [
+      "Kim", "Lee", "Park", "Choi", "Jung", "Kang", "Cho", "Yoon", "Jang", "Lim",
+      "Han", "Oh", "Shin", "Seo", "Kwon", "Hwang", "Ahn", "Song", "Yoo", "Hong"
+    ],
+    cities: [
+      "Seoul", "Busan", "Incheon", "Daegu", "Daejeon", "Gwangju", "Suwon", "Ulsan",
+      "Changwon", "Seongnam", "Goyang", "Yongin", "Bucheon", "Cheongju", "Ansan", "Jeonju",
+      "Cheonan", "Namyangju", "Hwaseong", "Pyeongtaek", "Gimhae", "Pohang", "Jeju", "Masan"
+    ],
+    states: [
+      { abbr: "SEO", name: "Seoul" }, { abbr: "BUS", name: "Busan" },
+      { abbr: "DAE", name: "Daegu" }, { abbr: "INC", name: "Incheon" },
+      { abbr: "GWJ", name: "Gwangju" }, { abbr: "DJN", name: "Daejeon" },
+      { abbr: "ULS", name: "Ulsan" }, { abbr: "SEJ", name: "Sejong" },
+      { abbr: "GG", name: "Gyeonggi" }, { abbr: "GW", name: "Gangwon" },
+      { abbr: "CB", name: "Chungcheongbuk" }, { abbr: "CN", name: "Chungcheongnam" },
+      { abbr: "JB", name: "Jeollabuk" }, { abbr: "JN", name: "Jeollanam" },
+      { abbr: "GB", name: "Gyeongsangbuk" }, { abbr: "GN", name: "Gyeongsangnam" },
+      { abbr: "JJ", name: "Jeju" }
+    ],
+    streets: ["Jong-ro", "Gangnam-daero", "Teheran-ro", "Eulji-ro", "Sejong-daero", "Yulgok-ro", "Sajik-ro", "Samcheong-ro", "Insadong-gil", "Bukchon-ro",
+      "Myeongdong-gil", "Hongdae-gil", "Sinchon-ro", "Apgujeong-ro", "Cheongdam-ro", "Nonhyeon-ro", "Yanghwa-ro", "Mapo-daero", "Wangsimni-ro", "Cheonho-daero"],
+    streetTypes: ["Ro", "Gil", "Daero"],
+    phoneFormat: krPhone,
+    zipFormat: krZip,
     titleMale: "Mr.",
     titleFemale: "Ms.",
   },

@@ -78,7 +78,7 @@
   },
   "email": {
     "inbox": "Inbox",
-    "refresh": "Refresh Emails",
+    "refresh": "Refresh Inbox",
     "refreshSuccess": "Email list has been refreshed",
     "autoRefresh": "Auto Refresh",
     "autoRefreshOn": "Auto Refresh: On",

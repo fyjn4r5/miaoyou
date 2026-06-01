@@ -108,7 +108,7 @@ const EmailList: React.FC<EmailListProps> = ({
   
   if (isLoading || isDeleting) {
     return (
-      <div className="border rounded-lg p-6">
+      <div className="border rounded-xl shadow-sm p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
         </div>
@@ -121,76 +121,78 @@ const EmailList: React.FC<EmailListProps> = ({
   
   return (
     <>
-    <div className="border rounded-lg">
-      <div className="flex justify-between items-center p-4 border-b">
-        <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
+    <div className="border rounded-xl shadow-sm overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
+        <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
             <span className="text-foreground font-semibold">{randomName.firstName}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
+            <i className="fas fa-copy text-xs opacity-50"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
             <span className="text-foreground font-semibold">{randomName.lastName}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
+            <i className="fas fa-copy text-xs opacity-50"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
             <span className="text-foreground font-semibold">{randomName.username}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
+            <i className="fas fa-copy text-xs opacity-50"></i>
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.showMore')}
           >
             <i className="fas fa-ellipsis-h text-xs"></i>
             <span>{t('email.showMore')}</span>
           </button>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">{t('email.autoRefresh')}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">{t('email.autoRefresh')}</span>
           <button
             onClick={toggleAutoRefresh}
-            className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${autoRefresh ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+            className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${autoRefresh ? 'bg-primary' : 'bg-muted-foreground/30'}`}
             title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
           >
-            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300 ${autoRefresh ? 'translate-x-7' : 'translate-x-0'}`} />
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${autoRefresh ? 'translate-x-6' : 'translate-x-0'}`} />
           </button>
         </div>
       </div>
 
       {mailbox && (
-        <div className="px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground">
-          <div className="flex justify-between items-center mb-1">
-            <span>{t('mailbox.created')}:</span>
-            <span>{formatFullDate(mailbox.createdAt)}</span>
+        <div className="px-5 py-3 bg-muted/20 border-b text-sm text-muted-foreground">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+              <span className="font-medium">{t('mailbox.created')}</span>
+              <span>{formatFullDate(mailbox.createdAt)}</span>
+            </div>
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+              <span className="font-medium">{t('mailbox.expiresAt')}</span>
+              <span>{formatFullDate(mailbox.expiresAt)}</span>
+            </div>
+            <div className="flex justify-between sm:flex-col sm:gap-0.5">
+              <span className="font-medium">{t('mailbox.timeLeft')}</span>
+              <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span>{t('mailbox.expiresAt')}:</span>
-            <span>{formatFullDate(mailbox.expiresAt)}</span>
-          </div>
-          <div className="flex justify-between items-center mt-1">
-            <span>{t('mailbox.timeLeft')}:</span>
-            <span>{calculateTimeLeft(mailbox.expiresAt)}</span>
-          </div>
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-end mt-2 pt-2 border-t border-border/50">
             <button
               onClick={handleDeleteMailbox}
-              className="text-red-500 hover:text-red-600 text-xs flex items-center gap-1"
+              className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1.5 px-3 py-1 rounded-lg hover:bg-red-500/10 transition-colors font-medium"
               title={t('mailbox.delete')}
             >
               <i className="fas fa-trash-alt"></i>
@@ -200,13 +202,13 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       )}
       
-      <div className="flex justify-between items-center px-4 py-2 bg-muted/30">
-        <span className="text-sm text-muted-foreground">
+      <div className="flex justify-between items-center px-5 py-3 bg-muted/20">
+        <span className="text-sm font-medium text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
         <button
           onClick={handleRefresh}
-          className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+          className="px-4 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border text-sm font-medium transition-all hover:shadow-sm"
           title={t('email.refresh')}
         >
           <i className="fas fa-sync-alt text-xs"></i>
@@ -215,32 +217,36 @@ const EmailList: React.FC<EmailListProps> = ({
       </div>
       
       {emails.length === 0 ? (
-        <div className="p-6 text-center text-muted-foreground">
-          <p>{t('email.emptyInbox')}</p>
+        <div className="p-10 text-center text-muted-foreground">
+          <div className="text-5xl mb-4 opacity-20"><i className="fas fa-envelope-open-text"></i></div>
+          <p className="text-lg font-medium">{t('email.emptyInbox')}</p>
           <p className="text-sm mt-2">{t('email.waitingForEmails')}</p>
         </div>
       ) : (
-        <ul className="divide-y">
+        <ul className="divide-y divide-border/50">
           {emails.map((email) => (
             <React.Fragment key={email.id}>
               <li 
-                className={`p-4 cursor-pointer hover:bg-muted/50 ${
-                  selectedEmailId === email.id ? 'bg-muted' : ''
-                } ${!email.isRead ? 'font-semibold' : ''}`}
+                className={`px-5 py-4 cursor-pointer transition-colors ${
+                  selectedEmailId === email.id ? 'bg-primary/5' : 'hover:bg-muted/40'
+                } ${!email.isRead ? 'bg-primary/[0.02] border-l-2 border-primary' : 'border-l-2 border-transparent'}`}
                 onClick={() => onSelectEmail(selectedEmailId === email.id ? null : email.id)}
               >
-                <div className="flex justify-between mb-1">
-                  <span className="truncate">{email.fromName || email.fromAddress}</span>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className={`truncate ${!email.isRead ? 'font-bold text-foreground' : 'text-foreground'}`}>
+                    {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
+                    {email.fromName || email.fromAddress}
+                  </span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
                     {formatDate(email.receivedAt)}
                   </span>
                 </div>
-                <div className="text-sm truncate">
-                  {email.subject || t('email.noSubject')}
+                <div className={`text-sm truncate ${!email.isRead ? 'font-medium' : 'text-muted-foreground'}`}>
+                  {email.subject || <span className="italic opacity-60">{t('email.noSubject')}</span>}
                 </div>
               </li>
               {selectedEmailId === email.id && (
-                <li className="border-t border-muted">
+                <li className="border-t border-border/50 bg-muted/10">
                   <EmailDetail 
                     emailId={email.id} 
                     onClose={() => onSelectEmail(null)}

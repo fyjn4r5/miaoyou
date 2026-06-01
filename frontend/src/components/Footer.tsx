@@ -24,34 +24,34 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
   }, []);
 
   return (
-    <footer className="border-t py-6">
+    <footer className="border-t py-8 mt-8 bg-card/50">
       <Container>
         <div className="text-center text-sm text-muted-foreground">
           {mailboxCount !== null && (
-            <p className="mb-2 text-primary font-medium">
+            <p className="mb-3 text-primary font-semibold text-base">
+              <i className="fas fa-envelope mr-1.5"></i>
               {t("footer.mailboxCount", { count: mailboxCount })}
             </p>
           )}
-          <p className="mb-2">
+          <p className="mb-3">
             © {year} {t("app.title")}
           </p>
-          <div className="flex flex-wrap justify-center items-center space-x-4 mb-2">
-            {/* 将 Link 组件修改为 button，点击时调用 onShowInfo 函数显示弹窗 */}
+          <div className="flex flex-wrap justify-center items-center gap-4">
             <button
               onClick={() => onShowInfo("privacy")}
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors font-medium"
             >
               {t("common.privacyPolicy", "隐私政策")}
             </button>
             <button
               onClick={() => onShowInfo("terms")}
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors font-medium"
             >
               {t("common.terms", "使用条款")}
             </button>
             <button
               onClick={() => onShowInfo("about")}
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors font-medium"
             >
               {t("common.about", "关于我们")}
             </button>
