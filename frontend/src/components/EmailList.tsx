@@ -128,10 +128,10 @@ const EmailList: React.FC<EmailListProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground font-medium mr-1">{t('email.regInfo')}</span>
+          <span className="text-xs text-muted-foreground/70 font-medium tracking-wide mr-1">{t('email.regInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm"
+            className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/15 text-primary flex items-center gap-1.5 border border-primary/20 hover:border-primary/40 text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.copyFullName')}
           >
             <span className="text-primary/70">{t('email.fullName')}:</span>
@@ -140,7 +140,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-border/50 hover:border-border text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
@@ -149,7 +149,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-border/50 hover:border-border text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
@@ -158,7 +158,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-border/50 hover:border-border text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
@@ -167,7 +167,7 @@ const EmailList: React.FC<EmailListProps> = ({
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
-            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-border/50 hover:border-border text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.showMore')}
           >
             <i className="fas fa-ellipsis-h text-xs opacity-60"></i>
