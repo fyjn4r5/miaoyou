@@ -173,7 +173,7 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
         aria-label={t('mailbox.switch') || "切换邮箱"}
         title={t('mailbox.switch') || "切换邮箱"}
       >
-        <i className="fas fa-exchange-alt text-sm"></i>
+        <i className="fas fa-exchange-alt text-base"></i>
       </button>
 
       {showDropdown && (
@@ -207,7 +207,7 @@ const MailboxSwitcher: React.FC<MailboxSwitcherProps> = ({
                     className="p-2 text-red-500 hover:text-red-700"
                     title={t('common.delete') || "删除"}
                   >
-                    <i className="fas fa-trash-alt text-xs"></i>
+                    <i className="fas fa-trash-alt text-sm"></i>
                   </button>
                 )}
               </div>

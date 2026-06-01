@@ -304,21 +304,21 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                 className="p-3 rounded-md hover:bg-muted text-muted-foreground"
                 title={`${t('email.markAsUnread')} (${t('email.markAsUnreadHint')})`}
               >
-                <i className="fas fa-envelope"></i>
+                <i className="fas fa-envelope text-lg"></i>
               </button>
               <button
                 onClick={onClose}
                 className="p-3 rounded-md hover:bg-muted"
                 title={t('common.close')}
               >
-                <i className="fas fa-chevron-up"></i>
+                <i className="fas fa-chevron-up text-lg"></i>
               </button>
               <button
                 onClick={handleDelete}
                 className="p-3 rounded-md hover:bg-red-100 text-red-600"
                 title={t('common.delete')}
               >
-                <i className="fas fa-trash-alt"></i>
+                <i className="fas fa-trash-alt text-lg"></i>
               </button>
             </div>
           </div>

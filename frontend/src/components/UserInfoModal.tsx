@@ -70,7 +70,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
               className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background disabled:opacity-50"
             >
               {countries.map(c => (
-                <option key={c.code} value={c.code}>{c.englishName}</option>
+                <option key={c.code} value={c.code}>{i18n.language?.startsWith('zh') ? c.name : c.englishName}</option>
               ))}
             </select>
           </div>

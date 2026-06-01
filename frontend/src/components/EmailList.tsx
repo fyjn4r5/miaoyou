@@ -135,7 +135,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
             <span className="text-foreground font-semibold">{randomName.firstName}</span>
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-sm"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
@@ -144,7 +144,7 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
             <span className="text-foreground font-semibold">{randomName.lastName}</span>
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-sm"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
@@ -153,14 +153,14 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
             <span className="text-foreground font-semibold">{randomName.username}</span>
-            <i className="fas fa-copy text-xs"></i>
+            <i className="fas fa-copy text-sm"></i>
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.showMore')}
           >
-            <i className="fas fa-ellipsis-h text-xs"></i>
+            <i className="fas fa-ellipsis-h text-sm"></i>
             <span>{t('email.showMore')}</span>
           </button>
           {isNameLoading && (
@@ -199,7 +199,7 @@ const EmailList: React.FC<EmailListProps> = ({
             className="h-9 px-4 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
             title={t('email.refresh')}
           >
-            <i className="fas fa-sync-alt text-xs"></i>
+            <i className="fas fa-sync-alt text-sm"></i>
             <span>{t('email.refresh')}</span>
           </button>
           <button
@@ -237,7 +237,7 @@ const EmailList: React.FC<EmailListProps> = ({
                     {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
                     {email.fromName || email.fromAddress}
                   </span>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
                     {formatDate(email.receivedAt)}
                   </span>
                 </div>
