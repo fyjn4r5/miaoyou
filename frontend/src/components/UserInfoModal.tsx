@@ -14,7 +14,7 @@ interface UserInfoModalProps {
 }
 
 const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -68,7 +68,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
               className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
             >
               {countries.map(c => (
-                <option key={c.code} value={c.code}>{c.englishName} / {c.code}</option>
+                <option key={c.code} value={c.code}>{i18n.language?.startsWith('zh') ? c.name : c.englishName} / {c.code}</option>
               ))}
             </select>
           </div>
@@ -106,6 +106,19 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
             <InfoRow label={t('email.state')} value={`${randomName.state} (${randomName.stateFull})`} />
             <InfoRow label={t('email.zipCode')} value={randomName.zipCode} />
             <InfoRow label={t('email.country')} value={`${countries.find(c => c.code === selectedCountry)?.englishName || randomName.countryName} / ${randomName.countryCode}`} />
+            <div className="flex items-start justify-between py-2 border-b border-muted/50 last:border-0">
+              <span className="text-sm text-muted-foreground min-w-[90px]">{t('email.fullAddress')}</span>
+              <div className="flex items-start gap-2 flex-1 justify-end">
+                <pre className="text-base font-mono text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
+                <button
+                  onClick={() => copyToClipboard(randomName.fullAddress)}
+                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
+                  title={t('email.copyFullAddress')}
+                >
+                  <i className="fas fa-copy text-sm"></i>
+                </button>
+              </div>
+            </div>
           </Section>
 
           <Section title={t('email.sectionContact')}>
@@ -130,21 +143,6 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
             <InfoRow label={t('email.expires')} value={randomName.expires} />
           </Section>
 
-          <Section title={t('email.fullAddress')}>
-            <div className="flex items-start justify-between py-2">
-              <span className="text-sm text-muted-foreground min-w-[90px]">{t('email.fullAddress')}</span>
-              <div className="flex items-start gap-2 flex-1 justify-end">
-                <pre className="text-base font-mono text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
-                <button
-                  onClick={() => copyToClipboard(randomName.fullAddress)}
-                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
-                  title={t('email.copyFullAddress')}
-                >
-                  <i className="fas fa-copy text-sm"></i>
-                </button>
-              </div>
-            </div>
-          </Section>
         </div>
       </div>
     </div>

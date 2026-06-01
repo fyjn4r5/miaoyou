@@ -15,7 +15,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, setShowPasswordDialog, selectedDomain, logout } = useContext(MailboxContext);
+  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, setShowPasswordDialog, selectedDomain, logout, deleteMailbox } = useContext(MailboxContext);
 
   const fullAddress = mailbox ? (mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${selectedDomain}`) : '';
 
@@ -35,6 +35,12 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
 
   const handleCreateNew = () => {
     setShowPasswordDialog(true);
+  };
+
+  const handleDeleteMailbox = async () => {
+    if (window.confirm(t('mailbox.confirmDelete'))) {
+      await deleteMailbox();
+    }
   };
 
   return (
@@ -73,6 +79,9 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
         
             <button onClick={logout} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.logout')}>
               <i className="fas fa-sign-out-alt text-sm"></i>
+            </button>
+            <button onClick={handleDeleteMailbox} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-500/15 hover:text-red-500 transition-all text-muted-foreground" title={t('mailbox.delete')}>
+              <i className="fas fa-trash-alt text-sm"></i>
             </button>
           </>
         )}
