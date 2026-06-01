@@ -70,7 +70,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
               className="px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background disabled:opacity-50"
             >
               {countries.map(c => (
-                <option key={c.code} value={c.code}>{i18n.language?.startsWith('zh') ? c.name : c.englishName} / {c.code}</option>
+                <option key={c.code} value={c.code}>{c.englishName}</option>
               ))}
             </select>
           </div>
@@ -120,7 +120,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(randomName.fullAddress.replace(/\n/g, ", "))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
+                  className="w-7 h-7 flex items-center justify-center rounded hover:bg-red-500/15 text-red-500 hover:text-red-600 shrink-0 mt-0.5"
                   title="在 Google Maps 中查看"
                 >
                   <i className="fas fa-map-marker-alt text-sm"></i>
