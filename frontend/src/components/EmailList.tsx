@@ -165,30 +165,7 @@ const EmailList: React.FC<EmailListProps> = ({
             </div>
             <div className="flex justify-between sm:flex-col sm:gap-0.5">
               <span className="font-medium">{t('mailbox.timeLeft')}</span>
-              <span className="flex items-center gap-2">
-                <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
-                <div className="flex items-center">
-                  <button
-                    onClick={handleRefresh}
-                    className="px-3 py-1.5 rounded-l-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border border-r-0 text-sm font-medium transition-all"
-                    title={t('email.refresh')}
-                  >
-                    <i className="fas fa-sync-alt text-xs"></i>
-                    <span>{t('email.refresh')}</span>
-                  </button>
-                  <button
-                    onClick={toggleAutoRefresh}
-                    className={`px-2.5 py-1.5 rounded-r-md border text-sm font-medium transition-all flex items-center ${
-                      autoRefresh
-                        ? 'bg-primary/10 border-primary/30 text-primary'
-                        : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'
-                    }`}
-                    title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500' : 'bg-gray-400'}`} />
-                  </button>
-                </div>
-              </span>
+                  <span className={mailbox.expiresAt - Math.floor(Date.now() / 1000) < 3600 ? 'text-red-500 font-semibold' : ''}>{calculateTimeLeft(mailbox.expiresAt)}</span>
             </div>
           </div>
         </div>
@@ -198,6 +175,27 @@ const EmailList: React.FC<EmailListProps> = ({
         <span className="text-sm font-medium text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
+        <div className="flex items-center">
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 rounded-l-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-2 border border-r-0 text-sm font-medium transition-all hover:shadow-sm"
+            title={t('email.refresh')}
+          >
+            <i className="fas fa-sync-alt text-xs"></i>
+            <span>{t('email.refresh')}</span>
+          </button>
+          <button
+            onClick={toggleAutoRefresh}
+            className={`px-3 py-2 rounded-r-xl border text-sm font-medium transition-all hover:shadow-sm flex items-center ${
+              autoRefresh
+                ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
+                : 'bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary border-border'
+            }`}
+            title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
+          >
+            <span className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500' : 'bg-gray-400'}`} />
+          </button>
+        </div>
       </div>
       
       {emails.length === 0 ? (
