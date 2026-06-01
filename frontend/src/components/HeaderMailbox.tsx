@@ -65,22 +65,22 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
               {fullAddress}
             </code>
         
-            <button onClick={copyToClipboard} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.copyMailbox')}>
+            <button onClick={copyToClipboard} className="w-9 h-9 flex items-center justify-center rounded-lg text-primary hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.copyMailbox')}>
               <i className="fas fa-copy text-sm"></i>
             </button>
         
-            <button onClick={copyPassword} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.copyPassword')}>
+            <button onClick={copyPassword} className="w-9 h-9 flex items-center justify-center rounded-lg text-amber-500 hover:bg-amber-500/15 hover:text-amber-500 transition-all" title={t('mailbox.copyPassword')}>
               <i className="fas fa-key text-sm"></i>
             </button>
         
-            <button onClick={handleCreateNew} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.createNew')}>
+            <button onClick={handleCreateNew} className="w-9 h-9 flex items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-500/15 hover:text-emerald-500 transition-all" title={t('mailbox.createNew')}>
               <i className="fas fa-plus text-sm"></i>
             </button>
         
-            <button onClick={logout} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.logout')}>
+            <button onClick={logout} className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.logout')}>
               <i className="fas fa-sign-out-alt text-sm"></i>
             </button>
-            <button onClick={handleDeleteMailbox} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-500/15 hover:text-red-500 transition-all text-muted-foreground" title={t('mailbox.delete')}>
+            <button onClick={handleDeleteMailbox} className="w-9 h-9 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-500/15 hover:text-red-500 transition-all" title={t('mailbox.delete')}>
               <i className="fas fa-trash-alt text-sm"></i>
             </button>
           </>
