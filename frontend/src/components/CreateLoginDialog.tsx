@@ -110,7 +110,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         </div>
 
         {activeTab === 'create' && (
-          <div className="space-y-4 min-h-[280px] flex flex-col">
+          <div className="space-y-4 min-h-[320px] flex flex-col">
             <div className="bg-muted/30 rounded-xl p-5 space-y-4 border">
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
@@ -173,7 +173,7 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
         )}
 
         {activeTab === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4 min-h-[280px] flex flex-col">
+          <form onSubmit={handleLogin} className="space-y-4 min-h-[320px] flex flex-col">
             <div>
               <label className="block text-sm font-semibold mb-1.5">
                 {t('mailbox.address')}

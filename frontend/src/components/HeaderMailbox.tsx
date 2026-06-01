@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
-import CreateLoginDialog from './CreateLoginDialog';
 import MailboxSwitcher from './MailboxSwitcher';
 
 interface HeaderMailboxProps {
@@ -16,7 +15,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, showPasswordDialog, setShowPasswordDialog, selectedDomain, logout } = useContext(MailboxContext);
+  const { showSuccessMessage, showErrorMessage, mailbox: currentMailbox, setShowPasswordDialog, selectedDomain, logout } = useContext(MailboxContext);
 
   const fullAddress = mailbox ? (mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${selectedDomain}`) : '';
 
@@ -79,7 +78,6 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
         )}
       </div>
 
-      <CreateLoginDialog isOpen={showPasswordDialog} onDismiss={() => setShowPasswordDialog(false)} />
     </>
   );
 };

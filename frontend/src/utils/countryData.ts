@@ -1,6 +1,7 @@
 export interface CountryInfo {
   code: string;
   name: string;
+  englishName: string;
   phoneCountryPrefix: string;
   maleFirstNames: string[];
   femaleFirstNames: string[];
@@ -90,6 +91,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "US",
     name: "美国",
+    englishName: "United States",
     phoneCountryPrefix: "1",
     maleFirstNames: [
       "Benjamin", "Matthew", "Alexander", "Andrew", "Samuel", "Ethan", "Daniel", "Anthony", "Henry", "Joseph",
@@ -144,6 +146,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "GB",
     name: "英国",
+    englishName: "United Kingdom",
     phoneCountryPrefix: "44",
     maleFirstNames: [
       "Oliver", "George", "Harry", "Noah", "Jack", "Leo", "Oscar", "Charlie", "James", "William",
@@ -180,6 +183,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "CA",
     name: "加拿大",
+    englishName: "Canada",
     phoneCountryPrefix: "1",
     maleFirstNames: [
       "Liam", "Noah", "Benjamin", "Ethan", "William", "Lucas", "James", "Oliver", "Henry", "Jack",
@@ -219,6 +223,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "AU",
     name: "澳大利亚",
+    englishName: "Australia",
     phoneCountryPrefix: "61",
     maleFirstNames: [
       "Oliver", "Noah", "William", "Jack", "James", "Henry", "Lucas", "Ethan", "Leo", "Thomas",
@@ -257,6 +262,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "JP",
     name: "日本",
+    englishName: "Japan",
     phoneCountryPrefix: "81",
     maleFirstNames: [
       "Haruto", "Sota", "Yuto", "Riku", "Minato", "Itsuki", "Yamato", "Takumi", "Sora", "Kaito",
@@ -315,6 +321,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "DE",
     name: "德国",
+    englishName: "Germany",
     phoneCountryPrefix: "49",
     maleFirstNames: [
       "Felix", "Maximilian", "Leon", "Lukas", "Jonas", "Tim", "Niklas", "Finn", "Julian", "Luis",
@@ -357,6 +364,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "FR",
     name: "法国",
+    englishName: "France",
     phoneCountryPrefix: "33",
     maleFirstNames: [
       "Gabriel", "Raphael", "Louis", "Arthur", "Jules", "Adam", "Lucas", "Hugo", "Leo", "Paul",
@@ -398,6 +406,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "SG",
     name: "新加坡",
+    englishName: "Singapore",
     phoneCountryPrefix: "65",
     maleFirstNames: [
       "Wei Ming", "Jun Wei", "Kai Xiang", "Zhi Hao", "Yi Feng", "Jie Ren", "Yi Zhong", "Wen Hao", "Jian Wei", "Yi Kang",
@@ -431,6 +440,7 @@ export const COUNTRIES: CountryInfo[] = [
   {
     code: "KR",
     name: "韩国",
+    englishName: "South Korea",
     phoneCountryPrefix: "82",
     maleFirstNames: [
       "Min-jun", "Seo-jun", "Ji-ho", "Ha-joon", "Si-woo", "Yun-woo", "Ji-hoon", "Hyun-woo", "Sung-min", "Jae-won",
