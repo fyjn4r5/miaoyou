@@ -1,4 +1,43 @@
-import { CountryInfo, getCountryByCode } from './countryData';
+import { getCountryByCode } from './countryData';
+
+const API_URL = "https://www.meiguodizhi.com/api/v1/dz";
+
+const API_COUNTRY_PATHS: Record<string, string> = {
+  US: "/",
+  CA: "/ca-address",
+  AU: "/au-address",
+  JP: "/jp-address",
+  KR: "/kr-address",
+  GB: "/uk-address",
+  DE: "/de-address",
+  FR: "/fr-address",
+  SG: "/sg-address",
+};
+
+interface AddressApiResponse {
+  status: string;
+  address: {
+    Full_Name: string;
+    Gender: string;
+    Birthday: string;
+    Title: string;
+    Address: string;
+    City: string;
+    State: string;
+    State_Full: string;
+    Zip_Code: string;
+    Telephone: string;
+    Username: string;
+    Password: string;
+    Occupation: string;
+    Company_Name: string;
+    Social_Security_Number: string;
+    Credit_Card_Type: string;
+    Credit_Card_Number: string;
+    CVV2: string;
+    Expires: string;
+  };
+}
 
 const COMPANIES = [
   "TechCorp", "DataStream", "CloudBase", "NexGen", "OmniTech", "Cyberdyne", "FusionWare",
@@ -129,4 +168,60 @@ export function generateRandomName(countryCode?: string): RandomName {
     zipCode, telephone, fullAddress, title, company, occupation,
     ssn, creditCardType, creditCardNumber, cvv2, expires, password
   };
+}
+
+export async function fetchRandomNameFromApi(countryCode?: string): Promise<RandomName | null> {
+  const code = countryCode || "US";
+  const path = API_COUNTRY_PATHS[code];
+  if (!path) return null;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, method: "address" }),
+    });
+
+    if (!res.ok) return null;
+
+    const data: AddressApiResponse = await res.json();
+    if (data.status !== "ok" || !data.address) return null;
+
+    const addr = data.address;
+    const nameParts = addr.Full_Name.split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+    const countryData = getCountryByCode(code);
+    const isMale = addr.Gender?.toLowerCase() === "male";
+
+    return {
+      countryCode: code,
+      countryName: countryData.name,
+      firstName,
+      lastName,
+      fullName: addr.Full_Name,
+      username: addr.Username,
+      isMale,
+      gender: addr.Gender,
+      birthday: addr.Birthday,
+      streetAddress: addr.Address,
+      city: addr.City,
+      state: addr.State,
+      stateFull: addr.State_Full,
+      zipCode: addr.Zip_Code,
+      telephone: addr.Telephone,
+      fullAddress: `${addr.Address}\n${addr.City}, ${addr.State} ${addr.Zip_Code}\n${countryData.englishName}`,
+      title: addr.Title,
+      company: addr.Company_Name,
+      occupation: addr.Occupation,
+      ssn: addr.Social_Security_Number,
+      creditCardType: addr.Credit_Card_Type,
+      creditCardNumber: addr.Credit_Card_Number,
+      cvv2: addr.CVV2,
+      expires: addr.Expires,
+      password: addr.Password,
+    };
+  } catch {
+    return null;
+  }
 }

@@ -10,7 +10,7 @@ interface UserInfoModalProps {
   countries: CountryInfo[];
   selectedCountry: string;
   onCountryChange: (countryCode: string) => void;
-  onRegenerate?: (countryCode?: string) => void;
+  onRegenerate?: (countryCode?: string) => void | Promise<void>;
 }
 
 const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate }) => {

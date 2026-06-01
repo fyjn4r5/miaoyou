@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
 import UserInfoModal from './UserInfoModal';
-import { generateRandomName } from '../utils/nameGenerator';
+import { generateRandomName, fetchRandomNameFromApi } from '../utils/nameGenerator';
 import { COUNTRIES } from '../utils/countryData';
 
 interface EmailListProps {
@@ -26,13 +26,22 @@ const EmailList: React.FC<EmailListProps> = ({
   const [selectedCountry, setSelectedCountry] = useState("US");
   const [randomName, setRandomName] = useState(() => generateRandomName("US"));
 
-  const regenerateName = (countryCode?: string) => {
-    setRandomName(generateRandomName(countryCode || selectedCountry));
+  useEffect(() => {
+    fetchRandomNameFromApi("US").then(result => {
+      if (result) setRandomName(result);
+    });
+  }, []);
+
+  const regenerateName = async (countryCode?: string) => {
+    const code = countryCode || selectedCountry;
+    const apiResult = await fetchRandomNameFromApi(code);
+    setRandomName(apiResult || generateRandomName(code));
   };
 
-  const handleCountryChange = (countryCode: string) => {
+  const handleCountryChange = async (countryCode: string) => {
     setSelectedCountry(countryCode);
-    setRandomName(generateRandomName(countryCode));
+    const apiResult = await fetchRandomNameFromApi(countryCode);
+    setRandomName(apiResult || generateRandomName(countryCode));
   };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
