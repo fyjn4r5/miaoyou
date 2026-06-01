@@ -1,43 +1,5 @@
 import { getCountryByCode } from './countryData';
-
-const API_URL = "https://www.meiguodizhi.com/api/v1/dz";
-
-const API_COUNTRY_PATHS: Record<string, string> = {
-  US: "/",
-  CA: "/ca-address",
-  AU: "/au-address",
-  JP: "/jp-address",
-  KR: "/kr-address",
-  GB: "/uk-address",
-  DE: "/de-address",
-  FR: "/fr-address",
-  SG: "/sg-address",
-};
-
-interface AddressApiResponse {
-  status: string;
-  address: {
-    Full_Name: string;
-    Gender: string;
-    Birthday: string;
-    Title: string;
-    Address: string;
-    City: string;
-    State: string;
-    State_Full: string;
-    Zip_Code: string;
-    Telephone: string;
-    Username: string;
-    Password: string;
-    Occupation: string;
-    Company_Name: string;
-    Social_Security_Number: string;
-    Credit_Card_Type: string;
-    Credit_Card_Number: string;
-    CVV2: string;
-    Expires: string;
-  };
-}
+import { getRealAddress, fetchRandomUser } from './addressService';
 
 const COMPANIES = [
   "TechCorp", "DataStream", "CloudBase", "NexGen", "OmniTech", "Cyberdyne", "FusionWare",
@@ -170,58 +132,50 @@ export function generateRandomName(countryCode?: string): RandomName {
   };
 }
 
-export async function fetchRandomNameFromApi(countryCode?: string): Promise<RandomName | null> {
+export async function generateFromOSM(countryCode?: string): Promise<RandomName | null> {
   const code = countryCode || "US";
-  const path = API_COUNTRY_PATHS[code];
-  if (!path) return null;
+  const country = getCountryByCode(code);
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path, method: "address" }),
-    });
+  const city = pick(country.cities);
+  const addressData = await getRealAddress(city, country.englishName);
+  if (!addressData) return null;
 
-    if (!res.ok) return null;
+  const userData = await fetchRandomUser(code);
+  const isMale = userData?.gender === "male";
 
-    const data: AddressApiResponse = await res.json();
-    if (data.status !== "ok" || !data.address) return null;
+  const firstName = userData?.name.first || (isMale ? pick(country.maleFirstNames) : pick(country.femaleFirstNames));
+  const lastName = userData?.name.last || pick(country.lastNames);
+  const fullName = `${firstName} ${lastName}`;
 
-    const addr = data.address;
-    const nameParts = addr.Full_Name.split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-    const countryData = getCountryByCode(code);
-    const isMale = addr.Gender?.toLowerCase() === "male";
+  const stateData = country.states.find(s =>
+    addressData.stateFull.toLowerCase().includes(s.name.toLowerCase())
+  );
 
-    return {
-      countryCode: code,
-      countryName: countryData.name,
-      firstName,
-      lastName,
-      fullName: addr.Full_Name,
-      username: addr.Username,
-      isMale,
-      gender: addr.Gender,
-      birthday: addr.Birthday,
-      streetAddress: addr.Address,
-      city: addr.City,
-      state: addr.State,
-      stateFull: addr.State_Full,
-      zipCode: addr.Zip_Code,
-      telephone: addr.Telephone,
-      fullAddress: `${addr.Address}\n${addr.City}, ${addr.State} ${addr.Zip_Code}\n${countryData.englishName}`,
-      title: addr.Title,
-      company: addr.Company_Name,
-      occupation: addr.Occupation,
-      ssn: addr.Social_Security_Number,
-      creditCardType: addr.Credit_Card_Type,
-      creditCardNumber: addr.Credit_Card_Number,
-      cvv2: addr.CVV2,
-      expires: addr.Expires,
-      password: addr.Password,
-    };
-  } catch {
-    return null;
-  }
+  return {
+    countryCode: code,
+    countryName: country.name,
+    firstName,
+    lastName,
+    fullName,
+    username: userData?.login.username || `${firstName}${lastName}`.toLowerCase() + randomInt(1998, 2008),
+    isMale,
+    gender: isMale ? "Male" : "Female",
+    birthday: userData?.dob.date?.split("T")[0] || randomBirthday(),
+    streetAddress: addressData.streetAddress,
+    city: addressData.city,
+    state: stateData?.abbr || addressData.stateFull,
+    stateFull: addressData.stateFull,
+    zipCode: addressData.zipCode,
+    telephone: userData?.phone || `+${country.phoneCountryPrefix}${country.phoneFormat()}`,
+    fullAddress: addressData.fullAddress,
+    title: isMale ? country.titleMale : country.titleFemale,
+    company: pick(COMPANIES),
+    occupation: pick(OCCUPATIONS),
+    ssn: userData?.id?.value || generateSSN(),
+    creditCardType: pick(["Visa", "MasterCard", "American Express", "Discover"]),
+    creditCardNumber: generateCreditCardNumber(),
+    cvv2: String(randomInt(100, 999)),
+    expires: generateExpiry(),
+    password: userData?.login.password || generatePassword(),
+  };
 }

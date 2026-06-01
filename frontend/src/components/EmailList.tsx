@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
 import UserInfoModal from './UserInfoModal';
-import { generateRandomName, fetchRandomNameFromApi } from '../utils/nameGenerator';
+import { generateRandomName, generateFromOSM } from '../utils/nameGenerator';
 import { COUNTRIES } from '../utils/countryData';
 
 interface EmailListProps {
@@ -27,20 +27,20 @@ const EmailList: React.FC<EmailListProps> = ({
   const [randomName, setRandomName] = useState(() => generateRandomName("US"));
 
   useEffect(() => {
-    fetchRandomNameFromApi("US").then(result => {
+    generateFromOSM("US").then(result => {
       if (result) setRandomName(result);
     });
   }, []);
 
   const regenerateName = async (countryCode?: string) => {
     const code = countryCode || selectedCountry;
-    const apiResult = await fetchRandomNameFromApi(code);
+    const apiResult = await generateFromOSM(code);
     setRandomName(apiResult || generateRandomName(code));
   };
 
   const handleCountryChange = async (countryCode: string) => {
     setSelectedCountry(countryCode);
-    const apiResult = await fetchRandomNameFromApi(countryCode);
+    const apiResult = await generateFromOSM(countryCode);
     setRandomName(apiResult || generateRandomName(countryCode));
   };
 
