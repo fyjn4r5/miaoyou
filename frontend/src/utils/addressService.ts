@@ -105,7 +105,7 @@ export async function getRealAddress(city: string, country: string): Promise<{
 
   const a = addrResult.address;
   const road = a.road || "";
-  const houseNum = a.house_number || "";
+  const houseNum = a.house_number || String(Math.floor(1 + Math.random() * 9999));
   const streetAddress = `${houseNum} ${road}`.trim();
   const cityName = a.city || a.town || a.village || city;
   const stateFull = a.state || "";
