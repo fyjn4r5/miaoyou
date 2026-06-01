@@ -113,7 +113,6 @@ const EmailList: React.FC<EmailListProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
         <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground/60 mr-1 select-none">{t('email.userInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
             className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-primary flex items-center gap-1.5 border text-sm font-medium transition-all hover:shadow-sm"
