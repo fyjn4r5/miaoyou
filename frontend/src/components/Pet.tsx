@@ -1,13 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-type Mood = 'idle' | 'happy' | 'sleep';
+type Mood = 'idle' | 'happy' | 'sleep' | 'curious' | 'surprised';
 
-const reactions = [
-  '喵~', '摸摸头~', '有邮件吗？', '喵喵！',
-  '嘿！', '要玩玩吗？', '好无聊…', '！',
+interface Reaction {
+  text: string;
+  mood: Mood;
+}
+
+const reactions: Reaction[] = [
+  { text: '喵~ 你终于来啦！', mood: 'happy' },
+  { text: '喵喵！摸摸头~', mood: 'happy' },
+  { text: '有邮件找我吗？', mood: 'curious' },
+  { text: '喵！想我了吗？', mood: 'happy' },
+  { text: '嘿~ 一起玩吧！', mood: 'happy' },
+  { text: '唔… 好无聊啊', mood: 'idle' },
+  { text: '！怎么了怎么了', mood: 'surprised' },
+  { text: '喵~ 我在呢', mood: 'curious' },
+  { text: '哈~ 困了…', mood: 'sleep' },
+  { text: '要收邮件了吗？', mood: 'curious' },
+  { text: '喵喵喵！', mood: 'happy' },
+  { text: '瞅你咋地~', mood: 'curious' },
+  { text: '！有动静', mood: 'surprised' },
+  { text: '嗯？叫我吗', mood: 'curious' },
+  { text: '好闲呀… 陪我玩', mood: 'idle' },
 ];
 
-const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=200&h=200&fit=crop&crop=face&q=80';
+const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=260&h=260&fit=crop&crop=face&q=80';
 
 const Pet: React.FC = () => {
   const [mood, setMood] = useState<Mood>('idle');
@@ -16,18 +34,20 @@ const Pet: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [eyeOpen, setEyeOpen] = useState(true);
+  const [clickCount, setClickCount] = useState(0);
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
+  const clickTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const resetSleepTimer = () => {
+  const resetSleepTimer = useCallback(() => {
     if (sleepTimer.current) clearTimeout(sleepTimer.current);
     setMood('idle');
-    sleepTimer.current = setTimeout(() => setMood('sleep'), 15000);
-  };
+    sleepTimer.current = setTimeout(() => setMood('sleep'), 18000);
+  }, []);
 
   useEffect(() => {
     resetSleepTimer();
     return () => { if (sleepTimer.current) clearTimeout(sleepTimer.current); };
-  }, []);
+  }, [resetSleepTimer]);
 
   useEffect(() => {
     if (mood === 'sleep') { setEyeOpen(false); return; }
@@ -39,20 +59,38 @@ const Pet: React.FC = () => {
     return () => clearInterval(blink);
   }, [mood]);
 
-  const handleClick = () => {
-    resetSleepTimer();
-    setMood('happy');
-    setMessage(reactions[Math.floor(Math.random() * reactions.length)]);
-    setTimeout(() => { setMood('idle'); setMessage(''); }, 2500);
-  };
+  const pickReaction = useCallback(() => {
+    const pool = reactions.filter(r => r.mood === mood || Math.random() < 0.4);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }, [mood]);
 
-  const handleMouseEnter = () => { resetSleepTimer(); };
+  const handleClick = useCallback(() => {
+    resetSleepTimer();
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (clickTimer.current) clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => setClickCount(0), 3000);
+
+    let targetMood: Mood;
+    if (newCount >= 4) targetMood = 'surprised';
+    else if (newCount >= 2) targetMood = 'happy';
+    else targetMood = 'curious';
+
+    setMood(targetMood);
+    const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+    setMessage(reaction.text);
+    setTimeout(() => { setMood('idle'); setMessage(''); }, 3000);
+  }, [clickCount, resetSleepTimer]);
+
+  const handleMouseEnter = useCallback(() => {
+    resetSleepTimer();
+  }, [resetSleepTimer]);
 
   if (hidden) {
     return (
       <button
         onClick={() => { setHidden(false); resetSleepTimer(); }}
-        className="fixed right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-md hover:shadow-lg hover:-translate-y-[calc(50%+2px)]"
+        className="fixed right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105"
         title="召唤猫咪"
       >
         <span className="text-xl">🐱</span>
@@ -60,8 +98,10 @@ const Pet: React.FC = () => {
     );
   }
 
+  const moodEmoji = mood === 'sleep' ? '💤' : mood === 'happy' ? '😊' : mood === 'curious' ? '🤔' : mood === 'surprised' ? '😮' : '';
+
   return (
-    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex items-start gap-2">
+    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex items-start gap-3">
       <div className="relative group order-2">
         <button
           onClick={() => setHidden(true)}
@@ -72,9 +112,9 @@ const Pet: React.FC = () => {
         <div
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
-          className={`relative w-[100px] h-[100px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-transform duration-300 hover:scale-105 hover:shadow-xl ${
-            mood === 'happy' ? 'animate-happy' : 'animate-float'
-          }`}
+          className={`relative w-[130px] h-[130px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl ${
+            mood === 'happy' ? 'animate-happy' : mood === 'surprised' ? 'animate-happy' : 'animate-float'
+          } ${mood === 'sleep' ? 'opacity-80 saturate-50' : ''}`}
         >
           {!imageError ? (
             <>
@@ -87,7 +127,7 @@ const Pet: React.FC = () => {
               />
               {!imageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                  <span className="text-4xl animate-pulse">🐱</span>
+                  <span className="text-5xl animate-pulse">🐱</span>
                 </div>
               )}
               {!eyeOpen && (
@@ -96,16 +136,21 @@ const Pet: React.FC = () => {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30">
-              <span className={`text-5xl ${mood === 'happy' ? 'animate-happy' : ''}`}>🐱</span>
+              <span className={`text-6xl ${mood === 'happy' ? 'animate-happy' : ''}`}>🐱</span>
             </div>
+          )}
+          {moodEmoji && (
+            <span className="absolute -top-1 -left-1 text-lg drop-shadow-sm">{moodEmoji}</span>
           )}
         </div>
       </div>
-      {message && (
-        <div className="order-1 px-3 py-1.5 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground max-w-[160px]">
-          {message}
-        </div>
-      )}
+      <div className="order-1 flex flex-col gap-1.5 max-w-[180px]">
+        {message && (
+          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed">
+            {message}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
