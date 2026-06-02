@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
@@ -7,6 +7,19 @@ import LanguageSwitcher from './LanguageSwitcher';
 import HeaderMailbox from './HeaderMailbox';
 import Container from './Container';
 import ThemeSwitcher from './ThemeSwitcher';
+
+interface ExternalLink {
+  label: string;
+  url: string;
+}
+
+function parseExternalLinks(): ExternalLink[] {
+  const raw = import.meta.env.VITE_EXTERNAL_LINKS || '';
+  return raw.split(',').filter(Boolean).map(pair => {
+    const [label, url] = pair.split('|');
+    return { label: label?.trim() || url, url: url?.trim() || '' };
+  }).filter(l => l.url);
+}
 
 interface HeaderProps {
   mailbox: (Mailbox & { password: string }) | null;
@@ -41,26 +54,48 @@ const Header: React.FC<HeaderProps> = ({
             <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-border' : ''}`}>
               <ThemeSwitcher />
               <LanguageSwitcher />
-              <Link
-                to="/chat"
-                className="px-3 h-9 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-primary/15 hover:text-primary ml-1.5 text-sm font-semibold whitespace-nowrap"
-              >
-                AI 助手
-              </Link>
-              <a
-                href="https://ip.alice7.eu.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 h-9 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-primary/15 hover:text-primary ml-1.5 text-sm font-semibold whitespace-nowrap"
-                title="真实地址生成器"
-              >
-                真实地址生成器
-              </a>
+              <ExternalLinksDropdown />
             </div>
           </div>
         </div>
       </Container>
     </header>
+  );
+};
+
+const ExternalLinksDropdown: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const links = parseExternalLinks();
+  if (links.length === 0) return null;
+
+  return (
+    <div className="relative ml-1.5">
+      <button
+        onClick={() => setOpen(!open)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        className="px-3 h-9 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-primary/15 hover:text-primary text-sm font-semibold whitespace-nowrap gap-1.5"
+      >
+        <i className="fas fa-link text-xs opacity-60"></i>
+        <span>工具</span>
+        <i className={`fas fa-chevron-down text-[10px] opacity-50 transition-transform ${open ? 'rotate-180' : ''}`}></i>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-56 rounded-xl bg-popover border shadow-xl z-50 py-1.5 overflow-hidden">
+          {links.slice(0, 5).map((link, i) => (
+            <a
+              key={i}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-popover-foreground hover:bg-muted transition-colors"
+            >
+              <i className="fas fa-external-link-alt text-xs text-muted-foreground/50 w-3.5"></i>
+              {link.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

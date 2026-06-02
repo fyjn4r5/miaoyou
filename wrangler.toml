@@ -16,6 +16,7 @@ database_id = "7efbe74a-e91d-4b6a-9535-52bf08377d43"
 # 设置域名
 [vars]
 VITE_EMAIL_DOMAIN = "alice7.eu.org,foodyard.eu.org,newgames.eu.org"
+VITE_EXTERNAL_LINKS = "临时邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/"
 
 # 配置邮件处理
 [triggers]

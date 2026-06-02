@@ -52,6 +52,7 @@ interface ImportMetaEnv {
   readonly VITE_API_URL: string;
   readonly VITE_EMAIL_DOMAIN: string;
   readonly VITE_API_BASE_URL: string;
+  readonly VITE_EXTERNAL_LINKS: string;
   readonly MODE: string;
   readonly DEV: boolean;
   readonly PROD: boolean;
