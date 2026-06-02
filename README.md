@@ -15,6 +15,7 @@
     <a href="#features"><strong>✨ 功能特点</strong></a> •
     <a href="#screenshots"><strong>📸 界面预览</strong></a> •
     <a href="#deployment"><strong>🚀 快速部署</strong></a> •
+    <a href="#env-vars"><strong>🔧 环境变量</strong></a> •
     <a href="#development"><strong>💻 本地开发</strong></a> •
     <a href="#tech-stack"><strong>🔧 技术栈</strong></a> •
     <a href="#project-structure"><strong>📁 项目结构</strong></a>
@@ -183,6 +184,36 @@ Miaoyou 现在采用全新的一体化部署方式，前端和后端整合为一
 
 ---
 
+
+## <a id="env-vars"></a>🔧 环境变量
+
+### VITE_EXTERNAL_LINKS（自定义顶部导航栏「工具」链接）
+
+在 Cloudflare Pages Dashboard → 环境变量中设置，格式：
+
+```
+标签|URL,标签|URL
+```
+
+最多 5 个，默认值：
+
+```
+临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/
+```
+
+示例：
+
+```
+临时邮箱|https://temp-mail.org,IP 查询|https://ip.sb,密码生成|https://1password.com/password-generator
+```
+
+> **注意**：`wrangler.toml` 的 `[vars]` 不会传递给 Vite 构建时的 `import.meta.env`，请务必在 Cloudflare Pages Dashboard 的环境变量中设置。
+
+### VITE_EMAIL_DOMAIN（邮箱域名）
+
+在 Cloudflare Pages Dashboard → 环境变量中设置 `VITE_EMAIL_DOMAIN`，格式：`域名1,域名2,域名3`
+
+---
 
 ## <a id="development"></a>💻 本地开发
 

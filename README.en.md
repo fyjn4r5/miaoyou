@@ -189,6 +189,36 @@ Regardless of which deployment method you choose, you need to configure Cloudfla
 
 ---
 
+## <a id="env-vars"></a>🔧 Environment Variables
+
+### VITE_EXTERNAL_LINKS (Custom Tool Links in Navbar)
+
+Set in Cloudflare Pages Dashboard → Environment Variables, format:
+
+```
+label|URL,label|URL
+```
+
+Max 5 links. Default value:
+
+```
+临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/
+```
+
+Example:
+
+```
+Temp Mail|https://temp-mail.org,IP Lookup|https://ip.sb,Password Generator|https://1password.com/password-generator
+```
+
+> **Note**: `[vars]` in `wrangler.toml` is NOT passed to `import.meta.env` during Vite build. Set variables in Cloudflare Pages Dashboard.
+
+### VITE_EMAIL_DOMAIN (Email Domains)
+
+Format: `domain1.com,domain2.com,domain3.com`
+
+---
+
 ## <a id="development"></a>💻 Local Development
 
 ### Prerequisites
