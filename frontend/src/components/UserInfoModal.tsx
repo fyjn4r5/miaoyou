@@ -21,10 +21,10 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
 
   if (!isOpen) return null;
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      showSuccessMessage(t('common.copied'));
+      showSuccessMessage(`${label} ${t('common.copied')}`);
     } catch {
     }
   };
@@ -40,7 +40,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
       <div className="flex items-center gap-2 flex-1 justify-end">
         <span className="text-base font-mono text-right truncate max-w-[280px]">{value}</span>
         <button
-          onClick={() => copyToClipboard(value)}
+          onClick={() => copyToClipboard(value, label)}
           className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0"
           title={label}
         >
@@ -131,7 +131,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
                 </a>
                 <pre className="text-base font-mono text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
                 <button
-                  onClick={() => copyToClipboard(randomName.fullAddress)}
+                  onClick={() => copyToClipboard(randomName.fullAddress, t('email.fullAddress'))}
                   className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"
                   title={t('email.copyFullAddress')}
                 >
