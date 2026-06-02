@@ -28,7 +28,7 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
       <Container>
         <div className="text-center text-sm text-muted-foreground">
           {mailboxCount !== null && (
-            <p className="mb-3 text-primary font-semibold text-base">
+            <p className="mb-3 text-muted-foreground">
               <i className="fas fa-envelope mr-1.5"></i>
               {t("footer.mailboxCount", { count: mailboxCount })}
             </p>
@@ -36,9 +36,7 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
           <p className="mb-3">
             © {year} {t("app.title")}
           </p>
-          <p className="mb-3 text-xs text-muted-foreground/60">
-            喵 = 秒，所以有只猫 🐱
-          </p>
+
           <div className="flex flex-wrap justify-center items-center gap-4">
             <button
               onClick={() => onShowInfo("privacy")}

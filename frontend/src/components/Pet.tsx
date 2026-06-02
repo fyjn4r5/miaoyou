@@ -81,7 +81,7 @@ const Pet: React.FC = () => {
     setMood(targetMood);
     const reaction = reactions[Math.floor(Math.random() * reactions.length)];
     setMessage(reaction.text);
-    setTimeout(() => { setMood('idle'); setMessage(''); }, 4500);
+    setTimeout(() => { setMood('idle'); setMessage(''); }, 3000);
   }, [clickCount, resetSleepTimer]);
 
   const handleMouseEnter = useCallback(() => {
