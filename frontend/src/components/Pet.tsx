@@ -23,6 +23,8 @@ const reactions: Reaction[] = [
   { text: '！有动静', mood: 'surprised' },
   { text: '嗯？叫我吗', mood: 'curious' },
   { text: '好闲呀… 陪我玩', mood: 'idle' },
+  { text: '喵~ 秒！我和秒邮同音呢', mood: 'curious' },
+  { text: '我叫猫，它叫秒，差不多啦~', mood: 'happy' },
 ];
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=260&h=260&fit=crop&crop=face&q=80';
@@ -54,8 +56,8 @@ const Pet: React.FC = () => {
     setEyeOpen(true);
     const blink = setInterval(() => {
       setEyeOpen(false);
-      setTimeout(() => setEyeOpen(true), 180);
-    }, 3500 + Math.random() * 2500);
+      setTimeout(() => setEyeOpen(true), 200);
+    }, 4500 + Math.random() * 3000);
     return () => clearInterval(blink);
   }, [mood]);
 
@@ -90,7 +92,7 @@ const Pet: React.FC = () => {
     return (
       <button
         onClick={() => { setHidden(false); resetSleepTimer(); }}
-        className="fixed right-4 top-[55%] -translate-y-1/2 w-[52px] h-[52px] rounded-2xl bg-muted/80 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105 ring-2 ring-border"
+        className="fixed right-4 top-[65%] -translate-y-1/2 w-[52px] h-[52px] rounded-2xl bg-muted/80 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105 ring-2 ring-border"
         title="召唤猫咪"
       >
         <span className="text-2xl">🐱</span>
@@ -101,7 +103,7 @@ const Pet: React.FC = () => {
   const moodEmoji = mood === 'sleep' ? '💤' : mood === 'happy' ? '😊' : mood === 'curious' ? '🤔' : mood === 'surprised' ? '😮' : '';
 
   return (
-    <div className="fixed right-4 top-[55%] -translate-y-1/2 z-50 flex items-start gap-3">
+    <div className="fixed right-4 top-[65%] -translate-y-1/2 z-50 flex items-start gap-3">
       <div className="relative group order-2">
         <button
           onClick={() => setHidden(true)}
