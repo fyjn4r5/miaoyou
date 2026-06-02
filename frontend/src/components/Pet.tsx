@@ -73,7 +73,7 @@ const Pet: React.FC = () => {
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
           className={`relative w-[100px] h-[100px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-transform duration-300 hover:scale-105 hover:shadow-xl ${
-            mood === 'happy' ? 'animate-bounce' : 'animate-float'
+            mood === 'happy' ? 'animate-happy' : 'animate-float'
           }`}
         >
           {!imageError ? (
@@ -96,7 +96,7 @@ const Pet: React.FC = () => {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30">
-              <span className={`text-5xl ${mood === 'happy' ? 'animate-bounce' : ''}`}>🐱</span>
+              <span className={`text-5xl ${mood === 'happy' ? 'animate-happy' : ''}`}>🐱</span>
             </div>
           )}
         </div>

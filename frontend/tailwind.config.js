@@ -64,12 +64,19 @@ module.exports = {
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-6px)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        happy: {
+          '0%': { transform: 'translateY(0px) scale(1)' },
+          '30%': { transform: 'translateY(-12px) scale(1.05)' },
+          '60%': { transform: 'translateY(-4px) scale(1.02)' },
+          '100%': { transform: 'translateY(0px) scale(1)' },
         },
       },
       animation: {
         wave: 'wave 0.4s ease-in-out 2',
         float: 'float 3s ease-in-out infinite',
+        happy: 'happy 0.6s ease-out 2',
       },
     },
   },
