@@ -2,19 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 type Mood = 'idle' | 'happy' | 'sleep' | 'curious' | 'surprised';
 
-const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喔。请用简短有趣的方式（不超过30字）回应主人的互动，语气要可爱、活泼，偶尔加个喵~。不要问问题。';
+const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喔。请用简短有趣的方式（不超过60字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
-
-const PRESET_REACTIONS = [
-  '喵~ 你终于来啦！',
-  '喵喵！摸摸头~',
-  '嘿~ 一起玩吧！',
-  '唔… 好无聊啊',
-  '喵~ 我在呢',
-  '喵喵喵！',
-  '瞅你咋地~',
-];
 
 const Pet: React.FC = () => {
   const [mood, setMood] = useState<Mood>('idle');
@@ -23,9 +13,12 @@ const Pet: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [eyeOpen, setEyeOpen] = useState(true);
+  const [chatInput, setChatInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [showInput, setShowInput] = useState(false);
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
   const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const resetSleepTimer = useCallback(() => {
     if (sleepTimer.current) clearTimeout(sleepTimer.current);
@@ -48,25 +41,26 @@ const Pet: React.FC = () => {
     return () => clearInterval(blink);
   }, [mood]);
 
-  const showMessage = useCallback((text: string, duration = 5000) => {
+  const showMessage = useCallback((text: string, duration = 8000) => {
     if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage(text);
     messageTimer.current = setTimeout(() => {
       setMessage('');
+      setShowInput(false);
       setMood('idle');
     }, duration);
   }, []);
 
-  const getAiReply = useCallback(async (prompt: string) => {
+  const getAiReply = useCallback(async (userText: string, keepHistory = false) => {
     setAiLoading(true);
     setMood('curious');
-    showMessage('🐱 思考中...', 10000);
+    showMessage('🐱 思考中...', 15000);
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: prompt,
+          message: userText,
           history: [],
           systemPrompt: PET_SYSTEM_PROMPT
         })
@@ -91,11 +85,12 @@ const Pet: React.FC = () => {
         }
       }
       setMood('happy');
-      showMessage(reply, 5000);
+      showMessage(reply, 8000);
+      setShowInput(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
     } catch (_) {
-      const fallback = PRESET_REACTIONS[Math.floor(Math.random() * PRESET_REACTIONS.length)];
       setMood('curious');
-      showMessage(fallback, 4000);
+      showMessage('喵~ 信号不太好，再试试？', 4000);
     } finally {
       setAiLoading(false);
     }
@@ -104,6 +99,7 @@ const Pet: React.FC = () => {
   const handleClick = useCallback(() => {
     resetSleepTimer();
     if (aiLoading) return;
+    if (showInput) { setShowInput(false); return; }
     const prompts = [
       '跟主人打个招呼吧',
       '今天心情怎么样？跟主人说说',
@@ -111,7 +107,19 @@ const Pet: React.FC = () => {
       '伸个懒腰跟主人打个招呼',
     ];
     getAiReply(prompts[Math.floor(Math.random() * prompts.length)]);
-  }, [resetSleepTimer, aiLoading, getAiReply]);
+  }, [resetSleepTimer, aiLoading, showInput, getAiReply]);
+
+  const handleSend = useCallback(() => {
+    const text = chatInput.trim();
+    if (!text || aiLoading) return;
+    setChatInput('');
+    setShowInput(false);
+    getAiReply(text);
+  }, [chatInput, aiLoading, getAiReply]);
+
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSend();
+  }, [handleSend]);
 
   const handleMouseEnter = useCallback(() => {
     resetSleepTimer();
@@ -180,10 +188,30 @@ const Pet: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="flex flex-col gap-1.5 max-w-[200px]">
+      <div className="flex flex-col gap-2 items-end max-w-[220px]">
         {message && (
-          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed">
+          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed break-words max-w-full">
             {message}
+          </div>
+        )}
+        {showInput && !aiLoading && (
+          <div className="flex gap-1.5 w-full">
+            <input
+              ref={inputRef}
+              type="text"
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              placeholder="跟猫猫说话..."
+              className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-full border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!chatInput.trim()}
+              className="px-3 py-1.5 text-sm rounded-full bg-primary text-primary-foreground disabled:opacity-40 transition-opacity shrink-0"
+            >
+              发送
+            </button>
           </div>
         )}
       </div>

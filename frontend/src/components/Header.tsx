@@ -13,8 +13,10 @@ interface ExternalLink {
   url: string;
 }
 
+const DEFAULT_LINKS = '临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/';
+
 function parseExternalLinks(): ExternalLink[] {
-  const raw = import.meta.env.VITE_EXTERNAL_LINKS || '';
+  const raw = import.meta.env.VITE_EXTERNAL_LINKS || DEFAULT_LINKS;
   return raw.split(',').filter(Boolean).map(pair => {
     const [label, url] = pair.split('|');
     return { label: label?.trim() || url, url: url?.trim() || '' };
