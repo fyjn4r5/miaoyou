@@ -26,7 +26,7 @@ const GREETINGS = [
 
 const QUICK_TAGS = ['你好', '心情', '饿', '玩', '工作', '晚安', '谢谢'];
 
-const CLICK_THRESHOLD = 3;
+const CLICK_THRESHOLD = 10;
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
