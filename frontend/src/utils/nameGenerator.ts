@@ -23,7 +23,7 @@ function randomInt(min: number, max: number): number {
 }
 
 function randomBirthdayYear(): number {
-  return randomInt(1965, 2002);
+  return randomInt(1985, 2008);
 }
 
 function randomBirthday(year?: number): string {
