@@ -90,10 +90,10 @@ const Pet: React.FC = () => {
     return (
       <button
         onClick={() => { setHidden(false); resetSleepTimer(); }}
-        className="fixed right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105"
+        className="fixed right-4 top-[55%] -translate-y-1/2 w-[52px] h-[52px] rounded-2xl bg-muted/80 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105 ring-2 ring-border"
         title="召唤猫咪"
       >
-        <span className="text-xl">🐱</span>
+        <span className="text-2xl">🐱</span>
       </button>
     );
   }
@@ -101,7 +101,7 @@ const Pet: React.FC = () => {
   const moodEmoji = mood === 'sleep' ? '💤' : mood === 'happy' ? '😊' : mood === 'curious' ? '🤔' : mood === 'surprised' ? '😮' : '';
 
   return (
-    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex items-start gap-3">
+    <div className="fixed right-4 top-[55%] -translate-y-1/2 z-50 flex items-start gap-3">
       <div className="relative group order-2">
         <button
           onClick={() => setHidden(true)}
@@ -126,8 +126,8 @@ const Pet: React.FC = () => {
                 onError={() => setImageError(true)}
               />
               {!imageLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                  <span className="text-5xl animate-pulse">🐱</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-2xl">
+                  <span className="text-6xl animate-pulse">🐱</span>
                 </div>
               )}
               {!eyeOpen && (
