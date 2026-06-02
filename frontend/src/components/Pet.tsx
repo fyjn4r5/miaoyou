@@ -235,7 +235,7 @@ const Pet: React.FC = () => {
       <div className="fixed bottom-2 right-2 z-50">
         <div className="relative">
           {bubbleText && (
-            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground truncate max-w-[220px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="absolute bottom-full right-0 mb-2 px-4 py-2.5 rounded-2xl bg-popover border shadow-lg text-sm text-popover-foreground leading-relaxed max-w-[260px] animate-in fade-in slide-in-from-bottom-2 duration-200">
               {bubbleText}
             </div>
           )}
