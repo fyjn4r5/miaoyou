@@ -41,14 +41,16 @@ const Pet: React.FC = () => {
     return () => clearInterval(blink);
   }, [mood]);
 
-  const showMessage = useCallback((text: string, duration = 8000) => {
+  const showMessage = useCallback((text: string, duration = 0) => {
     if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage(text);
-    messageTimer.current = setTimeout(() => {
-      setMessage('');
-      setShowInput(false);
-      setMood('idle');
-    }, duration);
+    if (duration > 0) {
+      messageTimer.current = setTimeout(() => {
+        setMessage('');
+        setShowInput(false);
+        setMood('idle');
+      }, duration);
+    }
   }, []);
 
   const getAiReply = useCallback(async (userText: string, keepHistory = false) => {
@@ -99,7 +101,13 @@ const Pet: React.FC = () => {
   const handleClick = useCallback(() => {
     resetSleepTimer();
     if (aiLoading) return;
-    if (showInput) { setShowInput(false); return; }
+    if (showInput) {
+      if (messageTimer.current) clearTimeout(messageTimer.current);
+      setMessage('');
+      setShowInput(false);
+      setMood('idle');
+      return;
+    }
     const prompts = [
       '跟主人打个招呼吧',
       '今天心情怎么样？跟主人说说',
