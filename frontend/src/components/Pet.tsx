@@ -333,7 +333,7 @@ const Pet: React.FC = () => {
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🐱</span>
-                <span className="font-semibold text-sm">喵喵 AI</span>
+                <span className="font-semibold text-sm">喵喵</span>
               </div>
               <button
                 onClick={closeChat}
