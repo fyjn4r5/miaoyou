@@ -151,8 +151,7 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
   const firstName = userData?.name.first || (isMale ? pick(country.maleFirstNames) : pick(country.femaleFirstNames));
   const lastName = userData?.name.last || pick(country.lastNames);
   const fullName = `${firstName} ${lastName}`;
-  const apiBirthYear = userData?.dob.date ? new Date(userData.dob.date).getFullYear() : null;
-  const birthYear = apiBirthYear || randomBirthdayYear();
+  const birthYear = randomBirthdayYear();
   const username = `${firstName}${lastName}`.toLowerCase() + birthYear;
 
   const stateData = country.states.find(s =>
@@ -172,7 +171,7 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     username,
     isMale,
     gender: isMale ? "Male" : "Female",
-    birthday: userData?.dob.date?.split("T")[0] || randomBirthday(birthYear),
+    birthday: randomBirthday(birthYear),
     streetAddress: addressData.streetAddress,
     city: addressData.city,
     state: stateAbbr,
