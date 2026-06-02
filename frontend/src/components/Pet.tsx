@@ -51,7 +51,7 @@ const Pet: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [eyeOpen, setEyeOpen] = useState(true);
-  const [bubbleText, setBubbleText] = useState('');
+  const [bubbleList, setBubbleList] = useState<string[]>([]);
   const [clickCount, setClickCount] = useState(0);
   const [showInvite, setShowInvite] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -89,10 +89,10 @@ const Pet: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const showBubble = useCallback((text: string) => {
+  const addBubble = useCallback((text: string) => {
     if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
-    setBubbleText(text);
-    bubbleTimer.current = setTimeout(() => setBubbleText(''), 5000);
+    setBubbleList(prev => [...prev, text]);
+    bubbleTimer.current = setTimeout(() => setBubbleList([]), 8000);
   }, []);
 
   const addCatMessage = useCallback((text: string) => {
@@ -168,7 +168,7 @@ const Pet: React.FC = () => {
 
   const handleCatClick = useCallback(() => {
     resetSleepTimer();
-    if (showInvite || chatOpen) return;
+    if (showInvite) return;
 
     const nextCount = clickCount + 1;
     setClickCount(nextCount);
@@ -180,8 +180,8 @@ const Pet: React.FC = () => {
 
     setMood('happy');
     const idx = (nextCount - 1) % BUBBLE_MSGS.length;
-    showBubble(BUBBLE_MSGS[idx]);
-  }, [clickCount, showInvite, chatOpen, resetSleepTimer, showBubble]);
+    addBubble(BUBBLE_MSGS[idx]);
+  }, [clickCount, showInvite, resetSleepTimer, addBubble]);
 
   const openAiChat = useCallback(() => {
     setShowInvite(false);
@@ -233,9 +233,13 @@ const Pet: React.FC = () => {
   return (
     <>
       <div className="fixed bottom-2 right-2 z-50 flex flex-col-reverse items-end gap-2">
-        {bubbleText && (
-          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed max-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200">
-            {bubbleText}
+        {bubbleList.length > 0 && (
+          <div className="flex flex-col-reverse gap-1.5 max-w-[220px]">
+            {bubbleList.map((txt, i) => (
+              <div key={i} className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-200">
+                {txt}
+              </div>
+            ))}
           </div>
         )}
         <div className="relative group">
@@ -291,7 +295,7 @@ const Pet: React.FC = () => {
             <div className="text-5xl mb-3">🐱</div>
             <h3 className="text-lg font-bold mb-2">和喵邮聊天吧！</h3>
             <p className="text-sm text-muted-foreground mb-5">
-              喵邮会用 AI 智能回复你哦，想聊什么都可以~
+              想和喵邮对话吗？
             </p>
             <div className="flex gap-3 justify-center">
               <button
