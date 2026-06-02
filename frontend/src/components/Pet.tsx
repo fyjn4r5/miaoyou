@@ -219,10 +219,6 @@ const Pet: React.FC = () => {
     await getAiReply(msg);
   }, [input, aiLoading, addUserMessage, getAiReply]);
 
-  const handleInputKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSend();
-  }, [handleSend]);
-
   const handleMouseEnter = useCallback(() => {
     resetSleepTimer();
   }, [resetSleepTimer]);
@@ -331,7 +327,7 @@ const Pet: React.FC = () => {
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
           <div
-            className="bg-background rounded-xl shadow-2xl w-[600px] max-w-[94vw] max-h-[80vh] flex flex-col overflow-hidden"
+            className="bg-background rounded-xl shadow-2xl w-[680px] max-w-[94vw] max-h-[85vh] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
@@ -383,21 +379,21 @@ const Pet: React.FC = () => {
               ))}
             </div>
 
-            <div className="px-4 pb-3 pt-1 border-t flex gap-2">
-              <input
-                ref={inputRef}
-                type="text"
+            <div className="px-4 pb-3 pt-2 border-t flex gap-2 items-end">
+              <textarea
+                ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={handleInputKeyDown}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 disabled={aiLoading}
-                placeholder="跟喵邮说说话..."
-                className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                placeholder="跟喵邮说说话...（Enter 发送，Shift+Enter 换行）"
+                rows={4}
+                className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 resize-none"
               />
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || aiLoading}
-                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity shrink-0"
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity shrink-0 mb-[1px]"
               >
                 发送
               </button>
