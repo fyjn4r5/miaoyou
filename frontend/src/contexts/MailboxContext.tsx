@@ -453,7 +453,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
                     '--tx': `${tx}px`,
                     '--ty': `${ty}px`,
                     animationDelay: `${i * 25}ms`,
-                  }}
+                  } as React.CSSProperties & { [key: string]: string }}
                 />
               );
             })}
