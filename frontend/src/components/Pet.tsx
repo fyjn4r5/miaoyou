@@ -7,6 +7,8 @@ interface ChatMessage {
   text: string;
 }
 
+const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵邮。请用简短有趣的方式（不超过80字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
+
 const GREETINGS = [
   '喵~ 主人来啦！今天想聊点什么呢？😊',
   '喵邮在此！主人有什么吩咐呀？🐱',
@@ -14,38 +16,7 @@ const GREETINGS = [
   '主人好！想和喵邮玩什么呀？🎀',
 ];
 
-const RESPONSES: [RegExp, string[]][] = [
-  [/你好|hi|hello|嗨|hey/i, ['喵~ 主人好呀！今天心情怎么样？😊', '你好你好！喵邮很高兴见到主人！🐱']],
-  [/心情|开心|难过|郁闷|烦/i, ['主人不要难过，喵邮陪你玩~ 🎀', '开心最重要！喵邮给主人卖个萌~ 😊']],
-  [/饿|吃|饭|美食|好吃/i, ['喵~ 说到吃，喵邮最喜欢小鱼干了！🐟', '主人饿了吗？快去吃点好吃的吧！']],
-  [/睡|困|晚安|困了/i, ['主人晚安~ 喵邮也困了，一起睡吧 💤', '困了就休息吧，喵邮给主人守夜~ 🌙']],
-  [/可爱|萌|乖|漂亮|帅/i, ['喵~ 主人真会说话！喵邮都不好意思了 😊', '嘻嘻，主人也很可爱呢！🎀']],
-  [/玩|游戏|无聊/i, ['主人想玩什么？喵邮陪你！🎮', '无聊的话，要不要和喵邮聊聊天呀？']],
-  [/工作|忙|上班|学习/i, ['主人辛苦了！喵邮给主人加油！💪', '忙完记得休息哦，喵邮会一直陪着主人的~']],
-  [/冷|热|天气/i, ['喵~ 主人要注意保暖/避暑哦！', '不管什么天气，喵邮都陪在主人身边~']],
-  [/名字|叫什/i, ['喵邮叫喵邮！和秒邮同音，是不是很好记？😊', '喵邮~ 喵邮~ 主人多叫几声嘛！']],
-  [/再见|拜拜|bye/i, ['主人拜拜~ 下次再来找喵邮玩！🐱', '喵~ 舍不得主人走… 下次早点来哦！']],
-  [/谢谢|感谢|好人/i, ['不客气！能帮到主人喵邮最开心了~ 😊', '主人太客气啦，喵邮会不好意思的~ 🎀']],
-];
-
-const FALLBACKS = [
-  '喵~ 让喵邮想想… 主人说的好有趣！😊',
-  '喵喵？主人再说说，喵邮想听~ 🐱',
-  '嘻嘻，喵邮不太懂，但主人开心就好！🎀',
-  '喵~ 主人讲的真有意思，再多说点嘛！✨',
-  '喵邮歪着脑袋想了想… 决定给主人一个大大的拥抱！🤗',
-];
-
 const QUICK_TAGS = ['你好', '心情', '饿', '玩', '工作', '晚安', '谢谢'];
-
-function getReply(text: string): string {
-  for (const [pattern, replies] of RESPONSES) {
-    if (pattern.test(text)) {
-      return replies[Math.floor(Math.random() * replies.length)];
-    }
-  }
-  return FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
-}
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
@@ -58,9 +29,11 @@ const Pet: React.FC = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
+  const abortRef = useRef<AbortController | null>(null);
 
   const resetSleepTimer = useCallback(() => {
     if (sleepTimer.current) clearTimeout(sleepTimer.current);
@@ -91,6 +64,74 @@ const Pet: React.FC = () => {
     setMessages(prev => [...prev, { role: 'cat', text }]);
   }, []);
 
+  const addUserMessage = useCallback((text: string) => {
+    setMessages(prev => [...prev, { role: 'user', text }]);
+  }, []);
+
+  const getAiReply = useCallback(async (userText: string) => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setAiLoading(true);
+    setMood('curious');
+    const loadingIdx = messages.length + 1;
+
+    try {
+      const res = await fetch('/api/chat', {
+        signal: controller.signal,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userText,
+          history: [],
+          systemPrompt: PET_SYSTEM_PROMPT
+        })
+      });
+      if (!res.ok || !res.body) throw new Error('fail');
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let reply = '';
+      setMessages(prev => [...prev, { role: 'cat', text: '' }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const token = JSON.parse(data).response;
+              if (token) reply += token;
+            } catch (_) {}
+          }
+        }
+        setMessages(prev => {
+          const next = [...prev];
+          if (next.length > 0) next[next.length - 1] = { role: 'cat', text: reply };
+          return next;
+        });
+      }
+      setMood('happy');
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      setMessages(prev => {
+        const next = [...prev];
+        if (next.length > loadingIdx) {
+          next[next.length - 1] = { role: 'cat', text: '喵~ 信号不太好，再试试？😿' };
+        } else {
+          next.push({ role: 'cat', text: '喵~ 信号不太好，再试试？😿' });
+        }
+        return next;
+      });
+      setMood('curious');
+    } finally {
+      setAiLoading(false);
+      abortRef.current = null;
+    }
+  }, [messages.length]);
+
   const openChat = useCallback(() => {
     resetSleepTimer();
     if (chatOpen) return;
@@ -104,21 +145,18 @@ const Pet: React.FC = () => {
   }, [chatOpen, messages.length, resetSleepTimer, addCatMessage]);
 
   const closeChat = useCallback(() => {
+    if (abortRef.current) abortRef.current.abort();
     setChatOpen(false);
     setMood('idle');
   }, []);
 
-  const handleSend = useCallback((text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const msg = (text ?? input).trim();
-    if (!msg) return;
+    if (!msg || aiLoading) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: msg }]);
-    setMood('curious');
-    setTimeout(() => {
-      setMood('happy');
-      addCatMessage(getReply(msg));
-    }, 400 + Math.random() * 300);
-  }, [input, addCatMessage]);
+    addUserMessage(msg);
+    await getAiReply(msg);
+  }, [input, aiLoading, addUserMessage, getAiReply]);
 
   const handleInputKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSend();
@@ -222,7 +260,13 @@ const Pet: React.FC = () => {
                         : 'bg-muted text-muted-foreground rounded-bl-md'
                     }`}
                   >
-                    {msg.text}
+                    {msg.text || (aiLoading && i === messages.length - 1 ? (
+                      <span className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '0ms'}} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '150ms'}} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '300ms'}} />
+                      </span>
+                    ) : '🐱 思考中...')}
                   </div>
                 </div>
               ))}
@@ -234,14 +278,16 @@ const Pet: React.FC = () => {
                 <button
                   key={tag}
                   onClick={() => handleSend(tag)}
-                  className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={aiLoading}
+                  className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                 >
                   {tag}
                 </button>
               ))}
               <button
                 onClick={greetingAgain}
-                className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                disabled={aiLoading}
+                className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                 title="换个话题"
               >
                 🎲 换一个
@@ -255,12 +301,13 @@ const Pet: React.FC = () => {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleInputKeyDown}
+                disabled={aiLoading}
                 placeholder="跟喵邮说说话..."
-                className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               />
               <button
                 onClick={() => handleSend()}
-                disabled={!input.trim()}
+                disabled={!input.trim() || aiLoading}
                 className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity shrink-0"
               >
                 发送
