@@ -7,7 +7,7 @@ const reactions = [
   '嘿！', '要玩玩吗？', '好无聊…', '！',
 ];
 
-const CAT_IMAGE = 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=180&h=180&fit=crop&crop=face&q=80';
+const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=200&h=200&fit=crop&crop=face&q=80';
 
 const Pet: React.FC = () => {
   const [mood, setMood] = useState<Mood>('idle');
@@ -52,7 +52,7 @@ const Pet: React.FC = () => {
     return (
       <button
         onClick={() => { setHidden(false); resetSleepTimer(); }}
-        className="fixed bottom-4 right-4 w-11 h-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+        className="fixed right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-md hover:shadow-lg hover:-translate-y-[calc(50%+2px)]"
         title="召唤猫咪"
       >
         <span className="text-xl">🐱</span>
@@ -61,13 +61,8 @@ const Pet: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      {message && (
-        <div className="px-3 py-1.5 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground max-w-[180px]">
-          {message}
-        </div>
-      )}
-      <div className="relative group">
+    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex items-start gap-2">
+      <div className="relative group order-2">
         <button
           onClick={() => setHidden(true)}
           className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/40 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -100,12 +95,17 @@ const Pet: React.FC = () => {
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30">
               <span className={`text-5xl ${mood === 'happy' ? 'animate-bounce' : ''}`}>🐱</span>
             </div>
           )}
         </div>
       </div>
+      {message && (
+        <div className="order-1 px-3 py-1.5 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground max-w-[160px]">
+          {message}
+        </div>
+      )}
     </div>
   );
 };

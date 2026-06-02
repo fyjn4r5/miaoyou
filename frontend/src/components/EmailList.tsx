@@ -131,11 +131,11 @@ const EmailList: React.FC<EmailListProps> = ({
           <span className="text-xs text-muted-foreground/70 font-medium tracking-wide mr-1">{t('email.regInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary flex items-center gap-1.5 border border-primary/30 hover:border-primary/60 text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
             title={t('email.copyFullName')}
           >
-            <span className="text-primary/70">{t('email.fullName')}:</span>
-            <span className="text-primary font-bold">{randomName.fullName}</span>
+            <span className="text-muted-foreground">{t('email.fullName')}:</span>
+            <span className="text-foreground font-bold">{randomName.fullName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -206,7 +206,7 @@ const EmailList: React.FC<EmailListProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1.5 border border-primary/20 text-sm"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-sm"
             title={t('email.refresh')}
           >
             <i className="fas fa-sync-alt text-xs"></i>
@@ -217,7 +217,7 @@ const EmailList: React.FC<EmailListProps> = ({
             className={`px-3 py-1.5 rounded-full border text-sm flex items-center gap-1.5 ${
               autoRefresh
                 ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
-                : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-primary border'
+                : 'bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary border-border/60 hover:border-border'
             }`}
             title={autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
           >

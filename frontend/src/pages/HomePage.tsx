@@ -118,7 +118,7 @@ const HomePage: React.FC = () => {
             <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-primary via-blue-500 to-indigo-500 bg-clip-text text-transparent leading-tight">
               {t('intro.hero.title')}
             </h1>
-            <p className="text-xl md:text-4xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-3xl bg-gradient-to-r from-primary/80 via-blue-500/80 to-indigo-500/80 bg-clip-text text-transparent max-w-3xl mx-auto leading-relaxed font-medium">
               {t('intro.hero.subtitle')}
             </p>
           </div>
