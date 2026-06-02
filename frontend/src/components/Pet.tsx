@@ -7,46 +7,46 @@ interface ChatMessage {
   text: string;
 }
 
-const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵邮。请用简短有趣的方式（不超过80字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
+const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。请用简短有趣的方式（不超过80字）回应主人，语气要活泼、可爱，偶尔加个喵~。';
 
 const BUBBLE_MSGS = [
   '喵~ 主人来啦！今天过得怎么样呀？😊',
-  '喵邮刚刚打了个盹，做了个美梦~ 💤',
+  '喵喵刚刚打了个盹，做了个美梦~ 💤',
   '主人你听，外面有小鸟在唱歌呢！🐦',
   '喵~ 今天天气真好，想出去晒太阳~ ☀️',
-  '主人要不要摸摸头？喵邮最喜欢了~ 🎀',
-  '喵邮今天也很乖哦，有好好看家呢！🏠',
+  '主人要不要摸摸头？喵喵可开心了~ 🎀',
+  '喵喵今天也很乖哦，有好好看家呢！🏠',
   '主人再点点我嘛~ 有惊喜等着你哦！😉',
-  '主人工作累了吧？喵邮给你跳个舞！💃',
-  '喵邮的尾巴今天特别蓬松，不信你看！🦊',
-  '嘘…喵邮正在思考猫生大事呢… 🤔',
-  '主人你知道吗，喵邮最喜欢你啦！💕',
-  '喵~ 今天想吃什么？喵邮给你推荐小鱼干！🐟',
-  '主人摸摸屏幕，就当是在摸喵邮了~ 🐾',
-  '喵邮刚刚学会了一个新招数，想不想看？✨',
+  '主人工作累了吧？喵喵给你跳个舞！💃',
+  '喵喵的尾巴今天特别蓬松，不信你看！🦊',
+  '嘘…喵喵正在思考猫生大事呢… 🤔',
+  '主人你知道吗，喵喵觉得你最棒啦！✨',
+  '喵~ 今天想吃什么？喵喵给你推荐小鱼干！🐟',
+  '主人摸摸屏幕，就当是在摸喵喵了~ 🐾',
+  '喵喵刚刚学会了一个新招数，想不想看？✨',
   '主人好~ 今天也是元气满满的一天呢！💪',
-  '喵~ 喵邮的呼噜声有助睡眠哦，要听吗？🌙',
-  '主人快看！喵邮的眼睛是不是特别好看？👀',
-  '喵~ 再点一下，喵邮就告诉你一个小秘密！🤫',
-  '今天有邮件来了吗？喵邮帮你盯着呢！📧',
-  '喵邮学会了一个超酷的新表情，你看！😎',
-  '主人猜猜喵邮今天看到什么有趣的事了？🤗',
+  '喵~ 喵喵的呼噜声有助睡眠哦，要听吗？🌙',
+  '主人快看！喵喵的眼睛是不是特别好看？👀',
+  '喵~ 再点一下，喵喵就告诉你一个小秘密！🤫',
+  '今天有邮件来了吗？喵喵帮你盯着呢！📧',
+  '喵喵学会了一个超酷的新表情，你看！😎',
+  '主人猜猜喵喵今天看到什么有趣的事了？🤗',
   '喵~ 生活就像小鱼干，要慢慢品味~ 🐟',
-  '叮！您的可爱喵邮已上线，请注意查收~ 📩',
-  '主人今天的发型很好看哦，喵邮认证！✨',
-  '喵邮刚刚伸了个懒腰，舒服极了~ 😌',
-  '嘘…喵邮在偷偷练习唱歌，好听吗？🎵',
-  '主人有没有好好吃饭呀？喵邮很关心哦！🍚',
+  '叮！您的可爱喵喵已上线，请注意查收~ 📩',
+  '主人今天的发型很好看哦，喵喵认证！✨',
+  '喵喵刚刚伸了个懒腰，舒服极了~ 😌',
+  '嘘…喵喵在偷偷练习唱歌，好听吗？🎵',
+  '主人有没有好好吃饭呀？喵喵很关心哦！🍚',
   '喵~ 什么都不想做，就想和主人待着~ 🎀',
-  '喵邮刚学会数数，一、二、三… 最喜欢主人！💕',
-  '据说多看猫咪可以减压，主人多看看喵邮吧~ 🐱',
+  '喵喵刚学会数数，一、二、三… 主人最好啦！✨',
+  '据说多看猫咪可以减压，主人多看看喵喵吧~ 🐱',
 ];
 
 const GREETINGS = [
   '喵~ 主人来啦！今天想聊点什么呢？😊',
-  '喵邮在此！主人有什么吩咐呀？🐱',
-  '嗨嗨~ 喵邮一直在等主人呢！✨',
-  '主人好！想和喵邮玩什么呀？🎀',
+  '喵喵在此！主人有什么吩咐呀？🐱',
+  '嗨嗨~ 喵喵一直在等主人呢！✨',
+  '主人好！想和喵喵玩什么呀？🎀',
 ];
 
 const QUICK_TAGS = ['你好', '心情', '饿', '玩', '工作', '晚安', '谢谢'];
@@ -298,9 +298,9 @@ const Pet: React.FC = () => {
             onClick={e => e.stopPropagation()}
           >
             <div className="text-5xl mb-3">🐱</div>
-            <h3 className="text-lg font-bold mb-2">和喵邮聊天吧！</h3>
+            <h3 className="text-lg font-bold mb-2">和喵喵聊天吧！</h3>
             <p className="text-sm text-muted-foreground mb-5">
-              想和喵邮对话吗？
+              想和喵喵对话吗？
             </p>
             <div className="flex gap-3 justify-center">
               <button
@@ -333,7 +333,7 @@ const Pet: React.FC = () => {
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🐱</span>
-                <span className="font-semibold text-sm">喵邮 AI</span>
+                <span className="font-semibold text-sm">喵喵 AI</span>
               </div>
               <button
                 onClick={closeChat}
@@ -386,7 +386,7 @@ const Pet: React.FC = () => {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 disabled={aiLoading}
-                placeholder="跟喵邮说说话...（Enter 发送，Shift+Enter 换行）"
+                placeholder="跟喵喵说说话...（Enter 发送，Shift+Enter 换行）"
                 rows={4}
                 className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 resize-none"
               />
