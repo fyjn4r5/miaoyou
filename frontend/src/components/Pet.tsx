@@ -314,7 +314,7 @@ const Pet: React.FC = () => {
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
           <div
-            className="bg-background rounded-xl shadow-2xl w-[380px] max-w-[90vw] max-h-[70vh] flex flex-col overflow-hidden"
+            className="bg-background rounded-xl shadow-2xl w-[520px] max-w-[92vw] max-h-[82vh] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
