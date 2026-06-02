@@ -1,9 +1,14 @@
 import { D1Database } from '@cloudflare/workers-types';
 
+interface Ai {
+  run: (model: string, options: { messages: Array<{ role: string; content: string }>; stream?: boolean; temperature?: number; max_tokens?: number }) => Promise<ReadableStream>;
+}
+
 // 环境变量类型
 export interface Env {
   DB: D1Database;
   VITE_EMAIL_DOMAIN?: string;
+  AI: Ai;
 }
 
 // 邮箱类型

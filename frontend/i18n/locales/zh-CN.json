@@ -460,5 +460,15 @@
       "item1": "如果您对本隐私政策有任何疑问，请通过GitHub Issues联系我们。"
     },
     "conclusion": "感谢您信任并使用秒邮永久匿名邮箱服务！"
+  },
+  "chat": {
+    "title": "AI 助手",
+    "placeholder": "输入消息，按 Enter 发送...",
+    "send": "发送",
+    "clear": "清空对话",
+    "thinking": "思考中...",
+    "welcome": "你好！我是 AI 助手，有什么可以帮你的？",
+    "error": "连接失败，请重试",
+    "copy": "复制"
   }
 }

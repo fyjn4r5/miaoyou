@@ -41,6 +41,12 @@ const Header: React.FC<HeaderProps> = ({
             <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-border' : ''}`}>
               <ThemeSwitcher />
               <LanguageSwitcher />
+              <Link
+                to="/chat"
+                className="px-3 h-9 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-primary/15 hover:text-primary ml-1.5 text-sm font-semibold whitespace-nowrap"
+              >
+                AI 助手
+              </Link>
               <a
                 href="https://ip.alice7.eu.org/"
                 target="_blank"

@@ -451,5 +451,15 @@
       "item1": "If you have any questions about this privacy policy, please contact us through GitHub Issues."
     },
     "conclusion": "Thank you for trusting and using 秒邮 temporary email service!"
+  },
+  "chat": {
+    "title": "AI Assistant",
+    "placeholder": "Type your message, Enter to send...",
+    "send": "Send",
+    "clear": "Clear chat",
+    "thinking": "Thinking...",
+    "welcome": "Hi! I'm your AI assistant. How can I help you?",
+    "error": "Connection failed, please retry",
+    "copy": "Copy"
   }
 }

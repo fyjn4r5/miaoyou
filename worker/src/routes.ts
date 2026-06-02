@@ -320,6 +320,45 @@ app.get('/api/attachments/:id', async (c) => {
   }
 });
 
+// AI 聊天
+app.post('/api/chat', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { message, history = [] } = body;
+
+    if (!message?.trim()) {
+      return c.json({ success: false, error: '消息不能为空' }, 400);
+    }
+
+    const messages = [
+      { role: 'system', content: '你是一个友好、聪明、有帮助的AI助手。请用中文回复用户的问题。' },
+      ...history.slice(-12),
+      { role: 'user', content: message }
+    ];
+
+    const aiResponse = await c.env.AI.run(
+      '@cf/meta/llama-3.1-8b-instruct',
+      {
+        messages,
+        temperature: 0.75,
+        max_tokens: 800,
+        stream: true
+      }
+    );
+
+    return new Response(aiResponse, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      }
+    });
+  } catch (error) {
+    console.error('AI 调用错误:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
+
 // 删除邮件
 app.delete('/api/emails/:id', async (c) => {
   try {
