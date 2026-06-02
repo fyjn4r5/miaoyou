@@ -1,6 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { marked } from 'marked';
+
+function renderMarkdown(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-muted p-3 rounded-lg overflow-x-auto text-sm my-2"><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>')
+    .replace(/\n/g, '<br>');
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -133,7 +145,7 @@ const ChatPage: React.FC = () => {
             }`}>
               {msg.role === 'assistant' && msg.content ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none break-words"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                 />
               ) : msg.role === 'assistant' && !msg.content ? (
                 <span className="text-muted-foreground animate-pulse">{t('chat.thinking')}</span>

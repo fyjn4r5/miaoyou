@@ -324,14 +324,14 @@ app.get('/api/attachments/:id', async (c) => {
 app.post('/api/chat', async (c) => {
   try {
     const body = await c.req.json();
-    const { message, history = [] } = body;
+    const { message, history = [], systemPrompt } = body;
 
     if (!message?.trim()) {
       return c.json({ success: false, error: '消息不能为空' }, 400);
     }
 
     const messages = [
-      { role: 'system', content: '你是一个友好、聪明、有帮助的AI助手。请用中文回复用户的问题。' },
+      { role: 'system', content: systemPrompt || '你是一个友好、聪明、有帮助的AI助手。请用中文回复用户的问题。' },
       ...history.slice(-12),
       { role: 'user', content: message }
     ];
