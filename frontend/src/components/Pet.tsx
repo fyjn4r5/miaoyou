@@ -24,7 +24,7 @@ const reactions: Reaction[] = [
   { text: '嗯？叫我吗', mood: 'curious' },
   { text: '好闲呀… 陪我玩', mood: 'idle' },
   { text: '喵~ 秒！我和秒邮同音呢', mood: 'curious' },
-  { text: '我叫猫，它叫秒，差不多啦~', mood: 'happy' },
+  { text: '我叫喵喔，它叫秒邮，差不多啦', mood: 'happy' },
 ];
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';

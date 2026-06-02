@@ -135,7 +135,7 @@ const EmailList: React.FC<EmailListProps> = ({
             title={t('email.copyFullName')}
           >
             <span className="text-muted-foreground">{t('email.fullName')}:</span>
-            <span className="text-foreground font-medium">{randomName.fullName}</span>
+            <span className="text-foreground">{randomName.fullName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -144,7 +144,7 @@ const EmailList: React.FC<EmailListProps> = ({
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
-            <span className="text-foreground font-medium">{randomName.firstName}</span>
+            <span className="text-foreground">{randomName.firstName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -153,7 +153,7 @@ const EmailList: React.FC<EmailListProps> = ({
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
-            <span className="text-foreground font-medium">{randomName.lastName}</span>
+            <span className="text-foreground">{randomName.lastName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -162,7 +162,7 @@ const EmailList: React.FC<EmailListProps> = ({
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
-            <span className="text-foreground font-medium">{randomName.username}</span>
+            <span className="text-foreground">{randomName.username}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button

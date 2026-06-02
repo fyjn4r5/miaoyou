@@ -112,6 +112,7 @@
     "firstName": "First",
     "lastName": "Last",
     "regInfo": "Random Virtual ID",
+    "selectCountry": "Select Country:",
     "fullName": "Full",
     "username": "Username",
     "copyFirstName": "Copy first name",

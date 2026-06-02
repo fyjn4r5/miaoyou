@@ -66,6 +66,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
         <div className="flex items-center justify-between p-5 border-b shrink-0">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold">{t('email.userInfo')}</h2>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">{t('email.selectCountry')}</span>
             <select
               value={selectedCountry}
               onChange={(e) => onCountryChange(e.target.value)}

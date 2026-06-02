@@ -103,6 +103,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
   const [emailCache, setEmailCache] = useState<EmailCache>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [exiting, setExiting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [emailDomains, setEmailDomains] = useState<string[]>(EMAIL_DOMAINS);
@@ -116,26 +117,31 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     saveMailboxToLocalStorage(newMailbox, newMailbox.password);
   };
 
+  const dismissWithParticles = (type: 'success' | 'error', duration: number) => {
+    const ref = type === 'success' ? successTimeoutRef : errorTimeoutRef;
+    const setter = type === 'success' ? setSuccessMessage : setErrorMessage;
+    if (ref.current) window.clearTimeout(ref.current);
+    ref.current = window.setTimeout(() => {
+      setExiting(true);
+      ref.current = window.setTimeout(() => {
+        setter(null);
+        setExiting(false);
+      }, 600);
+    }, duration);
+  };
+
   // feat: 创建显示成功消息的函数
   const showSuccessMessage = (message: string) => {
+    setExiting(false);
     setSuccessMessage(message);
-    if (successTimeoutRef.current) {
-      window.clearTimeout(successTimeoutRef.current);
-    }
-    successTimeoutRef.current = window.setTimeout(() => {
-      setSuccessMessage(null);
-    }, 8000);
+    dismissWithParticles('success', 8000);
   };
 
   // feat: 创建显示错误消息的函数
   const showErrorMessage = (message: string) => {
+    setExiting(false);
     setErrorMessage(message);
-    if (errorTimeoutRef.current) {
-      window.clearTimeout(errorTimeoutRef.current);
-    }
-    errorTimeoutRef.current = window.setTimeout(() => {
-      setErrorMessage(null);
-    }, 3000);
+    dismissWithParticles('error', 3000);
   };
 
   // 切换密码显示
@@ -426,14 +432,40 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
       {/* [feat] 全局通知组件 */}
       {(errorMessage || successMessage) && (
         <div
-          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-xl shadow-2xl max-w-md animate-in fade-in slide-in-from-top-2 duration-200 ${
-            errorMessage
-              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border border-red-300 dark:border-red-700'
-              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300 dark:border-green-700'
+          className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] ${
+            exiting ? 'animate-toast-exit' : 'animate-slide-up'
           }`}
         >
-          <i className={`fas ${errorMessage ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2`}></i>
-          {errorMessage || successMessage}
+          <div className="relative px-4 py-2.5 rounded-xl shadow-2xl max-w-md overflow-visible">
+            {exiting && Array.from({ length: 12 }).map((_, i) => {
+              const angle = (i / 12) * 360;
+              const dist = 50 + Math.random() * 40;
+              const tx = Math.cos(angle * Math.PI / 180) * dist;
+              const ty = Math.sin(angle * Math.PI / 180) * dist;
+              return (
+                <span
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full animate-particle"
+                  style={{
+                    backgroundColor: errorMessage ? '#ef4444' : '#22c55e',
+                    left: '50%',
+                    top: '50%',
+                    '--tx': `${tx}px`,
+                    '--ty': `${ty}px`,
+                    animationDelay: `${i * 25}ms`,
+                  }}
+                />
+              );
+            })}
+            <div className={`flex items-center ${
+              errorMessage
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border border-red-300 dark:border-red-700'
+                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300 dark:border-green-700'
+            } px-4 py-2.5 rounded-xl shadow-2xl`}>
+              <i className={`fas ${errorMessage ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2`}></i>
+              {errorMessage || successMessage}
+            </div>
+          </div>
         </div>
       )}
       {children}

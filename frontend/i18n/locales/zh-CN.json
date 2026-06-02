@@ -121,6 +121,7 @@
     "firstName": "名",
     "lastName": "姓",
     "regInfo": "可用的随机虚拟身份",
+    "selectCountry": "请选择国家：",
     "fullName": "姓名",
     "username": "用户名",
     "copyFirstName": "复制名",
