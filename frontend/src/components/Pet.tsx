@@ -63,6 +63,7 @@ const Pet: React.FC = () => {
   const [eyeOpen, setEyeOpen] = useState(true);
   const [bubbleText, setBubbleText] = useState('');
   const [clickCount, setClickCount] = useState(0);
+  const [bubbleOffset, setBubbleOffset] = useState(0);
   const [showInvite, setShowInvite] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -189,9 +190,9 @@ const Pet: React.FC = () => {
     }
 
     setMood('happy');
-    const idx = (nextCount - 1) % BUBBLE_MSGS.length;
+    const idx = (nextCount - 1 + bubbleOffset) % BUBBLE_MSGS.length;
     showBubble(BUBBLE_MSGS[idx]);
-  }, [clickCount, showInvite, resetSleepTimer, showBubble]);
+  }, [clickCount, showInvite, bubbleOffset, resetSleepTimer, showBubble]);
 
   const openAiChat = useCallback(() => {
     setShowInvite(false);
@@ -295,7 +296,7 @@ const Pet: React.FC = () => {
       </div>
 
       {showInvite && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={() => setShowInvite(false)}>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={() => { setShowInvite(false); setClickCount(0); setBubbleOffset(Math.floor(Math.random() * BUBBLE_MSGS.length)); }}>
           <div
             className="bg-background rounded-xl shadow-2xl p-6 w-[320px] max-w-[85vw] text-center"
             onClick={e => e.stopPropagation()}
@@ -307,7 +308,11 @@ const Pet: React.FC = () => {
             </p>
             <div className="flex gap-3 justify-center">
               <button
-                onClick={() => setShowInvite(false)}
+                onClick={() => {
+                  setShowInvite(false);
+                  setClickCount(0);
+                  setBubbleOffset(Math.floor(Math.random() * BUBBLE_MSGS.length));
+                }}
                 className="px-4 py-2 text-sm rounded-lg border border-muted-foreground/30 text-muted-foreground hover:text-foreground transition-colors"
               >
                 再逗逗
