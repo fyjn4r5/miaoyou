@@ -9,6 +9,14 @@ interface ChatMessage {
 
 const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵邮。请用简短有趣的方式（不超过80字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
 
+const BUBBLE_MSGS = [
+  '喵~ 主人来啦！😊',
+  '喵邮今天也很开心呢！🐱',
+  '主人要不要摸摸头？🎀',
+  '喵~ 喵邮喜欢主人！✨',
+  '主人再点点我嘛~ 有惊喜哦！😉',
+];
+
 const GREETINGS = [
   '喵~ 主人来啦！今天想聊点什么呢？😊',
   '喵邮在此！主人有什么吩咐呀？🐱',
@@ -18,6 +26,8 @@ const GREETINGS = [
 
 const QUICK_TAGS = ['你好', '心情', '饿', '玩', '工作', '晚安', '谢谢'];
 
+const CLICK_THRESHOLD = 3;
+
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
 const Pet: React.FC = () => {
@@ -26,6 +36,9 @@ const Pet: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [eyeOpen, setEyeOpen] = useState(true);
+  const [bubbleText, setBubbleText] = useState('');
+  const [clickCount, setClickCount] = useState(0);
+  const [showInvite, setShowInvite] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -33,6 +46,7 @@ const Pet: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
+  const bubbleTimer = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController | null>(null);
 
   const resetSleepTimer = useCallback(() => {
@@ -60,6 +74,12 @@ const Pet: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const showBubble = useCallback((text: string) => {
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    setBubbleText(text);
+    bubbleTimer.current = setTimeout(() => setBubbleText(''), 5000);
+  }, []);
+
   const addCatMessage = useCallback((text: string) => {
     setMessages(prev => [...prev, { role: 'cat', text }]);
   }, []);
@@ -75,7 +95,6 @@ const Pet: React.FC = () => {
 
     setAiLoading(true);
     setMood('curious');
-    const loadingIdx = messages.length + 1;
 
     try {
       const res = await fetch('/api/chat', {
@@ -118,7 +137,7 @@ const Pet: React.FC = () => {
       if (err instanceof Error && err.name === 'AbortError') return;
       setMessages(prev => {
         const next = [...prev];
-        if (next.length > loadingIdx) {
+        if (next.length > 0) {
           next[next.length - 1] = { role: 'cat', text: '喵~ 信号不太好，再试试？😿' };
         } else {
           next.push({ role: 'cat', text: '喵~ 信号不太好，再试试？😿' });
@@ -130,23 +149,39 @@ const Pet: React.FC = () => {
       setAiLoading(false);
       abortRef.current = null;
     }
-  }, [messages.length]);
+  }, []);
 
-  const openChat = useCallback(() => {
+  const handleCatClick = useCallback(() => {
     resetSleepTimer();
-    if (chatOpen) return;
+    if (showInvite || chatOpen) return;
+
+    const nextCount = clickCount + 1;
+    setClickCount(nextCount);
+
+    if (nextCount >= CLICK_THRESHOLD) {
+      setShowInvite(true);
+      return;
+    }
+
+    setMood('happy');
+    const idx = (nextCount - 1) % BUBBLE_MSGS.length;
+    showBubble(BUBBLE_MSGS[idx]);
+  }, [clickCount, showInvite, chatOpen, resetSleepTimer, showBubble]);
+
+  const openAiChat = useCallback(() => {
+    setShowInvite(false);
     setChatOpen(true);
     setMood('happy');
     if (messages.length === 0) {
-      const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-      addCatMessage(greeting);
+      addCatMessage(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
     }
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [chatOpen, messages.length, resetSleepTimer, addCatMessage]);
+  }, [messages.length, addCatMessage]);
 
   const closeChat = useCallback(() => {
     if (abortRef.current) abortRef.current.abort();
     setChatOpen(false);
+    setClickCount(0);
     setMood('idle');
   }, []);
 
@@ -166,10 +201,6 @@ const Pet: React.FC = () => {
     resetSleepTimer();
   }, [resetSleepTimer]);
 
-  const greetingAgain = useCallback(() => {
-    addCatMessage(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
-  }, [addCatMessage]);
-
   if (hidden) {
     return (
       <button
@@ -186,7 +217,12 @@ const Pet: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-2 right-2 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-2 right-2 z-50 flex flex-col-reverse items-end gap-2">
+        {bubbleText && (
+          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed max-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            {bubbleText}
+          </div>
+        )}
         <div className="relative group">
           <button
             onClick={() => setHidden(true)}
@@ -195,7 +231,7 @@ const Pet: React.FC = () => {
             <i className="fas fa-times"></i>
           </button>
           <div
-            onClick={openChat}
+            onClick={handleCatClick}
             onMouseEnter={handleMouseEnter}
             className={`relative w-[150px] h-[150px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl ${
               mood === 'happy' ? 'animate-happy' : mood === 'surprised' ? 'animate-happy' : 'animate-float'
@@ -231,6 +267,35 @@ const Pet: React.FC = () => {
         </div>
       </div>
 
+      {showInvite && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={() => setShowInvite(false)}>
+          <div
+            className="bg-background rounded-xl shadow-2xl p-6 w-[320px] max-w-[85vw] text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-3">🐱</div>
+            <h3 className="text-lg font-bold mb-2">和喵邮聊天吧！</h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              喵邮会用 AI 智能回复你哦，想聊什么都可以~
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setShowInvite(false)}
+                className="px-4 py-2 text-sm rounded-lg border border-muted-foreground/30 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                再逗逗
+              </button>
+              <button
+                onClick={openAiChat}
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                开始聊天
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
           <div
@@ -240,7 +305,7 @@ const Pet: React.FC = () => {
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🐱</span>
-                <span className="font-semibold text-sm">喵邮</span>
+                <span className="font-semibold text-sm">喵邮 AI</span>
               </div>
               <button
                 onClick={closeChat}
@@ -260,13 +325,13 @@ const Pet: React.FC = () => {
                         : 'bg-muted text-muted-foreground rounded-bl-md'
                     }`}
                   >
-                    {msg.text || (aiLoading && i === messages.length - 1 ? (
+                    {msg.text || (
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '0ms'}} />
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '150ms'}} />
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '300ms'}} />
                       </span>
-                    ) : '🐱 思考中...')}
+                    )}
                   </div>
                 </div>
               ))}
@@ -284,14 +349,6 @@ const Pet: React.FC = () => {
                   {tag}
                 </button>
               ))}
-              <button
-                onClick={greetingAgain}
-                disabled={aiLoading}
-                className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                title="换个话题"
-              >
-                🎲 换一个
-              </button>
             </div>
 
             <div className="px-4 pb-3 pt-1 border-t flex gap-2">
