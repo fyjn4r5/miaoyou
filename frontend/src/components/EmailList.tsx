@@ -126,48 +126,48 @@ const EmailList: React.FC<EmailListProps> = ({
     <>
     <div className="border rounded-xl shadow-sm overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b bg-card gap-3">
-        <h2 className="text-xl font-bold">{t('email.inbox')}</h2>
+        <h2 className="text-xl font-medium">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground/70 font-medium tracking-wide mr-1">{t('email.regInfo')}</span>
           <button
             onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.copyFullName')}
           >
             <span className="text-muted-foreground">{t('email.fullName')}:</span>
-            <span className="text-foreground font-bold">{randomName.fullName}</span>
+            <span className="text-foreground font-medium">{randomName.fullName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.copyFirstName')}
           >
             <span className="text-muted-foreground">{t('email.firstName')}:</span>
-            <span className="text-foreground font-bold">{randomName.firstName}</span>
+            <span className="text-foreground font-medium">{randomName.firstName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.lastName, 'email.copiedLastName')}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.copyLastName')}
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
-            <span className="text-foreground font-bold">{randomName.lastName}</span>
+            <span className="text-foreground font-medium">{randomName.lastName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.copyUsername')}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
-            <span className="text-foreground font-bold">{randomName.username}</span>
+            <span className="text-foreground font-medium">{randomName.username}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
             onClick={() => setIsInfoModalOpen(true)}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.showMore')}
           >
             <i className="fas fa-ellipsis-h text-xs opacity-60"></i>
@@ -243,7 +243,7 @@ const EmailList: React.FC<EmailListProps> = ({
                 onClick={() => onSelectEmail(selectedEmailId === email.id ? null : email.id)}
               >
                 <div className="flex justify-between items-center mb-1">
-                  <span className={`truncate ${!email.isRead ? 'font-bold text-foreground' : 'text-foreground'}`}>
+                  <span className={`truncate ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground'}`}>
                     {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
                     {email.fromName || email.fromAddress}
                   </span>
