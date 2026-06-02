@@ -11,14 +11,12 @@ const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫�
 
 const BUBBLE_MSGS = [
   '喵~ 主人来啦！今天过得怎么样呀？😊',
-  '喵邮刚刚打了个盹，梦到主人了~ 💤',
+  '喵邮刚刚打了个盹，做了个美梦~ 💤',
   '主人你听，外面有小鸟在唱歌呢！🐦',
-  '喵~ 今天天气真好，好想出去晒太阳~ ☀️',
+  '喵~ 今天天气真好，想出去晒太阳~ ☀️',
   '主人要不要摸摸头？喵邮最喜欢了~ 🎀',
-  '喵？主人是不是偷偷在想我呀？✨',
   '喵邮今天也很乖哦，有好好看家呢！🏠',
   '主人再点点我嘛~ 有惊喜等着你哦！😉',
-  '喵~ 好想钻进主人怀里取暖~ 🧶',
   '主人工作累了吧？喵邮给你跳个舞！💃',
   '喵邮的尾巴今天特别蓬松，不信你看！🦊',
   '嘘…喵邮正在思考猫生大事呢… 🤔',
@@ -30,6 +28,18 @@ const BUBBLE_MSGS = [
   '喵~ 喵邮的呼噜声有助睡眠哦，要听吗？🌙',
   '主人快看！喵邮的眼睛是不是特别好看？👀',
   '喵~ 再点一下，喵邮就告诉你一个小秘密！🤫',
+  '今天有邮件来了吗？喵邮帮你盯着呢！📧',
+  '喵邮学会了一个超酷的新表情，你看！😎',
+  '主人猜猜喵邮今天看到什么有趣的事了？🤗',
+  '喵~ 生活就像小鱼干，要慢慢品味~ 🐟',
+  '叮！您的可爱喵邮已上线，请注意查收~ 📩',
+  '主人今天的发型很好看哦，喵邮认证！✨',
+  '喵邮刚刚伸了个懒腰，舒服极了~ 😌',
+  '嘘…喵邮在偷偷练习唱歌，好听吗？🎵',
+  '主人有没有好好吃饭呀？喵邮很关心哦！🍚',
+  '喵~ 什么都不想做，就想和主人待着~ 🎀',
+  '喵邮刚学会数数，一、二、三… 最喜欢主人！💕',
+  '据说多看猫咪可以减压，主人多看看喵邮吧~ 🐱',
 ];
 
 const GREETINGS = [
@@ -316,7 +326,7 @@ const Pet: React.FC = () => {
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
           <div
-            className="bg-background rounded-xl shadow-2xl w-[520px] max-w-[92vw] max-h-[82vh] flex flex-col overflow-hidden"
+            className="bg-background rounded-xl shadow-2xl w-[600px] max-w-[94vw] max-h-[80vh] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
@@ -332,7 +342,7 @@ const Pet: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px] max-h-[400px]">
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
