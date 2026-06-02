@@ -56,7 +56,17 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        wave: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-20deg)' },
+          '75%': { transform: 'rotate(20deg)' },
+        },
+      },
+      animation: {
+        wave: 'wave 0.4s ease-in-out 2',
+      },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 } 

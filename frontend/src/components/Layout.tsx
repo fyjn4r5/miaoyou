@@ -5,7 +5,8 @@ import Header from './Header';
 import Footer from './Footer';
 import SEO from './SEO';
 import { MailboxContext } from '../contexts/MailboxContext';
-import InfoModal from './InfoModal'; // 导入弹窗组件
+import InfoModal from './InfoModal';
+import Pet from './Pet';
 
 const Layout: React.FC = () => {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ const Layout: React.FC = () => {
         onClose={handleCloseInfo} 
         type={infoModal.type} 
       />
+      <Pet />
     </div>
   );
 };
