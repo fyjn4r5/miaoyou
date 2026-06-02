@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 type Mood = 'idle' | 'happy' | 'sleep' | 'curious' | 'surprised';
 
-const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喔。请用简短有趣的方式（不超过60字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
+const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵邮。请用简短有趣的方式（不超过60字）回应主人，语气要可爱、活泼，偶尔加个喵~。';
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
