@@ -232,13 +232,14 @@ const Pet: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-2 right-2 z-50 flex flex-col-reverse items-end gap-2">
-        {bubbleText && (
-          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground truncate max-w-[220px] animate-in fade-in slide-in-from-bottom-2 duration-200">
-            {bubbleText}
-          </div>
-        )}
-        <div className="relative group">
+      <div className="fixed bottom-2 right-2 z-50">
+        <div className="relative">
+          {bubbleText && (
+            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground truncate max-w-[220px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+              {bubbleText}
+            </div>
+          )}
+          <div className="relative group">
           <button
             onClick={() => setHidden(true)}
             className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/40 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -280,6 +281,7 @@ const Pet: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       {showInvite && (
