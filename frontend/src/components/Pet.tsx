@@ -70,7 +70,7 @@ const Pet: React.FC = () => {
   const [input, setInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
   const bubbleTimer = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController | null>(null);
@@ -381,7 +381,7 @@ const Pet: React.FC = () => {
 
             <div className="px-4 pb-3 pt-2 border-t flex gap-2 items-end">
               <textarea
-                ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
