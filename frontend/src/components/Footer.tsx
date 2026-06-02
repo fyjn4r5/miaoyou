@@ -36,6 +36,9 @@ const Footer: React.FC<FooterProps> = ({ onShowInfo }) => {
           <p className="mb-3">
             © {year} {t("app.title")}
           </p>
+          <p className="mb-3 text-xs text-muted-foreground/60">
+            喵 = 秒，所以有只猫 🐱
+          </p>
           <div className="flex flex-wrap justify-center items-center gap-4">
             <button
               onClick={() => onShowInfo("privacy")}

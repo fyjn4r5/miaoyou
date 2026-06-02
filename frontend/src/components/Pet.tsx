@@ -27,7 +27,7 @@ const reactions: Reaction[] = [
   { text: '我叫猫，它叫秒，差不多啦~', mood: 'happy' },
 ];
 
-const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=260&h=260&fit=crop&crop=face&q=80';
+const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
 const Pet: React.FC = () => {
   const [mood, setMood] = useState<Mood>('idle');
@@ -92,7 +92,7 @@ const Pet: React.FC = () => {
     return (
       <button
         onClick={() => { setHidden(false); resetSleepTimer(); }}
-        className="fixed right-4 top-[65%] -translate-y-1/2 w-[52px] h-[52px] rounded-2xl bg-muted/80 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105 ring-2 ring-border"
+        className="fixed bottom-2 right-2 w-[52px] h-[52px] rounded-2xl bg-muted/80 hover:bg-muted flex items-center justify-center transition-all z-50 shadow-lg hover:shadow-xl hover:scale-105 ring-2 ring-border"
         title="召唤猫咪"
       >
         <span className="text-2xl">🐱</span>
@@ -103,8 +103,8 @@ const Pet: React.FC = () => {
   const moodEmoji = mood === 'sleep' ? '💤' : mood === 'happy' ? '😊' : mood === 'curious' ? '🤔' : mood === 'surprised' ? '😮' : '';
 
   return (
-    <div className="fixed right-4 top-[65%] -translate-y-1/2 z-50 flex items-start gap-3">
-      <div className="relative group order-2">
+    <div className="fixed bottom-2 right-2 z-50 flex flex-col-reverse items-end gap-2">
+      <div className="relative group">
         <button
           onClick={() => setHidden(true)}
           className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/40 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -114,7 +114,7 @@ const Pet: React.FC = () => {
         <div
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
-          className={`relative w-[130px] h-[130px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl ${
+          className={`relative w-[150px] h-[150px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl ${
             mood === 'happy' ? 'animate-happy' : mood === 'surprised' ? 'animate-happy' : 'animate-float'
           } ${mood === 'sleep' ? 'opacity-80 saturate-50' : ''}`}
         >
@@ -146,7 +146,7 @@ const Pet: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="order-1 flex flex-col gap-1.5 max-w-[180px]">
+      <div className="flex flex-col gap-1.5 max-w-[180px]">
         {message && (
           <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed">
             {message}

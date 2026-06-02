@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MailboxContext } from '../contexts/MailboxContext';
 import { RandomName } from '../utils/nameGenerator';
 import { CountryInfo } from '../utils/countryData';
 
@@ -16,12 +17,14 @@ interface UserInfoModalProps {
 
 const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomName, countries, selectedCountry, onCountryChange, onRegenerate, generating }) => {
   const { t, i18n } = useTranslation();
+  const { showSuccessMessage } = useContext(MailboxContext);
 
   if (!isOpen) return null;
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      showSuccessMessage(t('common.copied'));
     } catch {
     }
   };
