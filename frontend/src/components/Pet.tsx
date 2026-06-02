@@ -51,7 +51,7 @@ const Pet: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [eyeOpen, setEyeOpen] = useState(true);
-  const [bubbleList, setBubbleList] = useState<string[]>([]);
+  const [bubbleText, setBubbleText] = useState('');
   const [clickCount, setClickCount] = useState(0);
   const [showInvite, setShowInvite] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -89,10 +89,10 @@ const Pet: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const addBubble = useCallback((text: string) => {
+  const showBubble = useCallback((text: string) => {
     if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
-    setBubbleList(prev => [...prev, text]);
-    bubbleTimer.current = setTimeout(() => setBubbleList([]), 8000);
+    setBubbleText(text);
+    bubbleTimer.current = setTimeout(() => setBubbleText(''), 5000);
   }, []);
 
   const addCatMessage = useCallback((text: string) => {
@@ -180,8 +180,8 @@ const Pet: React.FC = () => {
 
     setMood('happy');
     const idx = (nextCount - 1) % BUBBLE_MSGS.length;
-    addBubble(BUBBLE_MSGS[idx]);
-  }, [clickCount, showInvite, resetSleepTimer, addBubble]);
+    showBubble(BUBBLE_MSGS[idx]);
+  }, [clickCount, showInvite, resetSleepTimer, showBubble]);
 
   const openAiChat = useCallback(() => {
     setShowInvite(false);
@@ -233,13 +233,9 @@ const Pet: React.FC = () => {
   return (
     <>
       <div className="fixed bottom-2 right-2 z-50 flex flex-col-reverse items-end gap-2">
-        {bubbleList.length > 0 && (
-          <div className="flex flex-col-reverse gap-1.5 max-w-[220px]">
-            {bubbleList.map((txt, i) => (
-              <div key={i} className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-200">
-                {txt}
-              </div>
-            ))}
+        {bubbleText && (
+          <div className="px-3 py-2 rounded-xl bg-popover border shadow-md text-sm text-popover-foreground truncate max-w-[220px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            {bubbleText}
           </div>
         )}
         <div className="relative group">
