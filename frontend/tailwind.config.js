@@ -62,9 +62,14 @@ module.exports = {
           '25%': { transform: 'rotate(-20deg)' },
           '75%': { transform: 'rotate(20deg)' },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
       },
       animation: {
         wave: 'wave 0.4s ease-in-out 2',
+        float: 'float 3s ease-in-out infinite',
       },
     },
   },

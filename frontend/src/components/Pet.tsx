@@ -95,11 +95,8 @@ const Pet: React.FC = () => {
                   <span className="text-4xl animate-pulse">🐱</span>
                 </div>
               )}
-              {/* 闭眼遮罩 */}
               {!eyeOpen && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px] transition-opacity duration-150">
-                  <span className="text-3xl">😌</span>
-                </div>
+                <div className="absolute inset-0 bg-black/20 transition-opacity duration-100" />
               )}
             </>
           ) : (
