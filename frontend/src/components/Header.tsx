@@ -63,9 +63,15 @@ const Header: React.FC<HeaderProps> = ({
             )}
             
             <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-border' : 'ml-1'}`}>
-              <ThemeSwitcher />
-              <LanguageSwitcher />
-              <ExternalLinksDropdown />
+              <div className="border-r border-border pr-1">
+                <ThemeSwitcher />
+              </div>
+              <div className="border-r border-border px-1">
+                <LanguageSwitcher />
+              </div>
+              <div className="pl-1">
+                <ExternalLinksDropdown />
+              </div>
             </div>
           </div>
         </div>
