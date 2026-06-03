@@ -419,18 +419,6 @@ const Pet: React.FC = () => {
                 <i className="fas fa-pen mr-1"></i>写日记
               </button>
             </div>
-              {QUICK_TAGS.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => handleSend(tag)}
-                  disabled={aiLoading}
-                  className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-
             <div className="px-4 pb-3 pt-2 border-t flex gap-2 items-end">
               <textarea
                 ref={inputRef}
