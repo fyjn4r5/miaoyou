@@ -403,20 +403,20 @@ const Pet: React.FC = () => {
               ))}
             </div>
 
-            <div className="px-4 pb-2 flex flex-wrap gap-2">
+            <div className="px-4 pb-2 flex gap-2">
               <button
                 onClick={handleStory}
                 disabled={aiLoading}
                 className="px-3 py-1.5 text-xs rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 font-semibold transition-colors disabled:opacity-40"
               >
-                <i className="fas fa-book mr-1"></i>写故事
+                写故事
               </button>
               <button
                 onClick={handleDiary}
                 disabled={aiLoading}
                 className="px-3 py-1.5 text-xs rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 font-semibold transition-colors disabled:opacity-40"
               >
-                <i className="fas fa-pen mr-1"></i>写日记
+                写日记
               </button>
             </div>
             <div className="px-4 pb-3 pt-2 border-t flex gap-2 items-end">
