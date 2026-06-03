@@ -8,6 +8,8 @@ interface ChatMessage {
 }
 
 const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。秒邮是一个无需手机号、无需任何个人信息就能创建永久匿名邮箱的网站，一键创建，设置密码后可随时登录找回，完全保护隐私安全。请用有趣的方式回应主人，语气要活泼、可爱，偶尔加个喵~。平时回复控制在100字以内，介绍网站细节时可以适当多说一些。除非主人主动问起，否则最多十分之一的回复提及秒邮网站。';
+const STORY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在主人想听你讲故事。请发挥想象力，创作一个有趣、温馨或奇妙的小故事，约800字左右，语气可爱活泼，偶尔加个喵~。';
+const DIARY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在请你以猫咪的视角写一篇日记，记录今天发生的事情和心情，约800字左右，语气可爱活泼，偶尔加个喵~。';
 
 const BUBBLE_MSGS = [
   '喵~ 主人来啦！今天过得怎么样呀？😊',
@@ -126,7 +128,7 @@ const Pet: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', text }]);
   }, []);
 
-  const getAiReply = useCallback(async (userText: string) => {
+  const getAiReply = useCallback(async (userText: string, systemPrompt?: string) => {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -142,7 +144,7 @@ const Pet: React.FC = () => {
         body: JSON.stringify({
           message: userText,
           history: [],
-          systemPrompt: PET_SYSTEM_PROMPT
+          systemPrompt: systemPrompt || PET_SYSTEM_PROMPT
         })
       });
       if (!res.ok || !res.body) throw new Error('fail');
@@ -223,13 +225,23 @@ const Pet: React.FC = () => {
     setMood('idle');
   }, []);
 
-  const handleSend = useCallback(async (text?: string) => {
+  const handleSend = useCallback(async (text?: string, systemPrompt?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || aiLoading) return;
     setInput('');
     addUserMessage(msg);
-    await getAiReply(msg);
+    await getAiReply(msg, systemPrompt);
   }, [input, aiLoading, addUserMessage, getAiReply]);
+
+  const handleStory = useCallback(() => {
+    addUserMessage('喵喵，给我讲个故事吧~');
+    getAiReply('给我讲一个有趣的故事吧，800字左右~', STORY_PROMPT);
+  }, [addUserMessage, getAiReply]);
+
+  const handleDiary = useCallback(() => {
+    addUserMessage('喵喵，写一篇日记吧~');
+    getAiReply('以猫咪的视角写一篇今天的日记吧，800字左右~', DIARY_PROMPT);
+  }, [addUserMessage, getAiReply]);
 
   const handleMouseEnter = useCallback(() => {
     resetSleepTimer();
@@ -376,6 +388,23 @@ const Pet: React.FC = () => {
                 </div>
               ))}
               <div ref={chatEndRef} />
+            </div>
+
+            <div className="px-4 pb-2 flex flex-wrap gap-2 border-b">
+              <button
+                onClick={handleStory}
+                disabled={aiLoading}
+                className="px-3 py-1.5 text-xs rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 font-semibold transition-colors disabled:opacity-40"
+              >
+                <i className="fas fa-book mr-1"></i>写故事
+              </button>
+              <button
+                onClick={handleDiary}
+                disabled={aiLoading}
+                className="px-3 py-1.5 text-xs rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 font-semibold transition-colors disabled:opacity-40"
+              >
+                <i className="fas fa-pen mr-1"></i>写日记
+              </button>
             </div>
 
             <div className="px-4 pb-2 flex flex-wrap gap-1.5">
