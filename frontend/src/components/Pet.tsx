@@ -254,7 +254,7 @@ const Pet: React.FC = () => {
       <div className="fixed bottom-2 right-2 z-50">
         <div className="relative">
           {bubbleText && (
-            <div className="absolute bottom-full right-0 mb-2 px-4 py-2.5 rounded-2xl bg-popover border shadow-lg text-sm text-popover-foreground leading-relaxed max-w-[260px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="absolute bottom-full right-0 mb-2 px-4 py-2.5 rounded-2xl bg-popover border shadow-lg text-sm text-popover-foreground leading-relaxed max-w-[360px] animate-in fade-in slide-in-from-bottom-2 duration-200">
               {bubbleText}
             </div>
           )}
@@ -339,7 +339,7 @@ const Pet: React.FC = () => {
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
           <div
-            className="bg-background rounded-xl shadow-2xl w-[680px] max-w-[94vw] h-[80vh] flex flex-col overflow-hidden"
+            className="bg-background rounded-xl shadow-2xl w-[840px] max-w-[94vw] h-[80vh] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
