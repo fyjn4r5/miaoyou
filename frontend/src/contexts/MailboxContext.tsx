@@ -436,28 +436,8 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
             exiting ? 'animate-toast-exit' : 'animate-slide-up'
           }`}
         >
-          <div className="relative px-4 py-2.5 rounded-xl shadow-2xl max-w-md overflow-visible">
-            {exiting && Array.from({ length: 12 }).map((_, i) => {
-              const angle = (i / 12) * 360;
-              const dist = 50 + Math.random() * 40;
-              const tx = Math.cos(angle * Math.PI / 180) * dist;
-              const ty = Math.sin(angle * Math.PI / 180) * dist;
-              return (
-                <span
-                  key={i}
-                  className="absolute w-1.5 h-1.5 rounded-full animate-particle"
-                  style={{
-                    backgroundColor: errorMessage ? '#ef4444' : '#22c55e',
-                    left: '50%',
-                    top: '50%',
-                    '--tx': `${tx}px`,
-                    '--ty': `${ty}px`,
-                    animationDelay: `${i * 25}ms`,
-                  } as React.CSSProperties & { [key: string]: string }}
-                />
-              );
-            })}
-            <div className={`flex items-center ${
+          <div className="relative px-4 py-2.5 rounded-xl shadow-2xl overflow-visible">
+            <div className={`flex items-center whitespace-nowrap ${
               errorMessage
                 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border border-red-300 dark:border-red-700'
                 : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-300 dark:border-green-700'
