@@ -35,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   isLoading = false 
 }) => {
   const { t } = useTranslation();
+  const { setShowPasswordDialog } = useContext(MailboxContext);
   
   return (
     <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40">
@@ -45,15 +46,23 @@ const Header: React.FC<HeaderProps> = ({
           </Link>
           
           <div className="flex items-center bg-muted/60 rounded-xl px-3 py-1.5 shadow-sm">
-            {mailbox && (
+            {mailbox ? (
               <HeaderMailbox 
                 mailbox={mailbox} 
                 onMailboxChange={onMailboxChange}
                 isLoading={isLoading}
               />
+            ) : (
+              <button
+                onClick={() => setShowPasswordDialog(true)}
+                className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all duration-200 text-lg"
+                title={t('intro.hero.createBtn')}
+              >
+                <i className="fas fa-plus"></i>
+              </button>
             )}
             
-            <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-border' : ''}`}>
+            <div className={`flex items-center ${mailbox ? 'ml-3 pl-3 border-l border-border' : 'ml-1'}`}>
               <ThemeSwitcher />
               <LanguageSwitcher />
               <ExternalLinksDropdown />

@@ -115,10 +115,10 @@ const HomePage: React.FC = () => {
       {!mailbox && (
         <div className="text-center space-y-10 py-20">
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-purple-800 via-purple-600 to-blue-500 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent leading-tight">
               {t('intro.hero.title')}
             </h1>
-            <p className="text-lg sm:text-xl md:text-3xl bg-gradient-to-r from-purple-700/80 via-purple-500/80 to-blue-400/80 bg-clip-text text-transparent max-w-full sm:max-w-3xl mx-auto leading-relaxed font-medium">
+            <p className="text-[10px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mx-auto leading-relaxed font-bold whitespace-nowrap">
               {t('intro.hero.subtitle')}
             </p>
           </div>
