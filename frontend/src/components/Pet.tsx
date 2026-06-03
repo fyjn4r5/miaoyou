@@ -390,7 +390,7 @@ const Pet: React.FC = () => {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+            <div className="px-4 pb-2 flex flex-wrap gap-1.5 items-center">
               {QUICK_TAGS.map(tag => (
                 <button
                   key={tag}
@@ -401,9 +401,6 @@ const Pet: React.FC = () => {
                   {tag}
                 </button>
               ))}
-            </div>
-
-            <div className="px-4 pb-2 flex gap-2">
               <button
                 onClick={handleStory}
                 disabled={aiLoading}
