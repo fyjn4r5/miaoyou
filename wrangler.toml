@@ -16,7 +16,7 @@ database_id = "7efbe74a-e91d-4b6a-9535-52bf08377d43"
 # 设置域名
 [vars]
 VITE_EMAIL_DOMAIN = "alice7.eu.org,foodyard.eu.org,newgames.eu.org"
-# 如需自定义顶部「工具」链接，在 Cloudflare Pages Dashboard → 环境变量中添加 VITE_EXTERNAL_LINKS
+# VITE_EXTERNAL_LINKS 请在 Cloudflare Pages Dashboard → 环境变量中设置
 # 格式：标签|URL,标签|URL（最多5个）
 
 # 配置邮件处理
