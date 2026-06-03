@@ -371,7 +371,7 @@ const Pet: React.FC = () => {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed break-words ${
+                    className={`max-w-[80%] px-4 py-2.5 rounded-xl text-base leading-relaxed break-words ${
                       msg.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-br-md'
                         : 'bg-muted text-muted-foreground rounded-bl-md'
@@ -390,7 +390,20 @@ const Pet: React.FC = () => {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="px-4 pb-2 flex flex-wrap gap-2 border-b">
+            <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+              {QUICK_TAGS.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleSend(tag)}
+                  disabled={aiLoading}
+                  className="px-2.5 py-1 text-xs rounded-full border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            <div className="px-4 pb-2 flex flex-wrap gap-2">
               <button
                 onClick={handleStory}
                 disabled={aiLoading}
@@ -406,8 +419,6 @@ const Pet: React.FC = () => {
                 <i className="fas fa-pen mr-1"></i>写日记
               </button>
             </div>
-
-            <div className="px-4 pb-2 flex flex-wrap gap-1.5">
               {QUICK_TAGS.map(tag => (
                 <button
                   key={tag}
