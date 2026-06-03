@@ -115,40 +115,40 @@ const HomePage: React.FC = () => {
       {!mailbox && (
         <div className="text-center space-y-10 py-20">
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-500 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-indigo-900 via-blue-800 to-cyan-700 bg-clip-text text-transparent leading-tight">
               {t('intro.hero.title')}
             </h1>
-            <p className="text-[10px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl bg-gradient-to-r from-blue-500 via-indigo-400 to-violet-400 bg-clip-text text-transparent mx-auto leading-relaxed font-bold whitespace-nowrap">
+            <p className="text-[10px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl bg-gradient-to-r from-blue-700 via-indigo-600 to-violet-600 bg-clip-text text-transparent mx-auto leading-relaxed font-bold whitespace-nowrap">
               {t('intro.hero.subtitle')}
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-3">
-            <div className="px-5 py-2.5 rounded-full bg-primary/10 text-primary font-semibold text-sm border border-primary/20 shadow-sm">
-              <i className="fas fa-infinity mr-2"></i>
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="px-6 py-3 rounded-full bg-primary/10 text-primary font-bold text-base md:text-lg border border-primary/20 shadow-sm">
+              <i className="fas fa-infinity mr-2 text-lg"></i>
               {t('intro.hero.stats.permanent')}
             </div>
-            <div className="px-5 py-2.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-semibold text-sm border border-green-500/20 shadow-sm">
-              <i className="fas fa-key mr-2"></i>
+            <div className="px-6 py-3 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-base md:text-lg border border-green-500/20 shadow-sm">
+              <i className="fas fa-key mr-2 text-lg"></i>
               {t('intro.hero.stats.secure')}
             </div>
-            <div className="px-5 py-2.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold text-sm border border-purple-500/20 shadow-sm">
-              <i className="fas fa-user-secret mr-2"></i>
+            <div className="px-6 py-3 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-base md:text-lg border border-purple-500/20 shadow-sm">
+              <i className="fas fa-user-secret mr-2 text-lg"></i>
               {t('intro.hero.stats.anonymous')}
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8">
             <button
               onClick={() => setShowPasswordDialog(true)}
-              className="w-full sm:w-auto px-10 py-4 text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
+              className="w-full sm:w-auto px-12 py-5 text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-2xl hover:shadow-primary/30 font-bold"
             >
               <i className="fas fa-plus mr-2"></i>
               {t('intro.hero.createBtn')}
             </button>
             <button
               onClick={openLogin}
-              className="w-full sm:w-auto px-10 py-4 text-lg rounded-2xl bg-card border-2 border-border hover:border-primary hover:bg-muted/50 transition-all hover:shadow-lg font-bold"
+              className="w-full sm:w-auto px-12 py-5 text-xl rounded-2xl bg-card border-2 border-border hover:border-primary hover:bg-muted/50 transition-all hover:shadow-lg font-bold"
             >
               <i className="fas fa-sign-in-alt mr-2"></i>
               {t('intro.hero.loginBtn')}
