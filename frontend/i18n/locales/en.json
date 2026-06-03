@@ -123,6 +123,7 @@
     "copiedLastName": "Last name copied",
     "copiedFullName": "Full name copied",
     "copiedUsername": "Username copied",
+    "copiedPassword": "Password copied",
     "markAsUnread": "Mark as unread",
     "markAsUnreadHint": "Marking as unread prevents auto-deletion",
     "markedAsUnread": "Email marked as unread",

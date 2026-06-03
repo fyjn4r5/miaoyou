@@ -166,6 +166,15 @@ const EmailList: React.FC<EmailListProps> = ({
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
+            onClick={() => copyToClipboard(randomName.password, 'email.copiedPassword')}
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
+            title={t('email.copyPassword')}
+          >
+            <span className="text-muted-foreground">{t('email.password')}:</span>
+            <span className="text-foreground">{'•'.repeat(12)}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
+          </button>
+          <button
             onClick={() => setIsInfoModalOpen(true)}
             className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.showMore')}
