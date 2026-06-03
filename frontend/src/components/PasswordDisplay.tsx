@@ -54,11 +54,16 @@ const PasswordDisplay: React.FC<PasswordDisplayProps> = ({ password, address, on
             <label className="block text-sm font-medium mb-1">
               {t('mailbox.password')}
             </label>
-            <div className="flex items-center bg-muted rounded-md px-3 py-2">
-              <code className="flex-1 text-sm break-all font-mono">{password}</code>
+            <div className="flex items-center gap-2 border border-border rounded-md p-1 bg-background">
+              <input
+                readOnly
+                type="password"
+                value={password}
+                className="flex-1 min-w-0 px-3 py-2 text-sm font-mono bg-transparent outline-none"
+              />
               <button
                 onClick={handleCopy}
-                className="ml-2 px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
+                className="shrink-0 px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
               >
                 {copied ? t('common.copied') : t('common.copy')}
               </button>
