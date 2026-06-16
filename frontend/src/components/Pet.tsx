@@ -10,6 +10,8 @@ interface ChatMessage {
 const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。秒邮是一个无需手机号、无需任何个人信息就能创建永久匿名邮箱的网站，一键创建，设置密码后可随时登录找回，完全保护隐私安全。请用有趣的方式回应主人，语气要活泼、可爱，偶尔加个喵~。平时回复控制在100字以内，介绍网站细节时可以适当多说一些。除非主人主动问起，否则最多十分之一的回复提及秒邮网站。';
 const STORY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在主人想听你讲故事。请发挥想象力，创作一个有趣、温馨或奇妙的小故事，约800字左右，语气可爱活泼，偶尔加个喵~。';
 const DIARY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在请你以猫咪的视角写一篇日记，记录今天发生的事情和心情，约800字左右，语气可爱活泼，偶尔加个喵~。';
+const DOUBLE_CLICK_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。主人刚刚双击了你，你超级开心！请用超甜、超黏人、超可爱的语气回应主人，要肉麻、要撒娇、要表现出被主人宠爱的幸福感。控制在40字以内。';
+const LONG_PRESS_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵，但你是个傲娇猫。主人长按了你很久，你其实很开心但死要面子。请用傲娇、口是心非、有点小脾气的语气回应主人（比如"别以为你按我我就会开心哦！哼！"这种）。控制在40字以内。';
 
 const BUBBLE_MSGS = [
   '喵~ 主人来啦！今天过得怎么样呀？😊',
@@ -129,6 +131,9 @@ const Pet: React.FC = () => {
   const sleepTimer = useRef<ReturnType<typeof setTimeout>>();
   const bubbleTimer = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController | null>(null);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const isLongPressRef = useRef(false);
 
   const resetSleepTimer = useCallback(() => {
     if (sleepTimer.current) clearTimeout(sleepTimer.current);
@@ -159,6 +164,43 @@ const Pet: React.FC = () => {
     if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
     setBubbleText(text);
     bubbleTimer.current = setTimeout(() => setBubbleText(''), 5000);
+  }, []);
+
+  const fetchBubbleReply = useCallback(async (systemPrompt: string): Promise<string> => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: '喵',
+          history: [],
+          systemPrompt,
+          max_tokens: 40
+        })
+      });
+      if (!res.ok || !res.body) return '';
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let reply = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const token = JSON.parse(data).response;
+              if (token) reply += token;
+            } catch (_) {}
+          }
+        }
+      }
+      return reply || '喵~';
+    } catch {
+      return '喵~';
+    }
   }, []);
 
   const addCatMessage = useCallback((text: string) => {
@@ -236,18 +278,77 @@ const Pet: React.FC = () => {
     resetSleepTimer();
     if (showInvite) return;
 
-    const nextCount = clickCount + 1;
-    setClickCount(nextCount);
-
-    if (nextCount >= CLICK_THRESHOLD) {
-      setShowInvite(true);
+    if (isLongPressRef.current) {
+      isLongPressRef.current = false;
       return;
     }
 
-    setMood('happy');
-    const idx = Math.floor(Math.random() * BUBBLE_MSGS.length);
-    showBubble(BUBBLE_MSGS[idx]);
-  }, [clickCount, showInvite, resetSleepTimer, showBubble]);
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = undefined;
+      setMood('happy');
+      showBubble('🐱 想想...');
+      fetchBubbleReply(DOUBLE_CLICK_PROMPT).then(text => text && showBubble(text));
+      return;
+    }
+
+    clickTimerRef.current = setTimeout(() => {
+      clickTimerRef.current = undefined;
+      const nextCount = clickCount + 1;
+      setClickCount(nextCount);
+
+      if (nextCount >= CLICK_THRESHOLD) {
+        setShowInvite(true);
+        return;
+      }
+
+      setMood('happy');
+      const idx = Math.floor(Math.random() * BUBBLE_MSGS.length);
+      showBubble(BUBBLE_MSGS[idx]);
+    }, 300);
+  }, [clickCount, showInvite, resetSleepTimer, showBubble, fetchBubbleReply]);
+
+  const handleMouseDown = useCallback(() => {
+    resetSleepTimer();
+    isLongPressRef.current = false;
+    pressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = undefined;
+      }
+      setMood('surprised');
+      showBubble('🐱 憋大招...');
+      fetchBubbleReply(LONG_PRESS_PROMPT).then(text => text && showBubble(text));
+    }, 600);
+  }, [resetSleepTimer, showBubble, fetchBubbleReply]);
+
+  const handleMouseUp = useCallback(() => {
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+  }, []);
+
+  const handleMouseLeaveCat = useCallback(() => {
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+  }, []);
+
+  const handleTouchStart = useCallback(() => {
+    resetSleepTimer();
+    isLongPressRef.current = false;
+    pressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = undefined;
+      }
+      setMood('surprised');
+      showBubble('🐱 憋大招...');
+      fetchBubbleReply(LONG_PRESS_PROMPT).then(text => text && showBubble(text));
+    }, 600);
+  }, [resetSleepTimer, showBubble, fetchBubbleReply]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+  }, []);
 
   const openAiChat = useCallback(() => {
     setShowInvite(false);
@@ -320,6 +421,11 @@ const Pet: React.FC = () => {
           </button>
           <div
             onClick={handleCatClick}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeaveCat}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             onMouseEnter={handleMouseEnter}
             className={`relative w-[150px] h-[150px] rounded-2xl overflow-hidden cursor-pointer select-none shadow-lg ring-2 ring-border transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl ${
               mood === 'happy' ? 'animate-happy' : mood === 'surprised' ? 'animate-happy' : 'animate-float'

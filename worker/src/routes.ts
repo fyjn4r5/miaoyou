@@ -324,7 +324,7 @@ app.get('/api/attachments/:id', async (c) => {
 app.post('/api/chat', async (c) => {
   try {
     const body = await c.req.json();
-    const { message, history = [], systemPrompt } = body;
+    const { message, history = [], systemPrompt, max_tokens } = body;
 
     if (!message?.trim()) {
       return c.json({ success: false, error: '消息不能为空' }, 400);
@@ -341,7 +341,7 @@ app.post('/api/chat', async (c) => {
       {
         messages,
         temperature: 0.75,
-        max_tokens: 800,
+        max_tokens: max_tokens || 800,
         stream: true
       }
     );
