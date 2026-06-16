@@ -337,7 +337,7 @@ app.post('/api/chat', async (c) => {
     ];
 
     const aiResponse = await c.env.AI.run(
-      '@cf/meta/llama-3.1-8b-instruct',
+      '@cf/meta/llama-4-scout-17b-16e-instruct',
       {
         messages,
         temperature: 0.75,
