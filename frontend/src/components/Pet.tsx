@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 type Mood = 'idle' | 'happy' | 'sleep' | 'curious' | 'surprised';
 
@@ -110,6 +110,27 @@ const GREETINGS = [
 const QUICK_TAGS = ['喵喵推荐', '猜谜语', '冷笑话', '喵喵日常', '绕口令', '脑筋急转弯', '小鱼干', '猫抓板', '摸摸头'];
 
 const CLICK_THRESHOLD = 10;
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+const Markdown: React.FC<{ text: string }> = ({ text }) => {
+  const html = useMemo(() => {
+    let raw = escapeHtml(text);
+    raw = raw
+      .replace(/```(\w*)\n([\s\S]*?)```/g, (_, __, code) => `<pre class="bg-muted/60 p-3 rounded-lg overflow-x-auto text-sm my-2"><code>${code.trim()}</code></pre>`)
+      .replace(/`([^`]+)`/g, '<code class="bg-muted/60 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/~~([^~]+)~~/g, '<del>$1</del>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline text-primary hover:text-primary/80">$1</a>')
+      .replace(/\n/g, '<br/>');
+    return raw;
+  }, [text]);
+
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+};
 
 const CAT_IMAGE = 'https://images.unsplash.com/photo-jKZ-qephrG4?w=320&h=320&fit=crop&crop=face&q=80';
 
@@ -523,7 +544,7 @@ const Pet: React.FC = () => {
                         : 'bg-muted text-muted-foreground rounded-bl-md'
                     }`}
                   >
-                    {msg.text || (
+                    {msg.text ? <Markdown text={msg.text} /> : (
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '0ms'}} />
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{animationDelay: '150ms'}} />
