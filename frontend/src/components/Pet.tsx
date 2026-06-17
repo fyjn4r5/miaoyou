@@ -11,7 +11,6 @@ const PET_SYSTEM_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫�
 const STORY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在主人想听你讲故事。请发挥想象力，创作一个有趣、温馨或奇妙的小故事，约800字左右，语气可爱活泼，偶尔加个喵~。';
 const DIARY_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。现在请你以猫咪的视角写一篇日记，记录今天发生的事情和心情，约800字左右，语气可爱活泼，偶尔加个喵~。';
 const DOUBLE_CLICK_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵。主人刚刚双击了你，你超级开心！请用超甜、超黏人、超可爱的语气回应主人，要肉麻、要撒娇、要表现出被主人宠爱的幸福感。控制在40字以内。';
-const LONG_PRESS_PROMPT = '你是一只住在秒邮网站的可爱猫咪，叫喵喵，但你是个傲娇猫。主人长按了你很久，你其实很开心但死要面子。请用傲娇、口是心非、有点小脾气的语气回应主人（比如"别以为你按我我就会开心哦！哼！"这种）。控制在40字以内。';
 
 const BUBBLE_MSGS = [
   '喵~ 主人来啦！今天过得怎么样呀？😊',
@@ -316,7 +315,6 @@ const Pet: React.FC = () => {
       clearTimeout(clickTimerRef.current);
       clickTimerRef.current = undefined;
       setMood('happy');
-      showBubble('🐱 想想...');
       fetchBubbleReply(DOUBLE_CLICK_PROMPT).then(text => text && showBubble(text));
       return;
     }
@@ -347,10 +345,10 @@ const Pet: React.FC = () => {
         clickTimerRef.current = undefined;
       }
       setMood('surprised');
-      showBubble('🐱 憋大招...');
-      fetchBubbleReply(LONG_PRESS_PROMPT).then(text => text && showBubble(text));
+      const idx = Math.floor(Math.random() * BUBBLE_MSGS.length);
+      showBubble(BUBBLE_MSGS[idx]);
     }, 600);
-  }, [resetSleepTimer, showBubble, fetchBubbleReply]);
+  }, [resetSleepTimer, showBubble]);
 
   const handleMouseUp = useCallback(() => {
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
@@ -370,10 +368,10 @@ const Pet: React.FC = () => {
         clickTimerRef.current = undefined;
       }
       setMood('surprised');
-      showBubble('🐱 憋大招...');
-      fetchBubbleReply(LONG_PRESS_PROMPT).then(text => text && showBubble(text));
+      const idx = Math.floor(Math.random() * BUBBLE_MSGS.length);
+      showBubble(BUBBLE_MSGS[idx]);
     }, 600);
-  }, [resetSleepTimer, showBubble, fetchBubbleReply]);
+  }, [resetSleepTimer, showBubble]);
 
   const handleTouchEnd = useCallback(() => {
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
