@@ -142,7 +142,6 @@ const Pet: React.FC = () => {
   const [eyeOpen, setEyeOpen] = useState(true);
   const [bubbleText, setBubbleText] = useState('');
   const [clickCount, setClickCount] = useState(0);
-  const [showInvite, setShowInvite] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -295,9 +294,18 @@ const Pet: React.FC = () => {
     }
   }, []);
 
+  const openAiChat = useCallback(() => {
+    setChatOpen(true);
+    setMood('happy');
+    setClickCount(0);
+    if (messages.length === 0) {
+      addCatMessage(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+    }
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [messages.length, addCatMessage]);
+
   const handleCatClick = useCallback(() => {
     resetSleepTimer();
-    if (showInvite) return;
 
     if (isLongPressRef.current) {
       isLongPressRef.current = false;
@@ -319,7 +327,7 @@ const Pet: React.FC = () => {
       setClickCount(nextCount);
 
       if (nextCount >= CLICK_THRESHOLD) {
-        setShowInvite(true);
+        openAiChat();
         return;
       }
 
@@ -327,7 +335,7 @@ const Pet: React.FC = () => {
       const idx = Math.floor(Math.random() * BUBBLE_MSGS.length);
       showBubble(BUBBLE_MSGS[idx]);
     }, 300);
-  }, [clickCount, showInvite, resetSleepTimer, showBubble, fetchBubbleReply]);
+  }, [clickCount, resetSleepTimer, showBubble, fetchBubbleReply, openAiChat]);
 
   const handleMouseDown = useCallback(() => {
     resetSleepTimer();
@@ -370,16 +378,6 @@ const Pet: React.FC = () => {
   const handleTouchEnd = useCallback(() => {
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
   }, []);
-
-  const openAiChat = useCallback(() => {
-    setShowInvite(false);
-    setChatOpen(true);
-    setMood('happy');
-    if (messages.length === 0) {
-      addCatMessage(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
-    }
-    setTimeout(() => inputRef.current?.focus(), 100);
-  }, [messages.length, addCatMessage]);
 
   const closeChat = useCallback(() => {
     if (abortRef.current) abortRef.current.abort();
@@ -482,38 +480,6 @@ const Pet: React.FC = () => {
         </div>
       </div>
       </div>
-
-      {showInvite && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={() => { setShowInvite(false); setClickCount(0); }}>
-          <div
-            className="bg-background rounded-xl shadow-2xl p-6 w-[320px] max-w-[85vw] text-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="text-5xl mb-3">🐱</div>
-            <h3 className="text-lg font-bold mb-2">和喵喵聊天吧！</h3>
-            <p className="text-sm text-muted-foreground mb-5">
-              想和喵喵对话吗？
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => {
-                  setShowInvite(false);
-                  setClickCount(0);
-                }}
-                className="px-4 py-2 text-sm rounded-lg border border-muted-foreground/30 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                再逗逗
-              </button>
-              <button
-                onClick={openAiChat}
-                className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                开始聊天
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {chatOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={closeChat}>
