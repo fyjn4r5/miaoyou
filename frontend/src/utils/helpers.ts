@@ -9,7 +9,7 @@ export function generateRandomAddress(): string {
 }
 
 export function generatePassword(length?: number): string {
-  const finalLength = length || Math.floor(Math.random() * 11) + 25;
+  const finalLength = length || Math.floor(Math.random() * 11) + 35;
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
   let result = '';
   for (let i = 0; i < finalLength; i++) {
