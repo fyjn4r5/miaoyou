@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
@@ -7,6 +7,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import HeaderMailbox from './HeaderMailbox';
 import Container from './Container';
 import ThemeSwitcher from './ThemeSwitcher';
+import { getExternalLinks } from '../config';
 
 interface ExternalLink {
   label: string;
@@ -15,8 +16,7 @@ interface ExternalLink {
 
 const DEFAULT_LINKS = '临时Gmail邮箱|https://smailpro.com/temporary-email,真实地址生成器|https://ip.alice7.eu.org/';
 
-function parseExternalLinks(): ExternalLink[] {
-  const raw = import.meta.env.VITE_EXTERNAL_LINKS || DEFAULT_LINKS;
+function parseExternalLinks(raw: string): ExternalLink[] {
   return raw.split(',').filter(Boolean).map(pair => {
     const [label, url] = pair.split('|');
     return { label: label?.trim() || url, url: url?.trim() || '' };
@@ -82,7 +82,15 @@ const Header: React.FC<HeaderProps> = ({
 
 const ExternalLinksDropdown: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const links = parseExternalLinks();
+  const [links, setLinks] = useState<ExternalLink[]>(() => parseExternalLinks(import.meta.env.VITE_EXTERNAL_LINKS || ''));
+
+  useEffect(() => {
+    getExternalLinks().then(raw => {
+      const parsed = parseExternalLinks(raw || DEFAULT_LINKS);
+      if (parsed.length > 0) setLinks(parsed);
+    });
+  }, []);
+
   if (links.length === 0) return null;
 
   return (

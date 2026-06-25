@@ -15,6 +15,8 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
 
   const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
+  const [customAddress, setCustomAddress] = useState('');
+  const [useCustomAddress, setUseCustomAddress] = useState(false);
   
   const [loginFullAddress, setLoginFullAddress] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -30,7 +32,12 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   };
 
   const handleCreate = async () => {
-    const fullAddress = `${generatedAddress}@${selectedDomain}`;
+    const localPart = useCustomAddress ? customAddress.trim() : generatedAddress;
+    if (!localPart) {
+      showErrorMessage(t('mailbox.invalidAddress'));
+      return;
+    }
+    const fullAddress = `${localPart}@${selectedDomain}`;
     const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
     
     if (result) {
@@ -113,14 +120,38 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
           <div className="space-y-4 min-h-[320px] flex flex-col">
             <div className="bg-muted/30 rounded-xl p-5 space-y-4 border">
               <div>
-                <label className="block text-sm font-semibold mb-1.5">
-                  {t('mailbox.address')}
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold">
+                    {t('mailbox.address')}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setUseCustomAddress(!useCustomAddress); setCustomAddress(''); }}
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <i className={`fas ${useCustomAddress ? 'fa-random' : 'fa-pen'} mr-1`}></i>
+                    {useCustomAddress ? t('mailbox.refresh') : t('mailbox.customize')}
+                  </button>
+                </div>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedAddress}>
-                    {generatedAddress}
-                  </code>
-                  <span className="text-muted-foreground font-bold text-lg">@</span>
+                  {useCustomAddress ? (
+                    <input
+                      type="text"
+                      value={customAddress}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z0-9._-]/g, '');
+                        setCustomAddress(val);
+                      }}
+                      placeholder={t('mailbox.customAddressPlaceholder')}
+                      className="flex-1 px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm font-mono"
+                      disabled={isLoading}
+                    />
+                  ) : (
+                    <code className="flex-1 bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedAddress}>
+                      {generatedAddress}
+                    </code>
+                  )}
+                  <span className="text-muted-foreground font-bold text-lg shrink-0">@</span>
                   <select 
                     value={selectedDomain}
                     onChange={(e) => setSelectedDomain(e.target.value)}

@@ -44,6 +44,23 @@ export const DEFAULT_EMAIL_DOMAIN = EMAIL_DOMAINS[0] || 'example.com';
 // API地址配置
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+// 从 API 获取外部链接配置
+export async function getExternalLinks(): Promise<string> {
+  try {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.config.externalLinks) {
+        return data.config.externalLinks.map((l: { label: string; url: string }) => `${l.label}|${l.url}`).join(',');
+      }
+    }
+  } catch (error) {
+    console.error('获取外部链接配置失败:', error);
+  }
+  // 如果 API 获取失败，使用环境变量作为后备
+  return import.meta.env.VITE_EXTERNAL_LINKS || '';
+}
+
 // 其他配置
 export const DEFAULT_AUTO_REFRESH = false;
 export const AUTO_REFRESH_INTERVAL = 10000; // 10秒

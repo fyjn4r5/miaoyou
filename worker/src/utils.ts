@@ -18,7 +18,7 @@ export function generateRandomString(length: number): string {
  * @returns 随机密码
  */
 export function generatePassword(length?: number): string {
-    const finalLength = length || Math.floor(Math.random() * 16) + 30; // 30-45随机
+    const finalLength = length || Math.floor(Math.random() * 11) + 25; // 25-35随机
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let result = '';
     for (let i = 0; i < finalLength; i++) {

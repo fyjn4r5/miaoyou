@@ -8,6 +8,7 @@ interface Ai {
 export interface Env {
   DB: D1Database;
   VITE_EMAIL_DOMAIN?: string;
+  VITE_EXTERNAL_LINKS?: string;
   AI: Ai;
 }
 

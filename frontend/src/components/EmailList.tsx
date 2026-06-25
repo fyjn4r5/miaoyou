@@ -129,15 +129,6 @@ const EmailList: React.FC<EmailListProps> = ({
         <h2 className="text-xl font-medium">{t('email.inbox')}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
-            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
-            title={t('email.copyFullName')}
-          >
-            <span className="text-muted-foreground">{t('email.fullName')}:</span>
-            <span className="text-foreground">{randomName.fullName}</span>
-            <i className="fas fa-copy text-xs opacity-60"></i>
-          </button>
-          <button
             onClick={() => copyToClipboard(randomName.firstName, 'email.copiedFirstName')}
             className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
             title={t('email.copyFirstName')}
@@ -153,6 +144,15 @@ const EmailList: React.FC<EmailListProps> = ({
           >
             <span className="text-muted-foreground">{t('email.lastName')}:</span>
             <span className="text-foreground">{randomName.lastName}</span>
+            <i className="fas fa-copy text-xs opacity-60"></i>
+          </button>
+          <button
+            onClick={() => copyToClipboard(randomName.fullName, 'email.copiedFullName')}
+            className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
+            title={t('email.copyFullName')}
+          >
+            <span className="text-muted-foreground">{t('email.fullName')}:</span>
+            <span className="text-foreground">{randomName.fullName}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button

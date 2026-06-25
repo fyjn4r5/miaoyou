@@ -39,10 +39,17 @@ app.get('/api/config', (c) => {
     const emailDomains = c.env.VITE_EMAIL_DOMAIN || '';
     const domains = emailDomains.split(',').map((domain: string) => domain.trim()).filter((domain: string) => domain);
     
+    const externalLinksRaw = c.env.VITE_EXTERNAL_LINKS || '';
+    const externalLinks = externalLinksRaw.split(',').filter(Boolean).map((pair: string) => {
+      const [label, url] = pair.split('|');
+      return { label: label?.trim() || url, url: url?.trim() || '' };
+    }).filter((l: { url: string }) => l.url);
+    
     return c.json({ 
       success: true, 
       config: {
-        emailDomains: domains
+        emailDomains: domains,
+        externalLinks: externalLinks.length > 0 ? externalLinks : undefined
       }
     });
   } catch (error) {
