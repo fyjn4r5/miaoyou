@@ -543,6 +543,39 @@ export async function markEmailAsUnread(db: D1Database, id: string): Promise<voi
 }
 
 /**
+ * 批量删除邮件
+ * @param db 数据库实例
+ * @param emailIds 邮件ID数组
+ */
+export async function batchDeleteEmails(db: D1Database, emailIds: string[]): Promise<void> {
+  if (emailIds.length === 0) return;
+  const placeholders = emailIds.map(() => '?').join(',');
+  await db.prepare(`DELETE FROM emails WHERE id IN (${placeholders})`).bind(...emailIds).run();
+}
+
+/**
+ * 批量标记邮件为已读
+ * @param db 数据库实例
+ * @param emailIds 邮件ID数组
+ */
+export async function batchMarkEmailsAsRead(db: D1Database, emailIds: string[]): Promise<void> {
+  if (emailIds.length === 0) return;
+  const placeholders = emailIds.map(() => '?').join(',');
+  await db.prepare(`UPDATE emails SET is_read = 1 WHERE id IN (${placeholders})`).bind(...emailIds).run();
+}
+
+/**
+ * 批量标记邮件为未读
+ * @param db 数据库实例
+ * @param emailIds 邮件ID数组
+ */
+export async function batchMarkEmailsAsUnread(db: D1Database, emailIds: string[]): Promise<void> {
+  if (emailIds.length === 0) return;
+  const placeholders = emailIds.map(() => '?').join(',');
+  await db.prepare(`UPDATE emails SET is_read = 0 WHERE id IN (${placeholders})`).bind(...emailIds).run();
+}
+
+/**
  * 获取邮箱总数
  * @param db 数据库实例
  * @returns 邮箱总数

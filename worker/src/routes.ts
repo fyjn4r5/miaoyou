@@ -13,7 +13,10 @@ import {
   getAttachments,
   getAttachment,
   getMailboxCount,
-  getMailboxCountByIpLast24h
+  getMailboxCountByIpLast24h,
+  batchDeleteEmails,
+  batchMarkEmailsAsRead,
+  batchMarkEmailsAsUnread
 } from './database';
 import { generateRandomAddress, generatePassword } from './utils';
 
@@ -395,6 +398,75 @@ app.put('/api/emails/:id/unread', async (c) => {
     return c.json({ 
       success: false, 
       error: '标记邮件为未读失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 批量删除邮件
+app.post('/api/emails/batch/delete', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { emailIds } = body;
+    
+    if (!Array.isArray(emailIds) || emailIds.length === 0) {
+      return c.json({ success: false, error: '请提供要删除的邮件ID列表' }, 400);
+    }
+    
+    await batchDeleteEmails(c.env.DB, emailIds);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('批量删除邮件失败:', error);
+    return c.json({ 
+      success: false, 
+      error: '批量删除邮件失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 批量标记邮件为已读
+app.post('/api/emails/batch/read', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { emailIds } = body;
+    
+    if (!Array.isArray(emailIds) || emailIds.length === 0) {
+      return c.json({ success: false, error: '请提供要标记的邮件ID列表' }, 400);
+    }
+    
+    await batchMarkEmailsAsRead(c.env.DB, emailIds);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('批量标记邮件为已读失败:', error);
+    return c.json({ 
+      success: false, 
+      error: '批量标记邮件为已读失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 批量标记邮件为未读
+app.post('/api/emails/batch/unread', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { emailIds } = body;
+    
+    if (!Array.isArray(emailIds) || emailIds.length === 0) {
+      return c.json({ success: false, error: '请提供要标记的邮件ID列表' }, 400);
+    }
+    
+    await batchMarkEmailsAsUnread(c.env.DB, emailIds);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('批量标记邮件为未读失败:', error);
+    return c.json({ 
+      success: false, 
+      error: '批量标记邮件为未读失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

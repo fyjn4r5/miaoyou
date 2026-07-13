@@ -5,6 +5,7 @@ import EmailDetail from './EmailDetail';
 import UserInfoModal from './UserInfoModal';
 import { generateRandomName, generateFromOSM } from '../utils/nameGenerator';
 import { COUNTRIES } from '../utils/countryData';
+import { batchDeleteEmails, batchMarkAsRead, batchMarkAsUnread } from '../utils/api';
 
 interface EmailListProps {
   emails: Email[];
@@ -20,12 +21,14 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
-  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage } = useContext(MailboxContext);
+  const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage, showErrorMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("US");
   const [randomName, setRandomName] = useState(() => generateRandomName("US"));
   const [isNameLoading, setIsNameLoading] = useState(true);
+  const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
+  const [isBatchOperating, setIsBatchOperating] = useState(false);
 
   useEffect(() => {
     generateFromOSM("US").then(result => {
@@ -48,6 +51,84 @@ const EmailList: React.FC<EmailListProps> = ({
     const apiResult = await generateFromOSM(countryCode);
     setRandomName(apiResult || generateRandomName(countryCode));
     setIsNameLoading(false);
+  };
+
+  const toggleEmailSelection = (emailId: string) => {
+    setSelectedEmailIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(emailId)) {
+        newSet.delete(emailId);
+      } else {
+        newSet.add(emailId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedEmailIds.size === emails.length) {
+      setSelectedEmailIds(new Set());
+    } else {
+      setSelectedEmailIds(new Set(emails.map(e => e.id)));
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedEmailIds.size === 0) return;
+    if (!window.confirm(t('email.batchDeleteConfirm', { count: selectedEmailIds.size }))) return;
+    
+    setIsBatchOperating(true);
+    try {
+      const result = await batchDeleteEmails(Array.from(selectedEmailIds));
+      if (result.success) {
+        showSuccessMessage(t('email.batchDeleteSuccess', { count: selectedEmailIds.size }));
+        setSelectedEmailIds(new Set());
+        refreshEmails(true);
+      } else {
+        showErrorMessage(t('email.batchDeleteFailed'));
+      }
+    } catch {
+      showErrorMessage(t('email.batchDeleteFailed'));
+    }
+    setIsBatchOperating(false);
+  };
+
+  const handleBatchMarkAsRead = async () => {
+    if (selectedEmailIds.size === 0) return;
+    
+    setIsBatchOperating(true);
+    try {
+      const result = await batchMarkAsRead(Array.from(selectedEmailIds));
+      if (result.success) {
+        showSuccessMessage(t('email.batchMarkAsReadSuccess', { count: selectedEmailIds.size }));
+        setSelectedEmailIds(new Set());
+        refreshEmails(true);
+      } else {
+        showErrorMessage(t('email.batchMarkAsReadFailed'));
+      }
+    } catch {
+      showErrorMessage(t('email.batchMarkAsReadFailed'));
+    }
+    setIsBatchOperating(false);
+  };
+
+  const handleBatchMarkAsUnread = async () => {
+    if (selectedEmailIds.size === 0) return;
+    
+    setIsBatchOperating(true);
+    try {
+      const result = await batchMarkAsUnread(Array.from(selectedEmailIds));
+      if (result.success) {
+        showSuccessMessage(t('email.batchMarkAsUnreadSuccess', { count: selectedEmailIds.size }));
+        setSelectedEmailIds(new Set());
+        refreshEmails(true);
+      } else {
+        showErrorMessage(t('email.batchMarkAsUnreadFailed'));
+      }
+    } catch {
+      showErrorMessage(t('email.batchMarkAsUnreadFailed'));
+    }
+    setIsBatchOperating(false);
   };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
@@ -158,10 +239,10 @@ const EmailList: React.FC<EmailListProps> = ({
           <button
             onClick={() => copyToClipboard(randomName.username, 'email.copiedUsername')}
             className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary flex items-center gap-1.5 border border-border/60 hover:border-border text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ease-out"
-            title={t('email.copyUsername')}
+            title={t('email.copyUsername') + ': ' + randomName.username}
           >
             <span className="text-muted-foreground">{t('email.username')}:</span>
-            <span className="text-foreground">{randomName.username}</span>
+            <span className="text-foreground">{randomName.username.length > 4 ? randomName.username.substring(0, 4) + '...' : randomName.username}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -170,7 +251,7 @@ const EmailList: React.FC<EmailListProps> = ({
             title={t('email.copyPassword')}
           >
             <span className="text-muted-foreground">{t('email.password')}:</span>
-            <span className="text-foreground">{'•'.repeat(12)}</span>
+            <span className="text-foreground">{'•'.repeat(4)}</span>
             <i className="fas fa-copy text-xs opacity-60"></i>
           </button>
           <button
@@ -208,10 +289,58 @@ const EmailList: React.FC<EmailListProps> = ({
       )}
       
       <div className="flex justify-between items-center px-5 py-3 bg-muted/20">
-        <span className="text-sm font-medium text-muted-foreground">
-          {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
-        </span>
+        <div className="flex items-center gap-3">
+          {emails.length > 0 && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedEmailIds.size === emails.length && emails.length > 0}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedEmailIds.size > 0 
+                  ? t('email.selectedCount', { count: selectedEmailIds.size })
+                  : t('email.selectAll')}
+              </span>
+            </label>
+          )}
+          <span className="text-sm font-medium text-muted-foreground">
+            {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
+          </span>
+        </div>
         <div className="flex items-center gap-2">
+          {selectedEmailIds.size > 0 && (
+            <>
+              <button
+                onClick={handleBatchMarkAsRead}
+                disabled={isBatchOperating}
+                className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary border border-border/60 hover:border-border flex items-center gap-1.5 text-sm disabled:opacity-50"
+                title={t('email.batchMarkAsRead')}
+              >
+                <i className="fas fa-envelope-open text-xs"></i>
+                <span className="hidden sm:inline">{t('email.batchMarkAsRead')}</span>
+              </button>
+              <button
+                onClick={handleBatchMarkAsUnread}
+                disabled={isBatchOperating}
+                className="px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary border border-border/60 hover:border-border flex items-center gap-1.5 text-sm disabled:opacity-50"
+                title={t('email.batchMarkAsUnread')}
+              >
+                <i className="fas fa-envelope text-xs"></i>
+                <span className="hidden sm:inline">{t('email.batchMarkAsUnread')}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                disabled={isBatchOperating}
+                className="px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 hover:border-red-500 flex items-center gap-1.5 text-sm disabled:opacity-50"
+                title={t('email.batchDelete')}
+              >
+                <i className="fas fa-trash text-xs"></i>
+                <span className="hidden sm:inline">{t('email.batchDelete')}</span>
+              </button>
+            </>
+          )}
           <button
             onClick={handleRefresh}
             className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary flex items-center gap-1.5 text-sm"
@@ -250,17 +379,31 @@ const EmailList: React.FC<EmailListProps> = ({
                 } ${!email.isRead ? 'bg-primary/[0.02] border-l-2 border-primary' : 'border-l-2 border-transparent'}`}
                 onClick={() => onSelectEmail(selectedEmailId === email.id ? null : email.id)}
               >
-                <div className="flex justify-between items-center mb-1">
-                  <span className={`truncate ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground'}`}>
-                    {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
-                    {email.fromName || email.fromAddress}
-                  </span>
-                  <span className="text-sm text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
-                    {formatDate(email.receivedAt)}
-                  </span>
-                </div>
-                <div className={`text-sm truncate ${!email.isRead ? 'font-medium' : 'text-muted-foreground'}`}>
-                  {email.subject || <span className="italic opacity-60">{t('email.noSubject')}</span>}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedEmailIds.has(email.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleEmailSelection(email.id);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={`truncate ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground'}`}>
+                        {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
+                        {email.fromName || email.fromAddress}
+                      </span>
+                      <span className="text-sm text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
+                        {formatDate(email.receivedAt)}
+                      </span>
+                    </div>
+                    <div className={`text-sm truncate ${!email.isRead ? 'font-medium' : 'text-muted-foreground'}`}>
+                      {email.subject || <span className="italic opacity-60">{t('email.noSubject')}</span>}
+                    </div>
+                  </div>
                 </div>
               </li>
               {selectedEmailId === email.id && (

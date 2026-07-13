@@ -279,4 +279,76 @@ export const getStats = async (): Promise<{ success: boolean; stats?: { mailboxC
     console.error('Error fetching stats:', error);
     return { success: false, error };
   }
-}; 
+};
+
+// 批量删除邮件
+export const batchDeleteEmails = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl('/api/emails/batch/delete'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ emailIds }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return { success: true };
+    } else {
+      return { success: false, error: data.error };
+    }
+  } catch (error) {
+    console.error('Error batch deleting emails:', error);
+    return { success: false, error };
+  }
+};
+
+// 批量标记邮件为已读
+export const batchMarkAsRead = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl('/api/emails/batch/read'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ emailIds }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return { success: true };
+    } else {
+      return { success: false, error: data.error };
+    }
+  } catch (error) {
+    console.error('Error batch marking emails as read:', error);
+    return { success: false, error };
+  }
+};
+
+// 批量标记邮件为未读
+export const batchMarkAsUnread = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl('/api/emails/batch/unread'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ emailIds }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return { success: true };
+    } else {
+      return { success: false, error: data.error };
+    }
+  } catch (error) {
+    console.error('Error batch marking emails as unread:', error);
+    return { success: false, error };
+  }
+};
