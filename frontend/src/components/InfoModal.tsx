@@ -2,13 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 import TermsPage from '../pages/TermsPage';
-import AboutPage from '../pages/AboutPage';
 
 // 定义 props 类型
 interface InfoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: 'privacy' | 'terms' | 'about' | null;
+  type: 'privacy' | 'terms' | null;
 }
 
 const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, type }) => {
@@ -30,11 +29,6 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, type }) => {
         return {
           title: t('common.terms'),
           content: <TermsPage />,
-        };
-      case 'about':
-        return {
-          title: t('common.about'),
-          content: <AboutPage />,
         };
       default:
         return {

@@ -14,7 +14,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
-              {/* 移除了 privacy-policy, terms, 和 about 的路由 */}
+              {/* 移除了 privacy-policy 和 terms 的路由 */}
               <Route path="/chat" element={<ChatPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>

@@ -24,8 +24,7 @@
     "youtube": "YouTube",
     "xugouMonitor": "Xugou Monitor",
     "privacyPolicy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "about": "About Us"
+    "terms": "Terms of Service"
   },
     "mailbox": {
     "createRandom": "Create Random Mailbox",
@@ -174,9 +173,6 @@
   "settings": {
     "language": "Language",
     "toggleTheme": "Toggle Theme"
-  },
-  "footer": {
-    "mailboxCount": "{{count}} mailboxes created"
   },
   "errors": {
     "generic": "An error occurred, please try again later",
@@ -331,91 +327,6 @@
     },
     "conclusion": "Thank you for using 秒邮 temporary email service!"
   },
-  "about": {
-    "title": "About Us",
-    "subtitle": "Learn about the background and philosophy of 秒邮 temporary email service.",
-    "intro": {
-      "title": "Project Introduction",
-      "content": "秒邮 is an open source temporary email service designed to provide users with secure and convenient temporary email solutions. We are committed to protecting user privacy and avoiding spam troubles."
-    },
-    "features": {
-      "title": "Core Features",
-      "free": {
-        "title": "Completely Free",
-        "desc": "No registration required, no payment required, completely free to use."
-      },
-      "instant": {
-        "title": "Instant Generation",
-        "desc": "Generate temporary email addresses with one click, ready to use immediately."
-      },
-      "autodestroy": {
-        "title": "Auto Destroy",
-        "desc": "Mailboxes are automatically destroyed after 24 hours to protect privacy."
-      },
-      "realtime": {
-        "title": "Real-time Receiving",
-        "desc": "Receive emails in real time with auto-refresh support."
-      },
-      "opensource": {
-        "title": "Open Source Transparency",
-        "desc": "Code is completely open source, secure and trustworthy."
-      }
-    },
-    "usecases": {
-      "title": "Use Cases",
-      "registration": "Website registration verification",
-      "download": "Download resource verification",
-      "temporary": "Temporary communication needs",
-      "spam": "Avoid spam"
-    },
-    "tech": {
-      "title": "Technical Architecture",
-      "intro": "秒邮 is built with modern technology stack:",
-      "frontend": {
-        "title": "Frontend",
-        "desc": "React + TypeScript + Tailwind CSS"
-      },
-      "backend": {
-        "title": "Backend",
-        "desc": "Honojs + CloudFlare Worker"
-      },
-      "email": {
-        "title": "Email Service",
-        "desc": "Based on CloudFlare email service to provide free temporary mailboxes, stable and reliable"
-      },
-      "storage": {
-        "title": "Data Storage",
-        "desc": "Memory storage with scheduled cleanup"
-      }
-    },
-    "opensource": {
-      "title": "Open Source Information",
-      "intro": "秒邮 is a completely open source project that follows the MIT open source license. We welcome community contributions, suggestions or issue reports.",
-      "github": {
-        "title": "GitHub Repository"
-      },
-      "license": {
-        "title": "License",
-        "desc": "MIT License"
-      },
-      "contribute": {
-        "title": "Contribution Guide",
-        "desc": "Welcome to submit Pull Requests and Issues"
-      }
-    },
-    "contact": {
-      "title": "Contact Us",
-      "intro": "If you encounter problems during use, or have any suggestions and feedback, please contact us through the following methods:",
-      "github": {
-        "title": "GitHub Issues",
-        "desc": "Submit Issues in the project repository"
-      },
-      "email": {
-        "title": "Email"
-      }
-    },
-    "conclusion": "Thank you for choosing 秒邮 temporary email service!"
-    },
   "privacy": {
     "title": "Privacy Policy",
     "intro": "We take your privacy protection very seriously. This privacy policy explains how we collect, use and protect your information.",

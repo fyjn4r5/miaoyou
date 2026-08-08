@@ -16,11 +16,11 @@ const Layout: React.FC = () => {
   // 添加状态来管理弹窗的显示和内容
   const [infoModal, setInfoModal] = useState<{
     isOpen: boolean;
-    type: 'privacy' | 'terms' | 'about' | null;
+    type: 'privacy' | 'terms' | null;
   }>({ isOpen: false, type: null });
 
   // 打开弹窗的函数
-  const handleShowInfo = (type: 'privacy' | 'terms' | 'about') => {
+  const handleShowInfo = (type: 'privacy' | 'terms') => {
     setInfoModal({ isOpen: true, type });
   };
 
