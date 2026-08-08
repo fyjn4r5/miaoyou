@@ -225,12 +225,17 @@ export async function cleanupExpiredMailboxes(db: D1Database): Promise<number> {
 export async function cleanupExpiredMails(db: D1Database): Promise<number> {
   const now = getCurrentTimestamp();
   const oneDayAgo = now - 24 * 60 * 60;
+  const ninetyDaysAgo = now - 90 * 24 * 60 * 60;
   
-  const result = await db.prepare(`DELETE FROM emails WHERE received_at <= ? AND is_read = 1`).bind(oneDayAgo).run();
+  // 已读邮件超过24小时删除
+  const readResult = await db.prepare(`DELETE FROM emails WHERE received_at <= ? AND is_read = 1`).bind(oneDayAgo).run();
+  
+  // 未读邮件最多保留90天
+  const unreadResult = await db.prepare(`DELETE FROM emails WHERE received_at <= ? AND is_read = 0`).bind(ninetyDaysAgo).run();
   
   await cleanupOrphanedAttachments(db);
   
-  return result.meta?.changes || 0;
+  return (readResult.meta?.changes || 0) + (unreadResult.meta?.changes || 0);
 }
 
 /**
