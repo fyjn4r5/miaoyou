@@ -43,13 +43,27 @@ function generateSSN(): string {
 }
 
 function generateCreditCardNumber(): string {
-  const groups = [
-    String(randomInt(1000, 9999)),
-    String(randomInt(1000, 9999)),
-    String(randomInt(1000, 9999)),
-    String(randomInt(1000, 9999))
-  ];
-  return groups.join(" ");
+  const CARD_BIN = "622759531087";
+  const middle = String(randomInt(0, 999)).padStart(3, "0");
+  const partial = CARD_BIN + middle;
+  const checkDigit = (10 - (luhnCheckSum(partial + "0") % 10)) % 10;
+  const full = partial + checkDigit;
+  return full.match(/.{1,4}/g)!.join(" ");
+}
+
+function luhnCheckSum(numStr: string): number {
+  let sum = 0;
+  let double = false;
+  for (let i = numStr.length - 1; i >= 0; i--) {
+    let d = numStr.charCodeAt(i) - 48;
+    if (double) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+    double = !double;
+  }
+  return sum;
 }
 
 function generateExpiry(): string {
@@ -121,7 +135,7 @@ export function generateRandomName(countryCode?: string): RandomName {
   const company = pick(COMPANIES);
   const occupation = pick(OCCUPATIONS);
   const ssn = generateSSN();
-  const creditCardType = pick(["Visa", "MasterCard", "American Express", "Discover"]);
+  const creditCardType = "UnionPay";
   const creditCardNumber = generateCreditCardNumber();
   const cvv2 = String(randomInt(100, 999));
   const expires = generateExpiry();
@@ -184,7 +198,7 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     company: pick(COMPANIES),
     occupation: pick(OCCUPATIONS),
     ssn: userData?.id?.value || generateSSN(),
-    creditCardType: pick(["Visa", "MasterCard", "American Express", "Discover"]),
+    creditCardType: "UnionPay",
     creditCardNumber: generateCreditCardNumber(),
     cvv2: String(randomInt(100, 999)),
     expires: generateExpiry(),
