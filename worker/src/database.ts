@@ -48,6 +48,12 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     // 创建附件块表
     await db.exec(`CREATE TABLE IF NOT EXISTS attachment_chunks (id TEXT PRIMARY KEY, attachment_id TEXT NOT NULL, chunk_index INTEGER NOT NULL, content TEXT NOT NULL, FOREIGN KEY (attachment_id) REFERENCES attachments(id) ON DELETE CASCADE);`);
     
+    // [feat] 站内聊天表：与收件箱分离，避免聊天消息刷屏站内邮件
+    await db.exec(`CREATE TABLE IF NOT EXISTS chat_messages (id TEXT PRIMARY KEY, mailbox_id TEXT NOT NULL, from_address TEXT NOT NULL, from_name TEXT, to_address TEXT NOT NULL, content TEXT NOT NULL, created_at INTEGER NOT NULL, is_read INTEGER DEFAULT 0);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_from ON chat_messages(mailbox_id, from_address, created_at);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_to ON chat_messages(mailbox_id, to_address, created_at);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(mailbox_id, is_read);`);
+    
     // 创建索引
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_mailboxes_address ON mailboxes(address);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_mailboxes_expires_at ON mailboxes(expires_at);`);
@@ -636,13 +642,13 @@ export async function getMailboxCountByIpLast24h(db: D1Database, ipAddress: stri
 }
 
 /**
- * 发送站内消息（写入发件人与收件人两个邮箱，各自保留一条完整对话记录）
+ * 发送站内消息（写入独立的 chat_messages 表，双方各自一条，不进入收件箱）
  * @param db 数据库实例
  * @param fromMailbox 发件人邮箱
  * @param toMailbox 收件人邮箱
  * @param fromName 发件人显示名（地址）
  * @param content 消息内容
- * @returns 发件人侧保存的邮件
+ * @returns 发件人侧保存的消息
  */
 export async function sendInternalMessage(
   db: D1Database,
@@ -650,52 +656,32 @@ export async function sendInternalMessage(
   toMailbox: Mailbox,
   fromName: string,
   content: string
-): Promise<Email> {
+): Promise<ChatMessage> {
   const now = getCurrentTimestamp();
-  const subject = `站内消息`;
 
-  // 发件人侧：记录一条已发送的消息，from=发件人，to=收件人
-  const senderEmail: Email = {
-    id: generateId(),
-    mailboxId: fromMailbox.id,
-    fromAddress: fromMailbox.address,
-    fromName,
-    toAddress: toMailbox.address,
-    subject,
-    textContent: content,
-    htmlContent: '',
-    receivedAt: now,
-    hasAttachments: false,
-    isRead: true,
-    isInternal: true,
-  };
-
-  // 收件人侧：记录一条收到的消息，from=发件人，to=收件人
-  const receiverEmail: Email = {
-    id: generateId(),
-    mailboxId: toMailbox.id,
-    fromAddress: fromMailbox.address,
-    fromName,
-    toAddress: toMailbox.address,
-    subject,
-    textContent: content,
-    htmlContent: '',
-    receivedAt: now,
-    hasAttachments: false,
-    isRead: false,
-    isInternal: true,
-  };
+  // 发件人侧副本：is_read=1（自己已读）；收件人侧副本：is_read=0（未读）
+  const senderId = generateId();
+  const receiverId = generateId();
 
   // 两条写入合并在一次 batch 中，降低 D1 事务开销
   await db.batch([
-    db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(senderEmail.id, senderEmail.mailboxId, senderEmail.fromAddress, senderEmail.fromName, senderEmail.toAddress, senderEmail.subject, senderEmail.textContent, senderEmail.htmlContent, senderEmail.receivedAt, 0, 1, 1),
-    db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(receiverEmail.id, receiverEmail.mailboxId, receiverEmail.fromAddress, receiverEmail.fromName, receiverEmail.toAddress, receiverEmail.subject, receiverEmail.textContent, receiverEmail.htmlContent, receiverEmail.receivedAt, 0, 0, 1),
+    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(senderId, fromMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 1),
+    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(receiverId, toMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 0),
   ]);
 
   console.log(`站内消息发送成功: ${fromMailbox.address} -> ${toMailbox.address}`);
-  return senderEmail;
+  return {
+    id: senderId,
+    fromAddress: fromMailbox.address,
+    toAddress: toMailbox.address,
+    fromName: fromName || '',
+    subject: '站内消息',
+    textContent: content,
+    receivedAt: now,
+    isRead: true,
+  };
 }
 
 /**
@@ -714,52 +700,49 @@ export async function getChatMessages(
   since: number,
   limit: number
 ): Promise<ChatMessage[]> {
-  let rows: Array<{
+let rows: Array<{
     id: string;
     from_address: string;
     from_name: string;
     to_address: string;
-    subject: string;
-    text_content: string;
-    received_at: number;
-    is_read: boolean | number;
+    content: string;
+    created_at: number;
+    is_read: number | boolean;
   }> = [];
 
   if (since > 0) {
     // 增量轮询：只取新消息（用 >= 防止同一秒内的消息被遗漏，客户端按 id 去重）
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, subject, text_content, received_at, is_read
-      FROM emails
-      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND received_at >= ?
-      ORDER BY received_at ASC
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read
+      FROM chat_messages
+      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND created_at >= ?
+      ORDER BY created_at ASC
       LIMIT ?
     `).bind(mailboxId, peerAddress, peerAddress, since, limit).all<{
       id: string;
       from_address: string;
       from_name: string;
       to_address: string;
-      subject: string;
-      text_content: string;
-      received_at: number;
+      content: string;
+      created_at: number;
       is_read: number | boolean;
     }>();
     rows = res.results || [];
   } else {
     // 初始加载：取最近 limit 条（先按时间倒序取，再升序返回）
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, subject, text_content, received_at, is_read
-      FROM emails
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read
+      FROM chat_messages
       WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?)
-      ORDER BY received_at DESC
+      ORDER BY created_at DESC
       LIMIT ?
     `).bind(mailboxId, peerAddress, peerAddress, limit).all<{
       id: string;
       from_address: string;
       from_name: string;
       to_address: string;
-      subject: string;
-      text_content: string;
-      received_at: number;
+      content: string;
+      created_at: number;
       is_read: number | boolean;
     }>();
     rows = (res.results || []).reverse();
@@ -770,9 +753,9 @@ export async function getChatMessages(
     fromAddress: r.from_address,
     toAddress: r.to_address,
     fromName: r.from_name || '',
-    subject: r.subject || '',
-    textContent: r.text_content || '',
-    receivedAt: r.received_at,
+    subject: '',
+    textContent: r.content || '',
+    receivedAt: r.created_at,
     isRead: !!r.is_read,
   }));
 }
@@ -796,21 +779,42 @@ export async function deleteInternalMessages(
   afterTs: number
 ): Promise<number> {
   // 双方各自删除 from/to 与双方匹配的站内消息
-  const timeCond = afterTs > 0 ? ` AND received_at >= ${afterTs}` : '';
+  const timeCond = afterTs > 0 ? ` AND created_at >= ${afterTs}` : '';
 
   const myRes = await db.prepare(`
-    DELETE FROM emails
-    WHERE mailbox_id = ? AND is_internal = 1
-      AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
+    DELETE FROM chat_messages
+    WHERE mailbox_id = ? AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
   `).bind(myId, myAddress, peerAddress, peerAddress, myAddress).run();
 
   const peerRes = await db.prepare(`
-    DELETE FROM emails
-    WHERE mailbox_id = ? AND is_internal = 1
-      AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
+    DELETE FROM chat_messages
+    WHERE mailbox_id = ? AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
   `).bind(peerId, myAddress, peerAddress, peerAddress, myAddress).run();
 
   const deleted = (myRes.meta?.changes || 0) + (peerRes.meta?.changes || 0);
   console.log(`清理站内聊天记录: ${deleted} 条（${myAddress} <-> ${peerAddress}${afterTs > 0 ? `, 自 ${afterTs} 起` : ', 全部'}）`);
   return deleted;
+}
+
+/**
+ * 将某用户发给我的聊天消息标记为已读（打开聊天/轮询时调用）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param peerAddress 对方邮箱地址
+ */
+export async function markChatRead(db: D1Database, mailboxId: string, peerAddress: string): Promise<void> {
+  await db.prepare(`UPDATE chat_messages SET is_read = 1 WHERE mailbox_id = ? AND from_address = ? AND is_read = 0`)
+    .bind(mailboxId, peerAddress).run();
+}
+
+/**
+ * 获取当前邮箱未读站内消息数量（用于角标/提示条）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @returns 未读数量
+ */
+export async function getUnreadChatCount(db: D1Database, mailboxId: string): Promise<number> {
+  const result = await db.prepare(`SELECT COUNT(*) as count FROM chat_messages WHERE mailbox_id = ? AND is_read = 0`)
+    .bind(mailboxId).first<{ count: number }>();
+  return result?.count || 0;
 }

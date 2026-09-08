@@ -2,6 +2,8 @@ import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import MailboxSwitcher from './MailboxSwitcher';
+import { buildAccountInfoText } from '../utils/helpers';
+import { copyText } from '../lib/utils';
 
 interface HeaderMailboxProps {
   mailbox: Mailbox | null;
@@ -19,18 +21,34 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
 
   const fullAddress = mailbox ? (mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${selectedDomain}`) : '';
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(fullAddress)
-      .then(() => showSuccessMessage(t('mailbox.copySuccess')))
-      .catch(() => showErrorMessage(t('mailbox.copyFailed')));
+  const copyToClipboard = async () => {
+    const ok = await copyText(fullAddress);
+    if (ok) showSuccessMessage(t('mailbox.copySuccess'));
+    else showErrorMessage(t('mailbox.copyFailed'));
   };
 
-  const copyPassword = () => {
+  const copyPassword = async () => {
     if (currentMailbox?.password) {
-      navigator.clipboard.writeText(currentMailbox.password)
-        .then(() => showSuccessMessage(t('mailbox.copyPasswordSuccess')))
-        .catch(() => showErrorMessage(t('mailbox.copyPasswordFailed')));
+      const ok = await copyText(currentMailbox.password);
+      if (ok) showSuccessMessage(t('mailbox.copyPasswordSuccess'));
+      else showErrorMessage(t('mailbox.copyPasswordFailed'));
     }
+  };
+
+  // 复制完整帐号信息（带分隔线与用户名/密码的固定格式）
+  const copyAccountInfo = async () => {
+    if (!currentMailbox?.password) return;
+    const text = buildAccountInfoText({
+      siteUrl: window.location.origin,
+      fullAddress,
+      password: currentMailbox.password,
+      title: t('mailbox.accountInfoTitle'),
+      usernameLabel: t('mailbox.username'),
+      passwordLabel: t('mailbox.password'),
+    });
+    const ok = await copyText(text);
+    if (ok) showSuccessMessage(t('mailbox.copyAccountInfoSuccess'));
+    else showErrorMessage(t('common.copyFailed'));
   };
 
   const handleCreateNew = () => {
@@ -72,10 +90,18 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             <button onClick={copyPassword} className="w-10 h-10 flex items-center justify-center rounded-lg text-amber-500 hover:bg-amber-500/15 hover:text-amber-500 transition-all" title={t('mailbox.copyPassword')}>
               <i className="fas fa-key text-base"></i>
             </button>
+
+            <button onClick={copyAccountInfo} className="w-10 h-10 flex items-center justify-center rounded-lg text-cyan-500 hover:bg-cyan-500/15 hover:text-cyan-600 transition-all" title={t('mailbox.copyAccountInfo')}>
+              <i className="fas fa-clipboard-list text-base"></i>
+            </button>
+
+            <span className="h-5 w-px bg-border mx-1" aria-hidden="true"></span>
         
             <button onClick={handleCreateNew} className="w-10 h-10 flex items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-500/15 hover:text-emerald-500 transition-all" title={t('mailbox.createNew')}>
               <i className="fas fa-plus text-base"></i>
             </button>
+
+            <span className="h-5 w-px bg-border mx-1" aria-hidden="true"></span>
         
             <button onClick={logout} className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/15 hover:text-primary transition-all" title={t('mailbox.logout')}>
               <i className="fas fa-sign-out-alt text-base"></i>

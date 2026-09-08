@@ -7,6 +7,7 @@ import UserInfoModal from './UserInfoModal';
 import { generateRandomName, generateFromOSM } from '../utils/nameGenerator';
 import { COUNTRIES } from '../utils/countryData';
 import { batchDeleteEmails, batchMarkAsRead, batchMarkAsUnread } from '../utils/api';
+import { copyText } from '../lib/utils';
 
 interface EmailListProps {
   emails: Email[];
@@ -134,11 +135,11 @@ const EmailList: React.FC<EmailListProps> = ({
   };
 
   const copyToClipboard = async (text: string, messageKey: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await copyText(text);
+    if (ok) {
       showSuccessMessage(t(messageKey));
-    } catch {
-      showSuccessMessage(t('common.copied'));
+    } else {
+      showErrorMessage(t('common.copyFailed'));
     }
   };
   
@@ -408,7 +409,7 @@ const EmailList: React.FC<EmailListProps> = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/internal-chat?peer=${encodeURIComponent(email.fromName || email.fromAddress)}`);
+                              navigate(`/internal-chat?peer=${encodeURIComponent(email.fromAddress)}`);
                             }}
                             className="px-2.5 py-1 text-xs rounded-full bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 hover:border-green-500 transition-colors"
                             title={t('email.enterChat')}

@@ -20,7 +20,9 @@ import {
   getMailboxId,
   sendInternalMessage,
   getChatMessages,
-  deleteInternalMessages
+  deleteInternalMessages,
+  markChatRead,
+  getUnreadChatCount
 } from './database';
 import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 
@@ -98,6 +100,9 @@ app.post('/api/mailboxes', async (c) => {
     // 验证参数
     if (body.address && typeof body.address !== 'string') {
       return c.json({ success: false, error: '无效的邮箱地址' }, 400);
+    }
+    if (body.password !== undefined && (typeof body.password !== 'string' || body.password.length < 6)) {
+      return c.json({ success: false, error: '密码长度至少需要 6 个字符' }, 400);
     }
     
     const expiresInHours = 876000; // 100年，相当于永久
@@ -314,12 +319,35 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     const peerAddress = withAddress;
     const messages = await getChatMessages(c.env.DB, mailboxId, peerAddress, since, limit);
 
+    // 打开/轮询聊天时，把对方发给我的消息标记为已读，角标清零
+    await markChatRead(c.env.DB, mailboxId, peerAddress);
+
     return c.json({ success: true, messages });
   } catch (error) {
     console.error('获取站内对话失败:', error);
     return c.json({
       success: false,
       error: '获取站内对话失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 获取当前邮箱未读站内消息数量（用于导航角标与首页提示条）
+app.get('/api/mailboxes/:address/chat/unread', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const mailboxId = await getMailboxId(c.env.DB, address);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+    const count = await getUnreadChatCount(c.env.DB, mailboxId);
+    return c.json({ success: true, count });
+  } catch (error) {
+    console.error('获取未读站内消息数失败:', error);
+    return c.json({
+      success: false,
+      error: '获取未读站内消息数失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

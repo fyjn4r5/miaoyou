@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { copyText } from '../lib/utils';
 
 function renderMarkdown(text: string): string {
   return text
@@ -111,8 +112,8 @@ const ChatPage: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content);
+  const copyMessage = async (content: string) => {
+    await copyText(content);
   };
 
   return (

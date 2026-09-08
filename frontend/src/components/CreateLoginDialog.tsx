@@ -1,12 +1,15 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
-import { generateRandomAddress, generatePassword } from '../utils/helpers';
+import { generateRandomAddress, generatePassword, buildAccountInfoText } from '../utils/helpers';
+import { copyText } from '../lib/utils';
 
 interface CreateLoginDialogProps {
   isOpen: boolean;
   onDismiss: () => void;
 }
+
+const MIN_PASSWORD_LENGTH = 6;
 
 const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss }) => {
   const { t } = useTranslation();
@@ -17,17 +20,37 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword());
   const [customAddress, setCustomAddress] = useState('');
   const [useCustomAddress, setUseCustomAddress] = useState(false);
+  const [customPassword, setCustomPassword] = useState('');
+  const [useCustomPassword, setUseCustomPassword] = useState(false);
   
   const [loginFullAddress, setLoginFullAddress] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+
+  // 每次打开弹窗时，随机选择地址、密码和域名后缀（而不是只依赖随机按钮）
+  useEffect(() => {
+    if (!isOpen) return;
+    setGeneratedAddress(generateRandomAddress());
+    setGeneratedPassword(generatePassword());
+    setUseCustomAddress(false);
+    setUseCustomPassword(false);
+    setCustomAddress('');
+    setCustomPassword('');
+    if (emailDomains.length > 0) {
+      setSelectedDomain(emailDomains[Math.floor(Math.random() * emailDomains.length)]);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 
   const handleRegenerate = () => {
     setGeneratedAddress(generateRandomAddress());
     setGeneratedPassword(generatePassword());
-    const randomDomain = emailDomains[Math.floor(Math.random() * emailDomains.length)];
+    setUseCustomPassword(false);
+    setCustomPassword('');
+    const randomDomain = emailDomains.length > 0
+      ? emailDomains[Math.floor(Math.random() * emailDomains.length)]
+      : selectedDomain;
     setSelectedDomain(randomDomain);
   };
 
@@ -37,15 +60,26 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
       showErrorMessage(t('mailbox.invalidAddress'));
       return;
     }
+    const finalPassword = useCustomPassword ? customPassword.trim() : generatedPassword;
+    if (useCustomPassword && finalPassword.length < MIN_PASSWORD_LENGTH) {
+      showErrorMessage(t('mailbox.passwordTooShort'));
+      return;
+    }
     const fullAddress = `${localPart}@${selectedDomain}`;
-    const result = await createMailboxWithCredentials(fullAddress, generatedPassword);
+    const result = await createMailboxWithCredentials(fullAddress, finalPassword);
     
     if (result) {
-      const siteUrl = window.location.origin;
-      const text = `-----------------------------------------------\n永久匿名邮箱：\n${siteUrl}\n\n用户名：\n${fullAddress}\n密码：\n${generatedPassword}\n-----------------------------------------------\n`;
+      const text = buildAccountInfoText({
+        siteUrl: window.location.origin,
+        fullAddress,
+        password: finalPassword,
+        title: t('mailbox.accountInfoTitle'),
+        usernameLabel: t('mailbox.username'),
+        passwordLabel: t('mailbox.password'),
+      });
       
       // 后台静默复制，不阻塞 UI
-      navigator.clipboard.writeText(text).catch(err => console.error("复制失败", err));
+      copyText(text).catch(err => console.error("复制失败", err));
       
       // 立即关闭弹窗，显示收件箱
       onDismiss();
@@ -165,12 +199,33 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1.5">
-                  {t('mailbox.password')}
-                </label>
-                <code className="block bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedPassword}>
-                  {generatedPassword}
-                </code>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold">
+                    {t('mailbox.password')}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setUseCustomPassword(!useCustomPassword); setCustomPassword(''); }}
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <i className={`fas ${useCustomPassword ? 'fa-sync-alt' : 'fa-pen'} mr-1`}></i>
+                    {useCustomPassword ? t('mailbox.randomPassword') : t('mailbox.customizePassword')}
+                  </button>
+                </div>
+                {useCustomPassword ? (
+                  <input
+                    type="text"
+                    value={customPassword}
+                    onChange={(e) => setCustomPassword(e.target.value)}
+                    placeholder={t('mailbox.passwordPlaceholder')}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm font-mono"
+                    disabled={isLoading}
+                  />
+                ) : (
+                  <code className="block bg-background rounded-lg px-3 py-2.5 text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis border" title={generatedPassword}>
+                    {generatedPassword}
+                  </code>
+                )}
               </div>
             </div>
 

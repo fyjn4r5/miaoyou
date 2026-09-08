@@ -412,6 +412,23 @@ export const getFullInternalChat = async (address: string, withAddress: string):
   }
 };
 
+// 获取当前邮箱未读站内消息数
+export const getUnreadChatCount = async (address: string): Promise<{ success: boolean; error?: any; count?: number }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/unread`));
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, count: data.count ?? 0 };
+    }
+    return { success: false, error: data.error || '获取未读数失败' };
+  } catch (error) {
+    console.error('Error fetching unread chat count:', error);
+    return { success: false, error };
+  }
+};
+
 // 清空与对方的站内聊天记录（hours>0 只清最近 N 小时；0 清空全部）
 export const clearInternalChat = async (address: string, withAddress: string, hours = 0): Promise<{ success: boolean; error?: any; deleted?: number }> => {
   try {

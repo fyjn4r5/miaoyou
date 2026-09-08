@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import { MailboxContext } from '../contexts/MailboxContext';
@@ -8,6 +8,7 @@ import HeaderMailbox from './HeaderMailbox';
 import Container from './Container';
 import ThemeSwitcher from './ThemeSwitcher';
 import { getExternalLinks } from '../config';
+import { getUnreadChatCount } from '../utils/api';
 
 interface ExternalLink {
   label: string;
@@ -36,6 +37,33 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const { setShowPasswordDialog } = useContext(MailboxContext);
+  const location = useLocation();
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // 站内聊天未读数角标（进入聊天页会由服务端标记已读）
+  useEffect(() => {
+    if (!mailbox) {
+      setUnreadChatCount(0);
+      return;
+    }
+    if (location.pathname.startsWith('/internal-chat')) {
+      setUnreadChatCount(0);
+      return;
+    }
+    let cancelled = false;
+    const fetchCount = async () => {
+      const result = await getUnreadChatCount(mailbox.address);
+      if (!cancelled && result.success) {
+        setUnreadChatCount(result.count ?? 0);
+      }
+    };
+    fetchCount();
+    const intervalId = window.setInterval(fetchCount, 30000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [mailbox, location.pathname]);
   
   return (
     <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40">
@@ -50,10 +78,15 @@ const Header: React.FC<HeaderProps> = ({
               <>
                 <Link
                   to="/internal-chat"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all duration-200 text-lg mr-2"
+                  className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all duration-200 text-lg mr-2"
                   title={t('internalChat.title')}
                 >
                   <i className="fas fa-comments"></i>
+                  {unreadChatCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                    </span>
+                  )}
                 </Link>
                 <HeaderMailbox 
                   mailbox={mailbox} 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { copyText } from '../lib/utils';
 
 interface PasswordDisplayProps {
   password: string;
@@ -11,11 +12,10 @@ const PasswordDisplay: React.FC<PasswordDisplayProps> = ({ password, address, on
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(password).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+  const handleCopy = async () => {
+    const ok = await copyText(password);
+    setCopied(ok);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (

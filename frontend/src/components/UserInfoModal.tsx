@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MailboxContext } from '../contexts/MailboxContext';
 import { RandomName } from '../utils/nameGenerator';
 import { CountryInfo } from '../utils/countryData';
+import { copyText } from '../lib/utils';
 
 interface UserInfoModalProps {
   isOpen: boolean;
@@ -22,11 +23,8 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
   if (!isOpen) return null;
 
   const copyToClipboard = async (text: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showSuccessMessage(`${label} ${t('common.copied')}`);
-    } catch {
-    }
+    const ok = await copyText(text);
+    if (ok) showSuccessMessage(`${label} ${t('common.copied')}`);
   };
 
   interface InfoItemProps {
