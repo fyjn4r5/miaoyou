@@ -26,7 +26,7 @@
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service"
   },
-    "mailbox": {
+  "mailbox": {
     "createRandom": "Create Random Mailbox",
     "createCustom": "Create Custom Mailbox",
     "create": "Create",
@@ -168,7 +168,8 @@
     "regenerate": "Regenerate",
     "fullAddress": "Full Address",
     "copyFullAddress": "Copy full address",
-    "country": "Country"
+    "country": "Country",
+    "internal": "Internal"
   },
   "settings": {
     "language": "Language",
@@ -178,7 +179,7 @@
     "generic": "An error occurred, please try again later",
     "notFound": "The requested resource was not found"
   },
-    "intro": {
+  "intro": {
     "hero": {
       "title": "Your Permanent Anonymous Email",
       "subtitle": "No phone number, no personal info, one-click to create a permanent mailbox with password recovery",
@@ -387,5 +388,22 @@
     "welcome": "Hi! I'm your AI assistant. How can I help you?",
     "error": "Connection failed, please retry",
     "copy": "Copy"
+  },
+  "internalChat": {
+    "title": "Internal Chat",
+    "intro": "Enter an email address registered on Miaoyou to start real-time internal chatting. Messages also appear in both inboxes as internal mail.",
+    "myAddress": "My mailbox",
+    "peerPlaceholder": "Enter peer mailbox, e.g. name@alice7.eu.org",
+    "peerHint": "The peer must have registered this mailbox on Miaoyou",
+    "start": "Start chat",
+    "back": "Back",
+    "online": "Internal",
+    "messages": "messages",
+    "empty": "No messages yet. Say hello!",
+    "inputPlaceholder": "Type your message, Enter to send...",
+    "send": "Send",
+    "sendFailed": "Send failed. Make sure the peer mailbox exists",
+    "selfError": "You cannot send an internal message to yourself",
+    "needLogin": "Please create or log in to a Miaoyou mailbox first"
   }
 }

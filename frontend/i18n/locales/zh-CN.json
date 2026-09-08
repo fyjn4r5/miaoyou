@@ -175,7 +175,8 @@
     "regenerate": "随机生成",
     "fullAddress": "完整地址",
     "copyFullAddress": "复制完整地址",
-    "country": "国家"
+    "country": "国家",
+    "internal": "站内"
   },
   "settings": {
     "language": "语言",
@@ -394,5 +395,22 @@
     "welcome": "你好！我是 AI 助手，有什么可以帮你的？",
     "error": "连接失败，请重试",
     "copy": "复制"
+  },
+  "internalChat": {
+    "title": "站内聊天",
+    "intro": "输入对方在秒邮注册的邮箱地址，即可与其站内实时聊天。消息会以站内邮件形式出现在双方收件箱中。",
+    "myAddress": "我的邮箱",
+    "peerPlaceholder": "输入对方的邮箱地址，如 name@alice7.eu.org",
+    "peerHint": "对方必须已在秒邮注册该邮箱，且使用密码登录后才能收发",
+    "start": "开始聊天",
+    "back": "返回",
+    "online": "站内在线",
+    "messages": "条消息",
+    "empty": "还没有消息，发一条打个招呼吧",
+    "inputPlaceholder": "输入消息，按 Enter 发送...",
+    "send": "发送",
+    "sendFailed": "发送失败，请确认对方邮箱存在",
+    "selfError": "不能给自己发送站内消息",
+    "needLogin": "请先创建或登录一个秒邮邮箱，再使用站内聊天"
   }
 }

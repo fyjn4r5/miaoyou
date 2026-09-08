@@ -44,6 +44,7 @@ export interface Email {
   receivedAt: number;
   hasAttachments: boolean;
   isRead: boolean;
+  isInternal?: boolean;
 }
 
 // 保存邮件参数
@@ -56,6 +57,7 @@ export interface SaveEmailParams {
   textContent?: string;
   htmlContent?: string;
   hasAttachments?: boolean;
+  isInternal?: boolean;
 }
 
 // 邮件列表项（不包含内容）
@@ -69,6 +71,7 @@ export interface EmailListItem {
   receivedAt: number;
   hasAttachments: boolean;
   isRead: boolean;
+  isInternal?: boolean;
 }
 
 // 附件类型
@@ -150,4 +153,24 @@ export interface SendEmailParams {
   subject: string;      // 邮件主题
   textContent?: string; // 纯文本内容
   htmlContent?: string; // HTML内容
+}
+
+// 站内发信参数
+export interface SendMessageParams {
+  fromAddress: string;   // 发件人邮箱地址
+  toAddress: string;     // 收件人邮箱地址
+  content: string;       // 消息内容
+  subject?: string;      // 可选主题（默认为发件人地址）
+}
+
+// 聊天消息
+export interface ChatMessage {
+  id: string;
+  fromAddress: string;
+  toAddress: string;
+  fromName: string;
+  subject: string;
+  textContent: string;
+  receivedAt: number;
+  isRead: boolean;
 }

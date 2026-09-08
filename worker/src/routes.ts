@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { Env} from './types';
+import { Env, Mailbox } from './types';
 import { 
   createMailbox, 
   getMailbox, 
@@ -16,9 +16,12 @@ import {
   getMailboxCountByIpLast24h,
   batchDeleteEmails,
   batchMarkEmailsAsRead,
-  batchMarkEmailsAsUnread
+  batchMarkEmailsAsUnread,
+  getMailboxId,
+  sendInternalMessage,
+  getChatMessages
 } from './database';
-import { generateRandomAddress, generatePassword } from './utils';
+import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName } from './utils';
 
 // 创建 Hono 应用
 const app = new Hono<{ Bindings: Env }>();
@@ -227,6 +230,94 @@ app.get('/api/mailboxes/:address/emails', async (c) => {
     return c.json({ 
       success: false, 
       error: '获取邮件列表失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 站内发信（发送站内消息给本站的另一邮箱）
+app.post('/api/mailboxes/:address/messages', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const body = await c.req.json();
+
+    if (!body.toAddress || typeof body.toAddress !== 'string') {
+      return c.json({ success: false, error: '请填写收件人邮箱地址' }, 400);
+    }
+    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) {
+      return c.json({ success: false, error: '消息内容不能为空' }, 400);
+    }
+
+    const content = body.content.trim();
+    if (content.length > 5000) {
+      return c.json({ success: false, error: '单条消息长度不能超过 5000 字符' }, 400);
+    }
+
+    const toAddress = body.toAddress.trim().toLowerCase();
+
+    if (!isValidEmailAddress(toAddress)) {
+      return c.json({ success: false, error: '收件人地址格式不正确' }, 400);
+    }
+
+    // 发件人必须是本站邮箱且已登录
+    const fromMailboxId = await getMailboxId(c.env.DB, address);
+    if (!fromMailboxId) {
+      return c.json({ success: false, error: '发件邮箱不存在' }, 404);
+    }
+
+    // 不能给自己发信
+    if (toAddress === address) {
+      return c.json({ success: false, error: '不能给自己发送站内消息' }, 400);
+    }
+
+    // 收件人必须在本站存在（站内发信）
+    const toMailboxId = await getMailboxId(c.env.DB, toAddress);
+    if (!toMailboxId) {
+      return c.json({ success: false, error: '对方邮箱不存在，请确认对方已在秒邮注册' }, 404);
+    }
+
+    const fromName = extractMailboxName(address);
+    const fromMailbox = { id: fromMailboxId, address } as Mailbox;
+    const toMailbox = { id: toMailboxId, address: toAddress } as Mailbox;
+    await sendInternalMessage(c.env.DB, fromMailbox, toMailbox, fromName, content);
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('站内发信失败:', error);
+    return c.json({
+      success: false,
+      error: '站内发信失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 获取与对方的站内对话（增量轮询，降低 D1 读取量）
+app.get('/api/mailboxes/:address/chat', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const withAddress = (c.req.query('with') || '').trim().toLowerCase();
+    const since = Number(c.req.query('since')) || 0;
+    const limit = Math.min(Number(c.req.query('limit')) || 30, 50);
+
+    if (!withAddress || !isValidEmailAddress(withAddress)) {
+      return c.json({ success: false, error: '缺少有效的对方邮箱地址' }, 400);
+    }
+
+    const mailboxId = await getMailboxId(c.env.DB, address);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const peerAddress = withAddress;
+    const messages = await getChatMessages(c.env.DB, mailboxId, peerAddress, since, limit);
+
+    return c.json({ success: true, messages });
+  } catch (error) {
+    console.error('获取站内对话失败:', error);
+    return c.json({
+      success: false,
+      error: '获取站内对话失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

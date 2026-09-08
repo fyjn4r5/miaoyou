@@ -47,11 +47,20 @@ const Header: React.FC<HeaderProps> = ({
           
           <div className="flex items-center bg-muted/60 rounded-xl px-3 py-1.5 shadow-sm">
             {mailbox ? (
-              <HeaderMailbox 
-                mailbox={mailbox} 
-                onMailboxChange={onMailboxChange}
-                isLoading={isLoading}
-              />
+              <>
+                <Link
+                  to="/internal-chat"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary transition-all duration-200 text-lg mr-2"
+                  title={t('internalChat.title')}
+                >
+                  <i className="fas fa-comments"></i>
+                </Link>
+                <HeaderMailbox 
+                  mailbox={mailbox} 
+                  onMailboxChange={onMailboxChange}
+                  isLoading={isLoading}
+                />
+              </>
             ) : (
               <button
                 onClick={() => setShowPasswordDialog(true)}

@@ -27,6 +27,7 @@ interface Email {
   receivedAt: number;
   hasAttachments: boolean;
   isRead: boolean;
+  isInternal?: boolean;
 }
 
 interface Attachment {

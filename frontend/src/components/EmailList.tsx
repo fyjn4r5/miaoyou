@@ -392,8 +392,13 @@ const EmailList: React.FC<EmailListProps> = ({
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <span className={`truncate ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground'}`}>
-                        {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block mr-2"></span>}
+                      <span className={`truncate flex items-center gap-1.5 ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground'}`}>
+                        {!email.isRead && <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>}
+                        {email.isInternal && (
+                          <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                            {t('email.internal')}
+                          </span>
+                        )}
                         {email.fromName || email.fromAddress}
                       </span>
                       <span className="text-sm text-muted-foreground whitespace-nowrap ml-2 tabular-nums">

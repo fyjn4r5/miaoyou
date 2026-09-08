@@ -352,3 +352,44 @@ export const batchMarkAsUnread = async (emailIds: string[]): Promise<{ success: 
     return { success: false, error };
   }
 };
+
+// 发送站内消息（给本站的另一邮箱）
+export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(fromAddress)}/messages`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ toAddress, content }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true };
+    }
+    return { success: false, error: data.error || '发送失败' };
+  } catch (error) {
+    console.error('Error sending internal message:', error);
+    return { success: false, error };
+  }
+};
+
+// 获取与对方的站内对话（增量轮询）
+export const getInternalChat = async (address: string, withAddress: string, since = 0): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+  try {
+    const query = `with=${encodeURIComponent(withAddress)}&since=${since}&limit=30`;
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`));
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, messages: data.messages };
+    }
+    return { success: false, error: data.error || '获取对话失败' };
+  } catch (error) {
+    console.error('Error fetching internal chat:', error);
+    return { success: false, error, messages: [] };
+  }
+};

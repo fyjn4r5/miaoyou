@@ -7,7 +7,8 @@ import {
   EmailListItem,
   Attachment,
   AttachmentListItem,
-  SaveAttachmentParams
+  SaveAttachmentParams,
+  ChatMessage
 } from './types';
 import { 
   generateId, 
@@ -17,6 +18,17 @@ import {
 
 // 附件分块大小（字节）
 const CHUNK_SIZE = 500000; // 约500KB
+
+/**
+ * 幂等地为表添加列（若列已存在则跳过）
+ */
+async function addColumnIfMissing(db: D1Database, table: string, column: string, definition: string): Promise<void> {
+  const cols = await db.prepare(`PRAGMA table_info(${table})`).all<{ name: string }>();
+  const exists = cols.results?.some(c => c.name === column);
+  if (!exists) {
+    await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+  }
+}
 
 /**
  * 初始化数据库
@@ -44,6 +56,12 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_email_id ON attachments(email_id);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_attachment_chunks_attachment_id ON attachment_chunks(attachment_id);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_attachment_chunks_chunk_index ON attachment_chunks(chunk_index);`);
+    
+    // [feat] 站内信：为 emails 表添加 is_internal 列（幂等迁移，避免重复添加）
+    await addColumnIfMissing(db, 'emails', 'is_internal', 'INTEGER DEFAULT 0');
+    // [feat] 站内信：为对话按 peer 地址查询建立索引（from/to 双向，降低扫描行数）
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_emails_mailbox_peer ON emails(mailbox_id, from_address, received_at);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_emails_mailbox_to ON emails(mailbox_id, to_address, received_at);`);
     
     console.log('数据库初始化成功');
   } catch (error) {
@@ -100,6 +118,17 @@ export async function getMailbox(db: D1Database, address: string): Promise<Mailb
     ipAddress: result.ip_address as string,
     lastAccessed: now,
   };
+}
+
+/**
+ * 轻量检查邮箱是否存在并返回ID（不更新 last_accessed，节省 D1 写入）
+ * @param db 数据库实例
+ * @param address 邮箱地址
+ * @returns 邮箱ID或null
+ */
+export async function getMailboxId(db: D1Database, address: string): Promise<string | null> {
+  const result = await db.prepare(`SELECT id FROM mailboxes WHERE address = ?`).bind(address).first<{ id: string }>();
+  return result?.id || null;
 }
 
 /**
@@ -306,11 +335,12 @@ export async function saveEmail(db: D1Database, params: SaveEmailParams): Promis
       receivedAt: now,
       hasAttachments: params.hasAttachments || false,
       isRead: false,
+      isInternal: params.isInternal || false,
     };
     
     console.log('准备插入邮件:', email.id);
     
-    await db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(email.id, email.mailboxId, email.fromAddress, email.fromName, email.toAddress, email.subject, email.textContent, email.htmlContent, email.receivedAt, email.hasAttachments ? 1 : 0, email.isRead ? 1 : 0).run();
+    await db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(email.id, email.mailboxId, email.fromAddress, email.fromName, email.toAddress, email.subject, email.textContent, email.htmlContent, email.receivedAt, email.hasAttachments ? 1 : 0, email.isRead ? 1 : 0, email.isInternal ? 1 : 0).run();
     
     console.log('邮件保存成功:', email.id);
     
@@ -405,7 +435,7 @@ export async function saveAttachment(db: D1Database, params: SaveAttachmentParam
  * @returns 邮件列表
  */
 export async function getEmails(db: D1Database, mailboxId: string): Promise<EmailListItem[]> {
-  const results = await db.prepare(`SELECT id, mailbox_id, from_address, from_name, to_address, subject, received_at, has_attachments, is_read FROM emails WHERE mailbox_id = ? ORDER BY received_at DESC`).bind(mailboxId).all();
+  const results = await db.prepare(`SELECT id, mailbox_id, from_address, from_name, to_address, subject, received_at, has_attachments, is_read, is_internal FROM emails WHERE mailbox_id = ? ORDER BY received_at DESC`).bind(mailboxId).all();
   
   if (!results.results) return [];
   
@@ -419,6 +449,7 @@ export async function getEmails(db: D1Database, mailboxId: string): Promise<Emai
     receivedAt: result.received_at as number,
     hasAttachments: !!result.has_attachments,
     isRead: !!result.is_read,
+    isInternal: !!result.is_internal,
   }));
 }
 
@@ -429,7 +460,7 @@ export async function getEmails(db: D1Database, mailboxId: string): Promise<Emai
  * @returns 邮件详情
  */
 export async function getEmail(db: D1Database, id: string): Promise<Email | null> {
-  const result = await db.prepare(`SELECT id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read FROM emails WHERE id = ?`).bind(id).first();
+  const result = await db.prepare(`SELECT id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal FROM emails WHERE id = ?`).bind(id).first();
   
   if (!result) return null;
   
@@ -448,6 +479,7 @@ export async function getEmail(db: D1Database, id: string): Promise<Email | null
     receivedAt: result.received_at as number,
     hasAttachments: !!result.has_attachments,
     isRead: true,
+    isInternal: !!result.is_internal,
   };
 }
 
@@ -601,4 +633,146 @@ export async function getMailboxCountByIpLast24h(db: D1Database, ipAddress: stri
   const oneDayAgo = now - (24 * 60 * 60);
   const result = await db.prepare(`SELECT COUNT(*) as count FROM mailboxes WHERE ip_address = ? AND created_at > ?`).bind(ipAddress, oneDayAgo).first<{ count: number }>();
   return result?.count || 0;
+}
+
+/**
+ * 发送站内消息（写入发件人与收件人两个邮箱，各自保留一条完整对话记录）
+ * @param db 数据库实例
+ * @param fromMailbox 发件人邮箱
+ * @param toMailbox 收件人邮箱
+ * @param fromName 发件人显示名（地址）
+ * @param content 消息内容
+ * @returns 发件人侧保存的邮件
+ */
+export async function sendInternalMessage(
+  db: D1Database,
+  fromMailbox: Mailbox,
+  toMailbox: Mailbox,
+  fromName: string,
+  content: string
+): Promise<Email> {
+  const now = getCurrentTimestamp();
+  const subject = `站内消息`;
+
+  // 发件人侧：记录一条已发送的消息，from=发件人，to=收件人
+  const senderEmail: Email = {
+    id: generateId(),
+    mailboxId: fromMailbox.id,
+    fromAddress: fromMailbox.address,
+    fromName,
+    toAddress: toMailbox.address,
+    subject,
+    textContent: content,
+    htmlContent: '',
+    receivedAt: now,
+    hasAttachments: false,
+    isRead: true,
+    isInternal: true,
+  };
+
+  // 收件人侧：记录一条收到的消息，from=发件人，to=收件人
+  const receiverEmail: Email = {
+    id: generateId(),
+    mailboxId: toMailbox.id,
+    fromAddress: fromMailbox.address,
+    fromName,
+    toAddress: toMailbox.address,
+    subject,
+    textContent: content,
+    htmlContent: '',
+    receivedAt: now,
+    hasAttachments: false,
+    isRead: false,
+    isInternal: true,
+  };
+
+  // 两条写入合并在一次 batch 中，降低 D1 事务开销
+  await db.batch([
+    db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(senderEmail.id, senderEmail.mailboxId, senderEmail.fromAddress, senderEmail.fromName, senderEmail.toAddress, senderEmail.subject, senderEmail.textContent, senderEmail.htmlContent, senderEmail.receivedAt, 0, 1, 1),
+    db.prepare(`INSERT INTO emails (id, mailbox_id, from_address, from_name, to_address, subject, text_content, html_content, received_at, has_attachments, is_read, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(receiverEmail.id, receiverEmail.mailboxId, receiverEmail.fromAddress, receiverEmail.fromName, receiverEmail.toAddress, receiverEmail.subject, receiverEmail.textContent, receiverEmail.htmlContent, receiverEmail.receivedAt, 0, 0, 1),
+  ]);
+
+  console.log(`站内消息发送成功: ${fromMailbox.address} -> ${toMailbox.address}`);
+  return senderEmail;
+}
+
+/**
+ * 获取与某用户之间的对话消息（轻量、增量查询，降低 D1 读取量）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param peerAddress 对方邮箱地址
+ * @param since 若>0则只获取大于该时间戳的新消息（增量轮询）；为0则获取最近 limit 条
+ * @param limit 单次最多返回条数
+ * @returns 聊天消息列表（按时间升序）
+ */
+export async function getChatMessages(
+  db: D1Database,
+  mailboxId: string,
+  peerAddress: string,
+  since: number,
+  limit: number
+): Promise<ChatMessage[]> {
+  let rows: Array<{
+    id: string;
+    from_address: string;
+    from_name: string;
+    to_address: string;
+    subject: string;
+    text_content: string;
+    received_at: number;
+    is_read: boolean | number;
+  }> = [];
+
+  if (since > 0) {
+    // 增量轮询：只取新消息（用 >= 防止同一秒内的消息被遗漏，客户端按 id 去重）
+    const res = await db.prepare(`
+      SELECT id, from_address, from_name, to_address, subject, text_content, received_at, is_read
+      FROM emails
+      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND received_at >= ?
+      ORDER BY received_at ASC
+      LIMIT ?
+    `).bind(mailboxId, peerAddress, peerAddress, since, limit).all<{
+      id: string;
+      from_address: string;
+      from_name: string;
+      to_address: string;
+      subject: string;
+      text_content: string;
+      received_at: number;
+      is_read: number | boolean;
+    }>();
+    rows = res.results || [];
+  } else {
+    // 初始加载：取最近 limit 条（先按时间倒序取，再升序返回）
+    const res = await db.prepare(`
+      SELECT id, from_address, from_name, to_address, subject, text_content, received_at, is_read
+      FROM emails
+      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?)
+      ORDER BY received_at DESC
+      LIMIT ?
+    `).bind(mailboxId, peerAddress, peerAddress, limit).all<{
+      id: string;
+      from_address: string;
+      from_name: string;
+      to_address: string;
+      subject: string;
+      text_content: string;
+      received_at: number;
+      is_read: number | boolean;
+    }>();
+    rows = (res.results || []).reverse();
+  }
+
+  return rows.map(r => ({
+    id: r.id,
+    fromAddress: r.from_address,
+    toAddress: r.to_address,
+    fromName: r.from_name || '',
+    subject: r.subject || '',
+    textContent: r.text_content || '',
+    receivedAt: r.received_at,
+    isRead: !!r.is_read,
+  }));
 }
