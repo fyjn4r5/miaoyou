@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat } from '../utils/api';
+import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations } from '../utils/api';
 
 interface ChatMessage {
   id: string;
@@ -32,6 +32,8 @@ const InternalChatPage: React.FC = () => {
   const [exporting, setExporting] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [showClearMenu, setShowClearMenu] = useState(false);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +67,25 @@ const InternalChatPage: React.FC = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 未选择对话对象时，拉取会话列表，让用户看到"谁发来、发了什么"
+  useEffect(() => {
+    if (!myAddress || connectedPeer) {
+      setConversations([]);
+      return;
+    }
+    let active = true;
+    setConversationsLoading(true);
+    getInternalChatConversations(myAddress).then(result => {
+      if (!active) return;
+      if (result.success && result.conversations) {
+        setConversations(result.conversations);
+      }
+    }).finally(() => {
+      if (active) setConversationsLoading(false);
+    });
+    return () => { active = false; };
+  }, [myAddress, connectedPeer]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -251,13 +272,66 @@ const InternalChatPage: React.FC = () => {
             </div>
           </div>
         ) : !connectedPeer ? (
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6">
-            <div className="text-5xl opacity-30"><i className="fas fa-comments"></i></div>
+          <div className="flex-1 flex flex-col items-center justify-start min-h-[50vh] pt-6 text-center space-y-5">
             <div>
+              <div className="text-5xl opacity-30 mb-4"><i className="fas fa-comments"></i></div>
               <h1 className="text-2xl font-bold mb-2">{t('internalChat.title')}</h1>
               <p className="text-muted-foreground text-sm max-w-md">{t('internalChat.intro')}</p>
               <p className="text-xs text-muted-foreground/70 mt-2">{t('internalChat.myAddress')}: <span className="font-mono text-primary">{myAddress}</span></p>
             </div>
+
+            <div className="w-full max-w-xl text-left">
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <h2 className="text-sm font-semibold text-muted-foreground">{t('internalChat.conversations')}</h2>
+                {conversationsLoading && (
+                  <span className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-primary"></span>
+                )}
+              </div>
+              {!conversationsLoading && conversations.length === 0 ? (
+                <div className="bg-muted/40 rounded-xl px-4 py-6 text-center text-sm text-muted-foreground border">
+                  {t('internalChat.noConversations')}
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[35vh] overflow-y-auto">
+                  {conversations.map(conv => (
+                    <button
+                      key={conv.peer}
+                      onClick={() => {
+                        setConnectedPeer(conv.peer);
+                        setPeer(conv.peer);
+                        try {
+                          localStorage.setItem('internalChatPeer', conv.peer);
+                        } catch {}
+                        sinceRef.current = 0;
+                        setMessages([]);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border bg-background hover:bg-muted/60 transition-colors text-left"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <i className="fas fa-user"></i>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-sm truncate font-mono">{conv.peer}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">{formatTime(conv.lastAt)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-sm truncate ${conv.unreadCount > 0 ? 'font-medium' : 'text-muted-foreground'}`}>
+                            {conv.lastMessage || t('internalChat.empty')}
+                          </span>
+                          {conv.unreadCount > 0 && (
+                            <span className="shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
+                              {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="w-full max-w-md flex gap-2">
               <input
                 type="text"

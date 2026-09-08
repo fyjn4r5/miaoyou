@@ -174,3 +174,11 @@ export interface ChatMessage {
   receivedAt: number;
   isRead: boolean;
 }
+
+// 会话列表项（用于聊天首页展示"谁发来、发了什么、几条未读"）
+export interface ChatConversation {
+  peer: string;        // 对方邮箱地址
+  lastMessage: string; // 最近一条消息内容
+  lastAt: number;      // 最近一条消息时间（秒）
+  unreadCount: number; // 对方发来的未读数
+}

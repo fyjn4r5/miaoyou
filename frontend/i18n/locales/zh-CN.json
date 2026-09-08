@@ -409,7 +409,9 @@
   },
   "internalChat": {
     "title": "站内聊天",
-    "intro": "输入对方在秒邮注册的邮箱地址，即可与其站内实时聊天。消息会以站内邮件形式出现在双方收件箱中。",
+    "intro": "输入对方在秒邮注册的邮箱地址，即可与其站内实时聊天。",
+    "conversations": "最近的对话",
+    "noConversations": "暂无对话，在下方输入对方邮箱地址即可开始聊天",
     "myAddress": "我的邮箱",
     "peerPlaceholder": "输入对方的邮箱地址，如 name@alice7.eu.org",
     "peerHint": "对方必须已在秒邮注册该邮箱，且使用密码登录后才能收发",

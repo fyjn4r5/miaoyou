@@ -8,7 +8,8 @@ import {
   Attachment,
   AttachmentListItem,
   SaveAttachmentParams,
-  ChatMessage
+  ChatMessage,
+  ChatConversation
 } from './types';
 import { 
   generateId, 
@@ -794,6 +795,66 @@ export async function deleteInternalMessages(
   const deleted = (myRes.meta?.changes || 0) + (peerRes.meta?.changes || 0);
   console.log(`清理站内聊天记录: ${deleted} 条（${myAddress} <-> ${peerAddress}${afterTs > 0 ? `, 自 ${afterTs} 起` : ', 全部'}）`);
   return deleted;
+}
+
+/**
+ * 获取当前邮箱的站内会话列表（最近的对话 = 谁发来、发了什么、几条未读）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param myAddress 当前邮箱地址
+ * @param limit 最多扫描的消息条数（用于聚合最近会话）
+ */
+export async function getChatConversations(
+  db: D1Database,
+  mailboxId: string,
+  myAddress: string,
+  limit = 200
+): Promise<ChatConversation[]> {
+  // 取最近的消息，聚合出每个对方最近一条内容
+  const res = await db.prepare(`
+    SELECT from_address, to_address, content, created_at
+    FROM chat_messages
+    WHERE mailbox_id = ?
+    ORDER BY created_at DESC
+    LIMIT ?
+  `).bind(mailboxId, limit).all<{
+    from_address: string;
+    to_address: string;
+    content: string;
+    created_at: number;
+  }>();
+  const rows = res.results || [];
+
+  const latest = new Map<string, { lastMessage: string; lastAt: number }>();
+  for (const r of rows) {
+    const peer = r.from_address === myAddress ? r.to_address : r.from_address;
+    if (!peer || peer === myAddress) continue;
+    if (!latest.has(peer)) {
+      latest.set(peer, { lastMessage: r.content || '', lastAt: r.created_at });
+    }
+  }
+
+  // 对方发来的未读数
+  const unreadRes = await db.prepare(`
+    SELECT from_address, COUNT(*) AS cnt
+    FROM chat_messages
+    WHERE mailbox_id = ? AND is_read = 0
+    GROUP BY from_address
+  `).bind(mailboxId).all<{ from_address: string; cnt: number }>();
+  const unreadMap = new Map<string, number>();
+  for (const u of unreadRes.results || []) {
+    unreadMap.set(u.from_address, u.cnt);
+  }
+
+  const conversations: ChatConversation[] = [...latest.entries()].map(([peer, info]) => ({
+    peer,
+    lastMessage: info.lastMessage,
+    lastAt: info.lastAt,
+    unreadCount: unreadMap.get(peer) || 0,
+  }));
+
+  conversations.sort((a, b) => b.lastAt - a.lastAt);
+  return conversations;
 }
 
 /**

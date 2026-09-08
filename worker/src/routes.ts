@@ -20,6 +20,7 @@ import {
   getMailboxId,
   sendInternalMessage,
   getChatMessages,
+  getChatConversations,
   deleteInternalMessages,
   markChatRead,
   getUnreadChatCount
@@ -328,6 +329,26 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     return c.json({
       success: false,
       error: '获取站内对话失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 获取当前邮箱的站内会话列表（谁发来、发了什么、几条未读）
+app.get('/api/mailboxes/:address/chat/conversations', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const mailboxId = await getMailboxId(c.env.DB, address);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+    const conversations = await getChatConversations(c.env.DB, mailboxId, address);
+    return c.json({ success: true, conversations });
+  } catch (error) {
+    console.error('获取站内会话列表失败:', error);
+    return c.json({
+      success: false,
+      error: '获取站内会话列表失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

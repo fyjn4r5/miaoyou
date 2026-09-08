@@ -39,6 +39,14 @@ interface Attachment {
   size: number;
 }
 
+// 站内会话列表项
+interface ChatConversation {
+  peer: string;
+  lastMessage: string;
+  lastAt: number;
+  unreadCount: number;
+}
+
 // Toast 相关类型
 interface Toast {
   id: string;

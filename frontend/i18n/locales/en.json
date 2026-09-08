@@ -402,7 +402,9 @@
   },
   "internalChat": {
     "title": "Internal Chat",
-    "intro": "Enter an email address registered on Miaoyou to start real-time internal chatting. Messages also appear in both inboxes as internal mail.",
+    "intro": "Enter an email address registered on Miaoyou to start real-time internal chatting.",
+    "conversations": "Recent conversations",
+    "noConversations": "No conversations yet. Enter a peer address below to start.",
     "myAddress": "My mailbox",
     "peerPlaceholder": "Enter peer mailbox, e.g. name@alice7.eu.org",
     "peerHint": "The peer must have registered this mailbox on Miaoyou",

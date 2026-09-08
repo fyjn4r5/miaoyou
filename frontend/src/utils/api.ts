@@ -429,6 +429,23 @@ export const getUnreadChatCount = async (address: string): Promise<{ success: bo
   }
 };
 
+// 获取当前邮箱的站内会话列表（谁发来、发了什么、几条未读）
+export const getInternalChatConversations = async (address: string): Promise<{ success: boolean; error?: any; conversations?: ChatConversation[] }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/conversations`));
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, conversations: data.conversations ?? [] };
+    }
+    return { success: false, error: data.error || '获取会话列表失败' };
+  } catch (error) {
+    console.error('Error fetching chat conversations:', error);
+    return { success: false, error, conversations: [] };
+  }
+};
+
 // 清空与对方的站内聊天记录（hours>0 只清最近 N 小时；0 清空全部）
 export const clearInternalChat = async (address: string, withAddress: string, hours = 0): Promise<{ success: boolean; error?: any; deleted?: number }> => {
   try {
