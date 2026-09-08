@@ -47,7 +47,7 @@
     "passwordMinLength": 6,
     "copyAccountInfo": "复制完整帐号信息",
     "copyAccountInfoSuccess": "完整帐号信息已复制",
-    "accountInfoTitle": "永久匿名邮箱",
+    "accountInfoTitle": "秒邮-永久匿名邮箱",
     "username": "用户名",
     "expiresIn": "有效期",
     "expiresAt": "过期时间",
