@@ -176,7 +176,8 @@
     "fullAddress": "完整地址",
     "copyFullAddress": "复制完整地址",
     "country": "国家",
-    "internal": "站内"
+    "internal": "站内",
+    "enterChat": "进入聊天"
   },
   "settings": {
     "language": "语言",
@@ -411,6 +412,20 @@
     "send": "发送",
     "sendFailed": "发送失败，请确认对方邮箱存在",
     "selfError": "不能给自己发送站内消息",
-    "needLogin": "请先创建或登录一个秒邮邮箱，再使用站内聊天"
+    "needLogin": "请先创建或登录一个秒邮邮箱，再使用站内聊天",
+    "peer": "对方",
+    "me": "我",
+    "exportTitle": "站内聊天记录导出",
+    "export": "导出",
+    "exportSuccess": "聊天记录已导出",
+    "exportFailed": "导出失败",
+    "clear": "清空",
+    "clear1h": "清空最近 1 小时",
+    "clear24h": "清空最近 24 小时",
+    "clearAll": "清空全部",
+    "clearAllConfirm": "确定清空与该用户的所有站内聊天记录吗？此操作双方均不可恢复。",
+    "clearHoursConfirm": "确定清空最近 {{hours}} 小时的站内聊天记录吗？此操作双方均不可恢复。",
+    "clearSuccess": "聊天记录已清空",
+    "clearFailed": "清空失败"
   }
 }

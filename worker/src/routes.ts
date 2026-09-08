@@ -19,9 +19,10 @@ import {
   batchMarkEmailsAsUnread,
   getMailboxId,
   sendInternalMessage,
-  getChatMessages
+  getChatMessages,
+  deleteInternalMessages
 } from './database';
-import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName } from './utils';
+import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 
 // 创建 Hono 应用
 const app = new Hono<{ Bindings: Env }>();
@@ -298,7 +299,8 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     const address = c.req.param('address').trim().toLowerCase();
     const withAddress = (c.req.query('with') || '').trim().toLowerCase();
     const since = Number(c.req.query('since')) || 0;
-    const limit = Math.min(Number(c.req.query('limit')) || 30, 50);
+    // 导出时允许拉取全部历史，上限放宽到 5000
+    const limit = Math.min(Number(c.req.query('limit')) || 30, 5000);
 
     if (!withAddress || !isValidEmailAddress(withAddress)) {
       return c.json({ success: false, error: '缺少有效的对方邮箱地址' }, 400);
@@ -318,6 +320,39 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     return c.json({
       success: false,
       error: '获取站内对话失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 清空与某用户的站内聊天记录（按小时，双方副本一并删除）
+app.delete('/api/mailboxes/:address/chat', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const withAddress = (c.req.query('with') || '').trim().toLowerCase();
+    const hours = Number(c.req.query('hours')) || 0;
+
+    if (!withAddress || !isValidEmailAddress(withAddress)) {
+      return c.json({ success: false, error: '缺少有效的对方邮箱地址' }, 400);
+    }
+
+    // 双方邮箱都必须存在
+    const myId = await getMailboxId(c.env.DB, address);
+    const peerId = await getMailboxId(c.env.DB, withAddress);
+    if (!myId || !peerId) {
+      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    // hours > 0 表示仅清空最近 N 小时；0 表示清空全部
+    const afterTs = hours > 0 ? getCurrentTimestamp() - hours * 3600 : 0;
+    const deleted = await deleteInternalMessages(c.env.DB, myId, address, peerId, withAddress, afterTs);
+
+    return c.json({ success: true, deleted });
+  } catch (error) {
+    console.error('清空站内聊天记录失败:', error);
+    return c.json({
+      success: false,
+      error: '清空站内聊天记录失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

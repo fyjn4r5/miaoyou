@@ -169,7 +169,8 @@
     "fullAddress": "Full Address",
     "copyFullAddress": "Copy full address",
     "country": "Country",
-    "internal": "Internal"
+    "internal": "Internal",
+    "enterChat": "Chat"
   },
   "settings": {
     "language": "Language",
@@ -404,6 +405,20 @@
     "send": "Send",
     "sendFailed": "Send failed. Make sure the peer mailbox exists",
     "selfError": "You cannot send an internal message to yourself",
-    "needLogin": "Please create or log in to a Miaoyou mailbox first"
+    "needLogin": "Please create or log in to a Miaoyou mailbox first",
+    "peer": "Peer",
+    "me": "Me",
+    "exportTitle": "Internal Chat Export",
+    "export": "Export",
+    "exportSuccess": "Chat history exported",
+    "exportFailed": "Export failed",
+    "clear": "Clear",
+    "clear1h": "Clear last 1 hour",
+    "clear24h": "Clear last 24 hours",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Clear all internal chat history with this user? This cannot be undone on both sides.",
+    "clearHoursConfirm": "Clear internal chat history from the last {{hours}} hour(s)? This cannot be undone on both sides.",
+    "clearSuccess": "Chat history cleared",
+    "clearFailed": "Clear failed"
   }
 }

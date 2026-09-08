@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import EmailDetail from './EmailDetail';
 import UserInfoModal from './UserInfoModal';
@@ -21,6 +22,7 @@ const EmailList: React.FC<EmailListProps> = ({
   isLoading 
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { autoRefresh, setAutoRefresh, refreshEmails, mailbox, deleteMailbox, showSuccessMessage, showErrorMessage } = useContext(MailboxContext);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
@@ -401,8 +403,23 @@ const EmailList: React.FC<EmailListProps> = ({
                         )}
                         {email.fromName || email.fromAddress}
                       </span>
-                      <span className="text-sm text-muted-foreground whitespace-nowrap ml-2 tabular-nums">
-                        {formatDate(email.receivedAt)}
+                      <span className="flex items-center gap-2 shrink-0">
+                        {email.isInternal && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/internal-chat?peer=${encodeURIComponent(email.fromName || email.fromAddress)}`);
+                            }}
+                            className="px-2.5 py-1 text-xs rounded-full bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 hover:border-green-500 transition-colors"
+                            title={t('email.enterChat')}
+                          >
+                            <i className="fas fa-comments mr-1"></i>
+                            {t('email.enterChat')}
+                          </button>
+                        )}
+                        <span className="text-sm text-muted-foreground whitespace-nowrap tabular-nums">
+                          {formatDate(email.receivedAt)}
+                        </span>
                       </span>
                     </div>
                     <div className={`text-sm truncate ${!email.isRead ? 'font-medium' : 'text-muted-foreground'}`}>

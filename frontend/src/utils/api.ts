@@ -393,3 +393,41 @@ export const getInternalChat = async (address: string, withAddress: string, sinc
     return { success: false, error, messages: [] };
   }
 };
+
+// 拉取与对方的完整站内对话（导出用，较大的 limit）
+export const getFullInternalChat = async (address: string, withAddress: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+  try {
+    const query = `with=${encodeURIComponent(withAddress)}&since=0&limit=5000`;
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`));
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, messages: data.messages };
+    }
+    return { success: false, error: data.error || '获取对话失败' };
+  } catch (error) {
+    console.error('Error fetching full internal chat:', error);
+    return { success: false, error, messages: [] };
+  }
+};
+
+// 清空与对方的站内聊天记录（hours>0 只清最近 N 小时；0 清空全部）
+export const clearInternalChat = async (address: string, withAddress: string, hours = 0): Promise<{ success: boolean; error?: any; deleted?: number }> => {
+  try {
+    const query = `with=${encodeURIComponent(withAddress)}&hours=${hours}`;
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
+      method: 'DELETE',
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, deleted: data.deleted };
+    }
+    return { success: false, error: data.error || '清空失败' };
+  } catch (error) {
+    console.error('Error clearing internal chat:', error);
+    return { success: false, error };
+  }
+};

@@ -776,3 +776,41 @@ export async function getChatMessages(
     isRead: !!r.is_read,
   }));
 }
+
+/**
+ * 删除与某用户之间的站内消息（同时删除双方各自保存的副本）
+ * @param db 数据库实例
+ * @param myId 当前邮箱ID
+ * @param myAddress 当前邮箱地址
+ * @param peerId 对方邮箱ID
+ * @param peerAddress 对方邮箱地址
+ * @param afterTs 只删除该时间戳之后的消息（秒）；为0表示全部
+ * @returns 删除的消息条数
+ */
+export async function deleteInternalMessages(
+  db: D1Database,
+  myId: string,
+  myAddress: string,
+  peerId: string,
+  peerAddress: string,
+  afterTs: number
+): Promise<number> {
+  // 双方各自删除 from/to 与双方匹配的站内消息
+  const timeCond = afterTs > 0 ? ` AND received_at >= ${afterTs}` : '';
+
+  const myRes = await db.prepare(`
+    DELETE FROM emails
+    WHERE mailbox_id = ? AND is_internal = 1
+      AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
+  `).bind(myId, myAddress, peerAddress, peerAddress, myAddress).run();
+
+  const peerRes = await db.prepare(`
+    DELETE FROM emails
+    WHERE mailbox_id = ? AND is_internal = 1
+      AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
+  `).bind(peerId, myAddress, peerAddress, peerAddress, myAddress).run();
+
+  const deleted = (myRes.meta?.changes || 0) + (peerRes.meta?.changes || 0);
+  console.log(`清理站内聊天记录: ${deleted} 条（${myAddress} <-> ${peerAddress}${afterTs > 0 ? `, 自 ${afterTs} 起` : ', 全部'}）`);
+  return deleted;
+}

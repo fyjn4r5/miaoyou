@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import { sendInternalMessage, getInternalChat } from '../utils/api';
+import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat } from '../utils/api';
 
 interface ChatMessage {
   id: string;
@@ -20,6 +21,7 @@ const POLL_INTERVAL = 4000;
 const InternalChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { mailbox, showSuccessMessage, showErrorMessage } = useContext(MailboxContext);
+  const [searchParams] = useSearchParams();
 
   const [peer, setPeer] = useState('');
   const [connectedPeer, setConnectedPeer] = useState('');
@@ -27,23 +29,39 @@ const InternalChatPage: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [savedPeer, setSavedPeer] = useState(() => {
-    try {
-      return localStorage.getItem('internalChatPeer') || '';
-    } catch {
-      return '';
-    }
-  });
+  const [exporting, setExporting] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [showClearMenu, setShowClearMenu] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sinceRef = useRef(0);
   const myAddress = mailbox?.address || '';
 
+  // 支持 ?peer=xxx 直达：从收件箱站内消息点击进入时自动开始聊天
   useEffect(() => {
-    if (savedPeer) {
-      setPeer(savedPeer);
-      setConnectedPeer(savedPeer);
+    const peerParam = searchParams.get('peer');
+    if (peerParam && peerParam.trim()) {
+      const target = peerParam.trim().toLowerCase();
+      if (target !== myAddress) {
+        setPeer(target);
+        setConnectedPeer(target);
+        try {
+          localStorage.setItem('internalChatPeer', target);
+        } catch {}
+      }
+    } else {
+      const saved = (() => {
+        try {
+          return localStorage.getItem('internalChatPeer') || '';
+        } catch {
+          return '';
+        }
+      })();
+      if (saved) {
+        setPeer(saved);
+        setConnectedPeer(saved);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -111,7 +129,6 @@ const InternalChatPage: React.FC = () => {
       return;
     }
     setConnectedPeer(target);
-    setSavedPeer(target);
     try {
       localStorage.setItem('internalChatPeer', target);
     } catch {}
@@ -155,6 +172,74 @@ const InternalChatPage: React.FC = () => {
     } catch {}
   };
 
+  // 导出聊天记录为文本文件（拉取完整历史）
+  const handleExport = async () => {
+    if (!myAddress || !connectedPeer || exporting) return;
+    setExporting(true);
+    try {
+      const result = await getFullInternalChat(myAddress, connectedPeer);
+      if (!result.success || !result.messages) {
+        showErrorMessage(t('internalChat.exportFailed'));
+        return;
+      }
+      const lines: string[] = [];
+      lines.push(`=== ${t('internalChat.exportTitle')} ===`);
+      lines.push(`${t('internalChat.myAddress')}: ${myAddress}`);
+      lines.push(`${t('internalChat.peer')}: ${connectedPeer}`);
+      lines.push('');
+      for (const m of result.messages) {
+        const time = new Intl.DateTimeFormat(undefined, {
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+        }).format(new Date(m.receivedAt * 1000));
+        const sender = m.fromAddress === myAddress ? `${myAddress} (${t('internalChat.me')})` : connectedPeer;
+        lines.push(`[${time}] ${sender}`);
+        lines.push(m.textContent || '');
+        lines.push('');
+      }
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chat_${myAddress}_${connectedPeer}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showSuccessMessage(t('internalChat.exportSuccess'));
+    } catch {
+      showErrorMessage(t('internalChat.exportFailed'));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // 清空聊天记录（按小时；0 表示全部）
+  const handleClear = async (hours: number) => {
+    if (!myAddress || !connectedPeer) return;
+    const label = hours === 0
+      ? t('internalChat.clearAllConfirm')
+      : t('internalChat.clearHoursConfirm', { hours });
+    if (!window.confirm(label)) return;
+
+    setClearing(true);
+    setShowClearMenu(false);
+    try {
+      const result = await clearInternalChat(myAddress, connectedPeer, hours);
+      if (result.success) {
+        setMessages([]);
+        sinceRef.current = 0;
+        showSuccessMessage(t('internalChat.clearSuccess'));
+      } else {
+        showErrorMessage(t('internalChat.clearFailed'));
+      }
+    } catch {
+      showErrorMessage(t('internalChat.clearFailed'));
+    } finally {
+      setClearing(false);
+    }
+  };
+
   return (
     <Container>
       <div className="max-w-4xl mx-auto h-[calc(100vh-12rem)] flex flex-col">
@@ -194,11 +279,11 @@ const InternalChatPage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between py-4 border-b">
+            <div className="flex items-center justify-between py-4 border-b gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   onClick={resetChat}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted transition-colors shrink-0"
                   title={t('internalChat.back')}
                 >
                   <i className="fas fa-arrow-left"></i>
@@ -208,9 +293,54 @@ const InternalChatPage: React.FC = () => {
                   <div className="text-xs text-muted-foreground">{t('internalChat.online')}</div>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {messages.length} {t('internalChat.messages')}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-muted-foreground">
+                  {messages.length} {t('internalChat.messages')}
+                </span>
+                <button
+                  onClick={handleExport}
+                  disabled={exporting || messages.length === 0}
+                  className="px-3 py-1.5 text-sm rounded-full bg-muted/60 hover:bg-muted/80 text-foreground hover:text-primary border border-border/60 hover:border-border flex items-center gap-1.5 disabled:opacity-50"
+                  title={t('internalChat.export')}
+                >
+                  <i className="fas fa-download text-xs"></i>
+                  <span className="hidden sm:inline">{exporting ? '...' : t('internalChat.export')}</span>
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowClearMenu(v => !v)}
+                    onBlur={() => setTimeout(() => setShowClearMenu(false), 150)}
+                    disabled={clearing || messages.length === 0}
+                    className="px-3 py-1.5 text-sm rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 hover:border-red-500 flex items-center gap-1.5 disabled:opacity-50"
+                    title={t('internalChat.clear')}
+                  >
+                    <i className="fas fa-trash text-xs"></i>
+                    <span className="hidden sm:inline">{clearing ? '...' : t('internalChat.clear')}</span>
+                  </button>
+                  {showClearMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-popover border shadow-xl z-50 py-1.5 overflow-hidden">
+                      <button
+                        className="w-full text-left px-4 py-2.5 text-sm text-popover-foreground hover:bg-muted transition-colors"
+                        onClick={() => handleClear(1)}
+                      >
+                        {t('internalChat.clear1h')}
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2.5 text-sm text-popover-foreground hover:bg-muted transition-colors"
+                        onClick={() => handleClear(24)}
+                      >
+                        {t('internalChat.clear24h')}
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                        onClick={() => handleClear(0)}
+                      >
+                        {t('internalChat.clearAll')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto py-4 space-y-3">
