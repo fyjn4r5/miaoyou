@@ -3,6 +3,12 @@ import { API_BASE_URL } from "../config";
 // API请求基础URL
 const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
 
+// 读取/操作邮箱数据所需的密码鉴权头
+const authHeaders = (password?: string): Record<string, string> => {
+  if (!password) return {};
+  return { 'X-Mailbox-Password': password };
+};
+
 // 创建随机邮箱
 export const createRandomMailbox = async (expiresInHours = 876000) => {
   try {
@@ -117,9 +123,11 @@ export const createCustomMailbox = async (address: string, expiresInHours = 8760
 };
 
 // 获取邮箱信息
-export const getMailbox = async (address: string) => {
+export const getMailbox = async (address: string, password?: string) => {
   try {
-    const response = await fetch(apiUrl(`/api/mailboxes/${address}`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}`), {
+      headers: authHeaders(password),
+    });
     
     if (!response.ok) {
       if (response.status === 404) {
@@ -141,14 +149,16 @@ export const getMailbox = async (address: string) => {
 };
 
 // 获取邮件列表
-export const getEmails = async (address: string) => {
+export const getEmails = async (address: string, password?: string) => {
   try {
     // 检查地址是否为空
     if (!address) {
       return { success: false, error: 'Address is empty', emails: [] };
     }
     
-    const response = await fetch(apiUrl(`/api/mailboxes/${address}/emails`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/emails`), {
+      headers: authHeaders(password),
+    });
     
     // 直接处理404状态码
     if (response.status === 404) {
@@ -176,10 +186,11 @@ export const getEmails = async (address: string) => {
 };
 
 // 删除邮箱
-export const deleteMailbox = async (address: string) => {
+export const deleteMailbox = async (address: string, password?: string) => {
   try {
-    const response = await fetch(apiUrl(`/api/mailboxes/${address}`), {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}`), {
       method: 'DELETE',
+      headers: authHeaders(password),
     });
     
     if (!response.ok) {
@@ -282,12 +293,13 @@ export const getStats = async (): Promise<{ success: boolean; stats?: { mailboxC
 };
 
 // 批量删除邮件
-export const batchDeleteEmails = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+export const batchDeleteEmails = async (emailIds: string[], password?: string): Promise<{ success: boolean; error?: any }> => {
   try {
     const response = await fetch(apiUrl('/api/emails/batch/delete'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(password),
       },
       body: JSON.stringify({ emailIds }),
     });
@@ -306,12 +318,13 @@ export const batchDeleteEmails = async (emailIds: string[]): Promise<{ success: 
 };
 
 // 批量标记邮件为已读
-export const batchMarkAsRead = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+export const batchMarkAsRead = async (emailIds: string[], password?: string): Promise<{ success: boolean; error?: any }> => {
   try {
     const response = await fetch(apiUrl('/api/emails/batch/read'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(password),
       },
       body: JSON.stringify({ emailIds }),
     });
@@ -330,12 +343,13 @@ export const batchMarkAsRead = async (emailIds: string[]): Promise<{ success: bo
 };
 
 // 批量标记邮件为未读
-export const batchMarkAsUnread = async (emailIds: string[]): Promise<{ success: boolean; error?: any }> => {
+export const batchMarkAsUnread = async (emailIds: string[], password?: string): Promise<{ success: boolean; error?: any }> => {
   try {
     const response = await fetch(apiUrl('/api/emails/batch/unread'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(password),
       },
       body: JSON.stringify({ emailIds }),
     });
@@ -377,10 +391,12 @@ export const sendInternalMessage = async (fromAddress: string, toAddress: string
 };
 
 // 获取与对方的站内对话（增量轮询）
-export const getInternalChat = async (address: string, withAddress: string, since = 0): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+export const getInternalChat = async (address: string, withAddress: string, since = 0, password?: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&since=${since}&limit=30`;
-    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
+      headers: authHeaders(password),
+    });
 
     const data = await response.json();
 
@@ -395,10 +411,12 @@ export const getInternalChat = async (address: string, withAddress: string, sinc
 };
 
 // 拉取与对方的完整站内对话（导出用，较大的 limit）
-export const getFullInternalChat = async (address: string, withAddress: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+export const getFullInternalChat = async (address: string, withAddress: string, password?: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&since=0&limit=5000`;
-    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
+      headers: authHeaders(password),
+    });
 
     const data = await response.json();
 
@@ -413,9 +431,11 @@ export const getFullInternalChat = async (address: string, withAddress: string):
 };
 
 // 获取当前邮箱未读站内消息数
-export const getUnreadChatCount = async (address: string): Promise<{ success: boolean; error?: any; count?: number }> => {
+export const getUnreadChatCount = async (address: string, password?: string): Promise<{ success: boolean; error?: any; count?: number }> => {
   try {
-    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/unread`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/unread`), {
+      headers: authHeaders(password),
+    });
 
     const data = await response.json();
 
@@ -430,9 +450,11 @@ export const getUnreadChatCount = async (address: string): Promise<{ success: bo
 };
 
 // 获取当前邮箱的站内会话列表（谁发来、发了什么、几条未读）
-export const getInternalChatConversations = async (address: string): Promise<{ success: boolean; error?: any; conversations?: ChatConversation[] }> => {
+export const getInternalChatConversations = async (address: string, password?: string): Promise<{ success: boolean; error?: any; conversations?: ChatConversation[] }> => {
   try {
-    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/conversations`));
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/conversations`), {
+      headers: authHeaders(password),
+    });
 
     const data = await response.json();
 
@@ -447,11 +469,12 @@ export const getInternalChatConversations = async (address: string): Promise<{ s
 };
 
 // 清空与对方的站内聊天记录（hours>0 只清最近 N 小时；0 清空全部）
-export const clearInternalChat = async (address: string, withAddress: string, hours = 0): Promise<{ success: boolean; error?: any; deleted?: number }> => {
+export const clearInternalChat = async (address: string, withAddress: string, hours = 0, password?: string): Promise<{ success: boolean; error?: any; deleted?: number }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&hours=${hours}`;
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
       method: 'DELETE',
+      headers: authHeaders(password),
     });
 
     const data = await response.json();

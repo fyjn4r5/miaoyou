@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, Context } from 'hono';
 import { cors } from 'hono/cors';
 import { Env, Mailbox } from './types';
 import { 
@@ -25,18 +25,74 @@ import {
   getChatConversations,
   deleteInternalMessages,
   markChatRead,
-  getUnreadChatCount
+  getUnreadChatCount,
+  getEmailOwnerMailboxId,
+  getAttachmentMailboxId,
+  getMailboxAddressById,
+  getEmailsOwnerMailboxId
 } from './database';
 import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 
 // 创建 Hono 应用
 const app = new Hono<{ Bindings: Env }>();
 
+type AuthenticatedContext = Context<{ Bindings: Env }>;
+
+// 从请求头获取邮箱读取密码并校验（鉴权）
+async function requireMailboxAuth(c: AuthenticatedContext, address: string): Promise<Mailbox | null> {
+  const password = c.req.header('X-Mailbox-Password') || '';
+  if (!password) return null;
+  return verifyMailboxPassword(c.env.DB, address, password);
+}
+
+// 校验是否有权访问某个邮箱ID的数据（先反查地址再校验密码）
+async function authOwnerMailbox(c: AuthenticatedContext, mailboxId: string): Promise<boolean> {
+  const address = await getMailboxAddressById(c.env.DB, mailboxId);
+  if (!address) return false;
+  return !!(await requireMailboxAuth(c, address));
+}
+
+// 校验是否有权访问某封邮件（返回 'notfound' 表示邮件不存在）
+async function emailAccess(c: AuthenticatedContext, emailId: string): Promise<boolean | 'notfound'> {
+  const mailboxId = await getEmailOwnerMailboxId(c.env.DB, emailId);
+  if (!mailboxId) return 'notfound';
+  if (!(await authOwnerMailbox(c, mailboxId))) return false;
+  return true;
+}
+
+// 校验是否有权访问某附件（返回 'notfound' 表示附件不存在）
+async function attachmentAccess(c: AuthenticatedContext, attachmentId: string): Promise<boolean | 'notfound'> {
+  const mailboxId = await getAttachmentMailboxId(c.env.DB, attachmentId);
+  if (!mailboxId) return 'notfound';
+  if (!(await authOwnerMailbox(c, mailboxId))) return false;
+  return true;
+}
+
+// 校验是否有权批量操作这些邮件
+async function emailsBatchAccess(c: AuthenticatedContext, emailIds: string[]): Promise<boolean | 'notfound' | 'mixed'> {
+  const { exists, mailboxId } = await getEmailsOwnerMailboxId(c.env.DB, emailIds);
+  if (exists === 0) return 'notfound';
+  if (!mailboxId) return 'mixed';
+  if (!(await authOwnerMailbox(c, mailboxId))) return false;
+  return true;
+}
+
+// 去掉密码等敏感字段后返回给前端的邮箱信息
+function publicMailbox(mailbox: Mailbox) {
+  const { password, ...rest } = mailbox;
+  return rest;
+}
+
+// 401 响应
+function unauthorized(c: AuthenticatedContext) {
+  return c.json({ success: false, error: '需要邮箱密码鉴权' }, 401);
+}
+
 // 添加 CORS 中间件
 app.use('/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type'],
+  allowHeaders: ['Content-Type', 'X-Mailbox-Password'],
   maxAge: 86400,
 }));
 
@@ -149,7 +205,8 @@ app.post('/api/mailboxes', async (c) => {
       ipAddress: ip,
     });
     
-    return c.json({ success: true, mailbox, password });
+    // 明文密码单独返回（仅展示/保存用），mailbox 中不包含密码及哈希
+    return c.json({ success: true, mailbox: publicMailbox(mailbox), password });
   } catch (error) {
     console.error('创建邮箱失败:', error);
     return c.json({ 
@@ -170,7 +227,12 @@ app.get('/api/mailboxes/:address', async (c) => {
       return c.json({ success: false, error: '邮箱不存在' }, 404);
     }
     
-    return c.json({ success: true, mailbox });
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      return unauthorized(c);
+    }
+    
+    return c.json({ success: true, mailbox: publicMailbox(mailbox) });
   } catch (error) {
     console.error('获取邮箱失败:', error);
     return c.json({ 
@@ -210,7 +272,7 @@ app.post('/api/mailboxes/login', async (c) => {
       return c.json({ success: false, error: '邮箱地址或密码错误' }, 401);
     }
     
-    return c.json({ success: true, mailbox });
+    return c.json({ success: true, mailbox: publicMailbox(mailbox) });
   } catch (error) {
     console.error('登录失败:', error);
     return c.json({ 
@@ -225,6 +287,11 @@ app.post('/api/mailboxes/login', async (c) => {
 app.delete('/api/mailboxes/:address', async (c) => {
   try {
     const address = c.req.param('address');
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
     await deleteMailbox(c.env.DB, address);
     
     return c.json({ success: true });
@@ -242,10 +309,10 @@ app.delete('/api/mailboxes/:address', async (c) => {
 app.get('/api/mailboxes/:address/emails', async (c) => {
   try {
     const address = c.req.param('address');
-    const mailbox = await getMailbox(c.env.DB, address);
-    
+    const mailbox = await requireMailboxAuth(c, address);
     if (!mailbox) {
-      return c.json({ success: false, error: '邮箱不存在' }, 404);
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
     }
     
     const emails = await getEmails(c.env.DB, mailbox.id);
@@ -339,10 +406,12 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
       return c.json({ success: false, error: '缺少有效的对方邮箱地址' }, 400);
     }
 
-    const mailboxId = await getMailboxId(c.env.DB, address);
-    if (!mailboxId) {
-      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
     }
+    const mailboxId = auth.id;
 
     const peerAddress = withAddress;
     const messages = await getChatMessages(c.env.DB, mailboxId, peerAddress, since, limit);
@@ -365,10 +434,12 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
 app.get('/api/mailboxes/:address/chat/conversations', async (c) => {
   try {
     const address = c.req.param('address').trim().toLowerCase();
-    const mailboxId = await getMailboxId(c.env.DB, address);
-    if (!mailboxId) {
-      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
     }
+    const mailboxId = auth.id;
     const conversations = await getChatConversations(c.env.DB, mailboxId, address);
     return c.json({ success: true, conversations });
   } catch (error) {
@@ -385,11 +456,12 @@ app.get('/api/mailboxes/:address/chat/conversations', async (c) => {
 app.get('/api/mailboxes/:address/chat/unread', async (c) => {
   try {
     const address = c.req.param('address').trim().toLowerCase();
-    const mailboxId = await getMailboxId(c.env.DB, address);
-    if (!mailboxId) {
-      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
     }
-    const count = await getUnreadChatCount(c.env.DB, mailboxId);
+    const count = await getUnreadChatCount(c.env.DB, auth.id);
     return c.json({ success: true, count });
   } catch (error) {
     console.error('获取未读站内消息数失败:', error);
@@ -412,8 +484,14 @@ app.delete('/api/mailboxes/:address/chat', async (c) => {
       return c.json({ success: false, error: '缺少有效的对方邮箱地址' }, 400);
     }
 
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
     // 双方邮箱都必须存在
-    const myId = await getMailboxId(c.env.DB, address);
+    const myId = auth.id;
     const peerId = await getMailboxId(c.env.DB, withAddress);
     if (!myId || !peerId) {
       return c.json({ success: false, error: '邮箱不存在' }, 404);
@@ -438,6 +516,14 @@ app.delete('/api/mailboxes/:address/chat', async (c) => {
 app.get('/api/emails/:id', async (c) => {
   try {
     const id = c.req.param('id');
+    const access = await emailAccess(c, id);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === false) {
+      return unauthorized(c);
+    }
+    
     const email = await getEmail(c.env.DB, id);
     
     if (!email) {
@@ -459,11 +545,12 @@ app.get('/api/emails/:id', async (c) => {
 app.get('/api/emails/:id/attachments', async (c) => {
   try {
     const id = c.req.param('id');
-    
-    // 检查邮件是否存在
-    const email = await getEmail(c.env.DB, id);
-    if (!email) {
+    const access = await emailAccess(c, id);
+    if (access === 'notfound') {
       return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === false) {
+      return unauthorized(c);
     }
     
     // 获取附件列表
@@ -484,6 +571,14 @@ app.get('/api/emails/:id/attachments', async (c) => {
 app.get('/api/attachments/:id', async (c) => {
   try {
     const id = c.req.param('id');
+    const access = await attachmentAccess(c, id);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '附件不存在' }, 404);
+    }
+    if (access === false) {
+      return unauthorized(c);
+    }
+    
     const attachment = await getAttachment(c.env.DB, id);
     
     if (!attachment) {
@@ -575,6 +670,13 @@ app.post('/api/chat', async (c) => {
 app.delete('/api/emails/:id', async (c) => {
   try {
     const id = c.req.param('id');
+    const access = await emailAccess(c, id);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === false) {
+      return unauthorized(c);
+    }
     await deleteEmail(c.env.DB, id);
     
     return c.json({ success: true });
@@ -592,6 +694,13 @@ app.delete('/api/emails/:id', async (c) => {
 app.put('/api/emails/:id/unread', async (c) => {
   try {
     const id = c.req.param('id');
+    const access = await emailAccess(c, id);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === false) {
+      return unauthorized(c);
+    }
     await markEmailAsUnread(c.env.DB, id);
     
     return c.json({ success: true });
@@ -613,6 +722,17 @@ app.post('/api/emails/batch/delete', async (c) => {
     
     if (!Array.isArray(emailIds) || emailIds.length === 0) {
       return c.json({ success: false, error: '请提供要删除的邮件ID列表' }, 400);
+    }
+    
+    const access = await emailsBatchAccess(c, emailIds);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === 'mixed') {
+      return c.json({ success: false, error: '存在不属于当前邮箱的邮件' }, 403);
+    }
+    if (access === false) {
+      return unauthorized(c);
     }
     
     await batchDeleteEmails(c.env.DB, emailIds);
@@ -638,6 +758,17 @@ app.post('/api/emails/batch/read', async (c) => {
       return c.json({ success: false, error: '请提供要标记的邮件ID列表' }, 400);
     }
     
+    const access = await emailsBatchAccess(c, emailIds);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === 'mixed') {
+      return c.json({ success: false, error: '存在不属于当前邮箱的邮件' }, 403);
+    }
+    if (access === false) {
+      return unauthorized(c);
+    }
+    
     await batchMarkEmailsAsRead(c.env.DB, emailIds);
     
     return c.json({ success: true });
@@ -659,6 +790,17 @@ app.post('/api/emails/batch/unread', async (c) => {
     
     if (!Array.isArray(emailIds) || emailIds.length === 0) {
       return c.json({ success: false, error: '请提供要标记的邮件ID列表' }, 400);
+    }
+    
+    const access = await emailsBatchAccess(c, emailIds);
+    if (access === 'notfound') {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+    if (access === 'mixed') {
+      return c.json({ success: false, error: '存在不属于当前邮箱的邮件' }, 403);
+    }
+    if (access === false) {
+      return unauthorized(c);
     }
     
     await batchMarkEmailsAsUnread(c.env.DB, emailIds);

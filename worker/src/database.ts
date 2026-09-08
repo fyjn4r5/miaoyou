@@ -577,6 +577,50 @@ export async function getEmail(db: D1Database, id: string): Promise<Email | null
 }
 
 /**
+ * 获取邮件所属的邮箱ID（不读取邮件内容、不标记已读，供鉴权用）
+ */
+export async function getEmailOwnerMailboxId(db: D1Database, emailId: string): Promise<string | null> {
+  const result = await db.prepare(`SELECT mailbox_id FROM emails WHERE id = ?`).bind(emailId).first<{ mailbox_id: string }>();
+  return result?.mailbox_id || null;
+}
+
+/**
+ * 通过附件ID解析其所属邮箱ID（关联邮件，不读取附件内容，供鉴权用）
+ */
+export async function getAttachmentMailboxId(db: D1Database, attachmentId: string): Promise<string | null> {
+  const result = await db.prepare(
+    `SELECT e.mailbox_id FROM attachments a JOIN emails e ON e.id = a.email_id WHERE a.id = ?`
+  ).bind(attachmentId).first<{ mailbox_id: string }>();
+  return result?.mailbox_id || null;
+}
+
+/**
+ * 根据邮箱ID获取其地址（供鉴权回查用）
+ */
+export async function getMailboxAddressById(db: D1Database, mailboxId: string): Promise<string | null> {
+  const result = await db.prepare(`SELECT address FROM mailboxes WHERE id = ?`).bind(mailboxId).first<{ address: string }>();
+  return result?.address || null;
+}
+
+/**
+ * 批量邮件鉴权：检查这些邮件是否都属于同一邮箱
+ * @returns exists=存在的邮件数；mailboxId=共同归属的邮箱ID（混属或多重时返回 null）
+ */
+export async function getEmailsOwnerMailboxId(db: D1Database, emailIds: string[]): Promise<{ exists: number; mailboxId: string | null }> {
+  let mailboxId: string | null = null;
+  let exists = 0;
+  for (const id of emailIds) {
+    const result = await db.prepare(`SELECT mailbox_id FROM emails WHERE id = ?`).bind(id).first<{ mailbox_id: string }>();
+    if (result) {
+      exists++;
+      if (mailboxId === null) mailboxId = result.mailbox_id;
+      else if (mailboxId !== result.mailbox_id) return { exists, mailboxId: null };
+    }
+  }
+  return { exists, mailboxId };
+}
+
+/**
  * 获取附件列表
  * @param db 数据库实例
  * @param emailId 邮件ID

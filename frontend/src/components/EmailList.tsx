@@ -82,7 +82,7 @@ const EmailList: React.FC<EmailListProps> = ({
     
     setIsBatchOperating(true);
     try {
-      const result = await batchDeleteEmails(Array.from(selectedEmailIds));
+      const result = await batchDeleteEmails(Array.from(selectedEmailIds), mailbox?.password);
       if (result.success) {
         showSuccessMessage(t('email.batchDeleteSuccess', { count: selectedEmailIds.size }));
         setSelectedEmailIds(new Set());
@@ -101,7 +101,7 @@ const EmailList: React.FC<EmailListProps> = ({
     
     setIsBatchOperating(true);
     try {
-      const result = await batchMarkAsRead(Array.from(selectedEmailIds));
+      const result = await batchMarkAsRead(Array.from(selectedEmailIds), mailbox?.password);
       if (result.success) {
         showSuccessMessage(t('email.batchMarkAsReadSuccess', { count: selectedEmailIds.size }));
         setSelectedEmailIds(new Set());
@@ -120,7 +120,7 @@ const EmailList: React.FC<EmailListProps> = ({
     
     setIsBatchOperating(true);
     try {
-      const result = await batchMarkAsUnread(Array.from(selectedEmailIds));
+      const result = await batchMarkAsUnread(Array.from(selectedEmailIds), mailbox?.password);
       if (result.success) {
         showSuccessMessage(t('email.batchMarkAsUnreadSuccess', { count: selectedEmailIds.size }));
         setSelectedEmailIds(new Set());

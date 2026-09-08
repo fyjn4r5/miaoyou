@@ -21,12 +21,17 @@ interface Attachment {
 
 const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const { t } = useTranslation();
-  const { emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage, setEmails } = useContext(MailboxContext);
+  const { mailbox, emailCache, addToEmailCache, handleMailboxNotFound, showErrorMessage, showSuccessMessage, setEmails } = useContext(MailboxContext);
   const [email, setEmail] = useState<Email | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
   const [htmlHeight, setHtmlHeight] = useState(600);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
+  const attachmentUrlsRef = useRef<Record<string, string>>({});
+
+  // 密码鉴权头（读取/操作邮件与附件都需要）
+  const authHeaders: Record<string, string> = mailbox?.password ? { 'X-Mailbox-Password': mailbox.password } : {};
 
   // iframe 加载完成后按内容自适应高度
   const handleHtmlLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
@@ -44,6 +49,37 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const processHtmlContent = (html: string) => {
     return html.replace(/<a\s(?![^>]*target=)/gi, '<a target="_blank" rel="noopener noreferrer" ');
   };
+
+  // 通过鉴权接口获取附件二进制并生成 Blob URL（浏览器的 img/video/a 等无法携带自定义请求头）
+  const loadAttachmentBlob = async (attachment: Attachment) => {
+    if (attachmentUrlsRef.current[attachment.id]) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/attachments/${attachment.id}?download=true`, {
+        headers: authHeaders,
+      });
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      attachmentUrlsRef.current[attachment.id] = url;
+      setAttachmentUrls(prev => ({ ...prev, [attachment.id]: url }));
+    } catch {
+      // 加载失败时保持无预览状态
+    }
+  };
+
+  // 附件列表变化时按需加载 Blob
+  useEffect(() => {
+    attachments.forEach(a => loadAttachmentBlob(a));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attachments, mailbox?.password, attachmentUrls]);
+
+  // 卸载时释放所有 Blob URL
+  useEffect(() => {
+    return () => {
+      Object.values(attachmentUrlsRef.current).forEach(url => URL.revokeObjectURL(url));
+      attachmentUrlsRef.current = {};
+    };
+  }, []);
 
   const syncEmailReadStatus = (read: boolean) => {
     setEmails((prev: Email[]) => prev.map((email: Email) =>
@@ -65,7 +101,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
         }
         
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`);
+        const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
+          headers: authHeaders,
+        });
         
         if (!response.ok) {
           // 如果邮箱不存在（404），则清除本地缓存并创建新邮箱
@@ -106,7 +144,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const fetchAttachments = async (emailId: string, emailData?: Email) => {
     try {
       setIsLoadingAttachments(true);
-      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`);
+      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`, {
+          headers: authHeaders,
+        });
       
       if (!response.ok) {
         // 如果邮箱不存在（404），则清除本地缓存并创建新邮箱
@@ -140,6 +180,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/unread`, {
         method: 'PUT',
+        headers: authHeaders,
       });
 
       if (!response.ok) {
@@ -165,6 +206,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
         method: 'DELETE',
+        headers: authHeaders,
       });
       
       if (!response.ok) {
@@ -231,16 +273,14 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     }
   };
   
-  // 获取附件下载链接
-  const getAttachmentUrl = (attachmentId: string, download: boolean = false): string => {
-    return `${API_BASE_URL}/api/attachments/${attachmentId}${download ? '?download=true' : ''}`;
-  };
-  
   // 渲染附件预览
   const renderAttachmentPreview = (attachment: Attachment) => {
     const fileType = getFileType(attachment.mimeType);
-    const attachmentUrl = getAttachmentUrl(attachment.id, true);
+    const attachmentUrl = attachmentUrls[attachment.id];
     
+    // 非文件类预览或 Blob 尚未加载完成时，不渲染预览
+    if (fileType === 'file' || !attachmentUrl) return null;
+
     switch (fileType) {
       case 'image':
         return (
@@ -385,15 +425,20 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                             <p className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</p>
                           </div>
                         </div>
-                        <a 
-                          href={getAttachmentUrl(attachment.id, true)}
-                          download={attachment.filename}
-                          className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {t('email.download')}
-                        </a>
+                        {attachmentUrls[attachment.id] ? (
+                          <a 
+                            href={attachmentUrls[attachment.id]}
+                            download={attachment.filename}
+                            className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
+                          >
+                            {t('email.download')}
+                          </a>
+                        ) : (
+                          <span className="px-3 py-1 bg-muted text-muted-foreground rounded-md text-sm inline-flex items-center">
+                            <span className="mr-1.5 inline-block animate-spin h-3 w-3 border-b-2 border-current rounded-full"></span>
+                            {t('email.downloading')}
+                          </span>
+                        )}
                       </div>
                       
                       {/* 附件预览 */}

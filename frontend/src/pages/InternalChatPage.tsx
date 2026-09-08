@@ -76,7 +76,7 @@ const InternalChatPage: React.FC = () => {
     }
     let active = true;
     setConversationsLoading(true);
-    getInternalChatConversations(myAddress).then(result => {
+    getInternalChatConversations(myAddress, mailbox?.password).then(result => {
       if (!active) return;
       if (result.success && result.conversations) {
         setConversations(result.conversations);
@@ -100,7 +100,7 @@ const InternalChatPage: React.FC = () => {
     if (!myAddress || !connectedPeer) return;
 
     const since = isInitial ? 0 : sinceRef.current;
-    const result = await getInternalChat(myAddress, connectedPeer, since);
+    const result = await getInternalChat(myAddress, connectedPeer, since, mailbox?.password);
 
     if (result.success && result.messages) {
       const incoming: ChatMessage[] = result.messages;
@@ -198,7 +198,7 @@ const InternalChatPage: React.FC = () => {
     if (!myAddress || !connectedPeer || exporting) return;
     setExporting(true);
     try {
-      const result = await getFullInternalChat(myAddress, connectedPeer);
+      const result = await getFullInternalChat(myAddress, connectedPeer, mailbox?.password);
       if (!result.success || !result.messages) {
         showErrorMessage(t('internalChat.exportFailed'));
         return;
@@ -246,7 +246,7 @@ const InternalChatPage: React.FC = () => {
     setClearing(true);
     setShowClearMenu(false);
     try {
-      const result = await clearInternalChat(myAddress, connectedPeer, hours);
+      const result = await clearInternalChat(myAddress, connectedPeer, hours, mailbox?.password);
       if (result.success) {
         setMessages([]);
         sinceRef.current = 0;

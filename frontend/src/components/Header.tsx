@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({
     }
     let cancelled = false;
     const fetchCount = async () => {
-      const result = await getUnreadChatCount(mailbox.address);
+      const result = await getUnreadChatCount(mailbox.address, mailbox.password);
       if (!cancelled && result.success) {
         setUnreadChatCount(result.count ?? 0);
       }

@@ -103,6 +103,7 @@
     "attachmentsNotSupported": "Attachment download not supported yet",
     "noAttachments": "No attachments",
     "download": "Download",
+    "downloading": "Preparing...",
     "videoNotSupported": "Your browser does not support video playback",
     "audioNotSupported": "Your browser does not support audio playback",
     "noSubject": "No Subject",

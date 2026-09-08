@@ -256,7 +256,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
       setErrorMessage(null);
       setSuccessMessage(null);
 
-      const result = await apiDeleteMailbox(mailbox.address);
+      const result = await apiDeleteMailbox(mailbox.address, mailbox.password);
 
       if (result.success) {
         showSuccessMessage(t('mailbox.deleteSuccess'));
@@ -291,7 +291,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     setIsEmailsLoading(true);
 
     try {
-      const result = await getEmails(mailbox.address);
+      const result = await getEmails(mailbox.address, mailbox.password);
 
       if (result.success) {
         setEmails(result.emails);
