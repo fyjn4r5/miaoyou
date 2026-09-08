@@ -20,6 +20,78 @@ import {
 // 附件分块大小（字节）
 const CHUNK_SIZE = 500000; // 约500KB
 
+// 密码哈希：PBKDF2(SHA-256, 100000次迭代)，格式 pbkdf2$<saltHex>$<hashHex>
+const PASSWORD_HASH_PREFIX = 'pbkdf2$';
+const PBKDF2_ITERATIONS = 100000;
+
+function toHex(bytes: Uint8Array): string {
+  return [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  const clean = hex.replace(/[^0-9a-fA-F]/g, '');
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
+  }
+  return out;
+}
+
+// 常数时间字符串比较（避免时序攻击）
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const importedKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: salt as BufferSource, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    importedKey,
+    256
+  );
+  return `${PASSWORD_HASH_PREFIX}${toHex(salt)}$${toHex(new Uint8Array(derived))}`;
+}
+
+async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  if (!stored) return false;
+  // 旧版明文密码（哈希方案上线前创建的邮箱），验证通过后由调用方升级为哈希
+  if (!stored.startsWith(PASSWORD_HASH_PREFIX)) {
+    return stored === password;
+  }
+  const body = stored.slice(PASSWORD_HASH_PREFIX.length);
+  const sepIndex = body.indexOf('$');
+  if (sepIndex < 0) return false;
+  const saltHex = body.slice(0, sepIndex);
+  const expectedHex = body.slice(sepIndex + 1);
+  const salt = hexToBytes(saltHex);
+  const importedKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: salt as BufferSource, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    importedKey,
+    256
+  );
+  const calcHex = toHex(new Uint8Array(derived));
+  return timingSafeEqualHex(calcHex, expectedHex);
+}
+
 /**
  * 幂等地为表添加列（若列已存在则跳过）
  */
@@ -54,6 +126,9 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_from ON chat_messages(mailbox_id, from_address, created_at);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_to ON chat_messages(mailbox_id, to_address, created_at);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(mailbox_id, is_read);`);
+    // 速率限制事件表（登录失败/发信等防爆破防刷）
+    await db.exec(`CREATE TABLE IF NOT EXISTS rate_events (ip TEXT, action TEXT, created_at INTEGER);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_rate_events_key ON rate_events(ip, action, created_at);`);
     
     // 创建索引
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_mailboxes_address ON mailboxes(address);`);
@@ -86,10 +161,11 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
  */
 export async function createMailbox(db: D1Database, params: CreateMailboxParams): Promise<Mailbox> {
   const now = getCurrentTimestamp();
+  const hashedPassword = await hashPassword(params.password);
   const mailbox: Mailbox = {
     id: generateId(),
     address: params.address,
-    password: params.password,
+    password: hashedPassword,
     createdAt: now,
     expiresAt: calculateExpiryTimestamp(params.expiresInHours),
     ipAddress: params.ipAddress,
@@ -147,9 +223,19 @@ export async function getMailboxId(db: D1Database, address: string): Promise<str
  */
 export async function loginMailbox(db: D1Database, address: string, password: string): Promise<Mailbox | null> {
   const now = getCurrentTimestamp();
-  const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ? AND password = ?`).bind(address, password).first();
+  const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ?`).bind(address).first();
   
   if (!result) return null;
+
+  const storedPassword = result.password as string;
+  const passwordMatches = await verifyPassword(password, storedPassword);
+  if (!passwordMatches) return null;
+
+  // 旧版明文密码验证通过后，升级为哈希存储（懒迁移）
+  if (!storedPassword.startsWith(PASSWORD_HASH_PREFIX)) {
+    const hashedPassword = await hashPassword(password);
+    await db.prepare(`UPDATE mailboxes SET password = ? WHERE id = ?`).bind(hashedPassword, result.id).run();
+  }
   
   // 更新最后访问时间
   await db.prepare(`UPDATE mailboxes SET last_accessed = ? WHERE id = ?`).bind(now, result.id).run();
@@ -157,7 +243,7 @@ export async function loginMailbox(db: D1Database, address: string, password: st
   return {
     id: result.id as string,
     address: result.address as string,
-    password: result.password as string,
+    password: storedPassword,
     createdAt: result.created_at as number,
     expiresAt: result.expires_at as number,
     ipAddress: result.ip_address as string,
@@ -878,4 +964,66 @@ export async function getUnreadChatCount(db: D1Database, mailboxId: string): Pro
   const result = await db.prepare(`SELECT COUNT(*) as count FROM chat_messages WHERE mailbox_id = ? AND is_read = 0`)
     .bind(mailboxId).first<{ count: number }>();
   return result?.count || 0;
+}
+
+/**
+ * 速率限制：统计窗口内该键（IP+动作）的已有次数，达到上限则返回 true（限流），否则记录一次
+ * @param db 数据库实例
+ * @param key 统计键（如 "login:218.x.x.x"、"send:foo@domain"）
+ * @param windowSeconds 时间窗口（秒）
+ * @param maxCount 窗口内允许的最大次数
+ * @returns 是否已限流
+ */
+export async function enforceRateLimit(db: D1Database, key: string, windowSeconds: number, maxCount: number): Promise<boolean> {
+  const now = getCurrentTimestamp();
+  const cutoff = now - windowSeconds;
+  const result = await db.prepare(`SELECT COUNT(*) AS count FROM rate_events WHERE ip = ? AND created_at >= ?`)
+    .bind(key, cutoff).first<{ count: number }>();
+  if ((result?.count || 0) >= maxCount) return true;
+  await db.prepare(`INSERT INTO rate_events (ip, action, created_at) VALUES (?, ?, ?)`)
+    .bind(key, 'rate', now).run();
+  return false;
+}
+
+/**
+ * 清理过期的速率限制记录（由定时任务调用，防表膨胀）
+ * @param db 数据库实例
+ * @param keepSeconds 保留最近多少秒（默认24小时）
+ */
+export async function cleanupRateEvents(db: D1Database, keepSeconds = 86400): Promise<void> {
+  const cutoff = getCurrentTimestamp() - keepSeconds;
+  await db.prepare(`DELETE FROM rate_events WHERE created_at < ?`).bind(cutoff).run();
+}
+
+/**
+ * 验证邮箱密码（不更新 last_accessed，节省 D1 写入；用于发信鉴权等热路径）
+ * @param db 数据库实例
+ * @param address 邮箱地址
+ * @param password 密码
+ * @returns 验证通过返回邮箱信息，否则 null
+ */
+export async function verifyMailboxPassword(db: D1Database, address: string, password: string): Promise<Mailbox | null> {
+  const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ?`)
+    .bind(address).first();
+  if (!result) return null;
+
+  const storedPassword = result.password as string;
+  const ok = await verifyPassword(password, storedPassword);
+  if (!ok) return null;
+
+  // 旧版明文密码懒迁移升级为哈希
+  if (!storedPassword.startsWith(PASSWORD_HASH_PREFIX)) {
+    const hashedPassword = await hashPassword(password);
+    await db.prepare(`UPDATE mailboxes SET password = ? WHERE id = ?`).bind(hashedPassword, result.id).run();
+  }
+
+  return {
+    id: result.id as string,
+    address: result.address as string,
+    password: storedPassword,
+    createdAt: result.created_at as number,
+    expiresAt: result.expires_at as number,
+    ipAddress: result.ip_address as string,
+    lastAccessed: result.last_accessed as number,
+  };
 }

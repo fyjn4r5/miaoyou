@@ -26,6 +26,20 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
+  const [htmlHeight, setHtmlHeight] = useState(600);
+
+  // iframe 加载完成后按内容自适应高度
+  const handleHtmlLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      const body = e.currentTarget.contentDocument?.body;
+      if (body) {
+        const height = Math.max(body.scrollHeight + 24, 120);
+        setHtmlHeight(height);
+      }
+    } catch {
+      // 跨域或沙箱限制时保持默认高度
+    }
+  };
   
   const processHtmlContent = (html: string) => {
     return html.replace(/<a\s(?![^>]*target=)/gi, '<a target="_blank" rel="noopener noreferrer" ');
@@ -330,9 +344,13 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
           <div>
             <h3 className="font-medium mb-2">{t('email.content')}</h3>
             {email.htmlContent ? (
-              <div 
-                className="prose max-w-none border rounded-md p-4 bg-white"
-                dangerouslySetInnerHTML={{ __html: processHtmlContent(email.htmlContent) }}
+              <iframe
+                title={t('email.content')}
+                srcDoc={processHtmlContent(email.htmlContent)}
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                onLoad={handleHtmlLoad}
+                className="w-full border rounded-md bg-white"
+                style={{ height: htmlHeight, border: 0 }}
               />
             ) : email.textContent ? (
               <pre className="whitespace-pre-wrap border rounded-md p-4 bg-white font-sans">

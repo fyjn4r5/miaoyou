@@ -1,4 +1,4 @@
-import { D1Database } from '@cloudflare/workers-types';
+import { D1Database, Fetcher } from '@cloudflare/workers-types';
 
 interface Ai {
   run: (model: string, options: { messages: Array<{ role: string; content: string }>; stream?: boolean; temperature?: number; max_tokens?: number }) => Promise<ReadableStream>;
@@ -10,6 +10,7 @@ export interface Env {
   VITE_EMAIL_DOMAIN?: string;
   VITE_EXTERNAL_LINKS?: string;
   AI: Ai;
+  ASSETS?: Fetcher;
 }
 
 // 邮箱类型

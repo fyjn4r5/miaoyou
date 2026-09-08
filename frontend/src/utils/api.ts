@@ -353,15 +353,15 @@ export const batchMarkAsUnread = async (emailIds: string[]): Promise<{ success: 
   }
 };
 
-// 发送站内消息（给本站的另一邮箱）
-export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string): Promise<{ success: boolean; error?: any }> => {
+// 发送站内消息（给本站的另一邮箱，需要发件箱密码鉴权）
+export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string, password?: string): Promise<{ success: boolean; error?: any }> => {
   try {
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(fromAddress)}/messages`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ toAddress, content }),
+      body: JSON.stringify({ toAddress, content, password }),
     });
 
     const data = await response.json();

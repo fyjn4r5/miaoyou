@@ -1,5 +1,5 @@
 import { Env } from './types';
-import { initializeDatabase, cleanupExpiredMailboxes, cleanupExpiredMails } from './database';
+import { initializeDatabase, cleanupExpiredMailboxes, cleanupExpiredMails, cleanupRateEvents } from './database';
 import { handleEmail } from './email-handler';
 import app from './routes';
 
@@ -8,7 +8,24 @@ export default {
   // 处理HTTP请求
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    
+
+    // 非 API 请求：优先提供前端静态资源（frontend/dist），未命中则回退到 index.html（SPA 路由刷新）
+    if (!url.pathname.startsWith('/api')) {
+      if (env.ASSETS) {
+        const assetResponse = await env.ASSETS.fetch(request);
+        if (assetResponse.status !== 404) return assetResponse;
+        // SPA 回退：/internal-chat 等前端路由直接返回 index.html
+        const indexRequest = new Request(new URL('/', request.url), request);
+        const indexResponse = await env.ASSETS.fetch(indexRequest);
+        if (indexResponse.status === 200) {
+          return new Response(indexResponse.body, indexResponse);
+        }
+        return indexResponse;
+      }
+      // 未配置静态资源绑定
+      return new Response('入口页面不存在，请检查 ASSETS 绑定配置', { status: 404 });
+    }
+
     try {
       // 自动初始化数据库（如果需要）
       await initializeDatabase(env.DB);
@@ -57,6 +74,8 @@ export default {
       console.log(`已清理 ${deleted} 个过期邮箱`);
       const deletedMail = await cleanupExpiredMails(env.DB);
       console.log(`已清理 ${deletedMail} 个过期邮件`);
+      await cleanupRateEvents(env.DB);
+      console.log('已清理过期速率限制记录');
     } catch (error) {
       console.error('定时任务执行失败:', error);
     }

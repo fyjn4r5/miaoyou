@@ -18,6 +18,8 @@ import {
   batchMarkEmailsAsRead,
   batchMarkEmailsAsUnread,
   getMailboxId,
+  verifyMailboxPassword,
+  enforceRateLimit,
   sendInternalMessage,
   getChatMessages,
   getChatConversations,
@@ -37,6 +39,15 @@ app.use('/*', cors({
   allowHeaders: ['Content-Type'],
   maxAge: 86400,
 }));
+
+// 安全响应头中间件
+app.use('*', async (c, next) => {
+  await next();
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('Referrer-Policy', 'no-referrer');
+  c.header('X-XSS-Protection', '0');
+});
 
 // 健康检查端点
 app.get('/', (c) => {
@@ -188,6 +199,14 @@ app.post('/api/mailboxes/login', async (c) => {
     const mailbox = await loginMailbox(c.env.DB, body.address, body.password);
     
     if (!mailbox) {
+      // 登录失败：按 IP 限流，防爆破
+      const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+      if (ip !== 'unknown') {
+        const limited = await enforceRateLimit(c.env.DB, `login:${ip}`, 900, 10);
+        if (limited) {
+          return c.json({ success: false, error: '尝试次数过多，请 15 分钟后再试' }, 429);
+        }
+      }
       return c.json({ success: false, error: '邮箱地址或密码错误' }, 401);
     }
     
@@ -266,10 +285,13 @@ app.post('/api/mailboxes/:address/messages', async (c) => {
       return c.json({ success: false, error: '收件人地址格式不正确' }, 400);
     }
 
-    // 发件人必须是本站邮箱且已登录
-    const fromMailboxId = await getMailboxId(c.env.DB, address);
-    if (!fromMailboxId) {
-      return c.json({ success: false, error: '发件邮箱不存在' }, 404);
+    // 发件人必须是本站邮箱且通过密码鉴权（防止冒用他人地址发信）
+    if (!body.password || typeof body.password !== 'string') {
+      return c.json({ success: false, error: '需要密码鉴权后才能发送站内消息' }, 401);
+    }
+    const fromMailbox = await verifyMailboxPassword(c.env.DB, address, body.password);
+    if (!fromMailbox) {
+      return c.json({ success: false, error: '发件邮箱或密码错误' }, 401);
     }
 
     // 不能给自己发信
@@ -283,8 +305,13 @@ app.post('/api/mailboxes/:address/messages', async (c) => {
       return c.json({ success: false, error: '对方邮箱不存在，请确认对方已在秒邮注册' }, 404);
     }
 
+    // 按发件邮箱限流，防刷屏
+    const rateLimited = await enforceRateLimit(c.env.DB, `send:${address}`, 60, 30);
+    if (rateLimited) {
+      return c.json({ success: false, error: '发送过于频繁，请稍后再试' }, 429);
+    }
+
     const fromName = extractMailboxName(address);
-    const fromMailbox = { id: fromMailboxId, address } as Mailbox;
     const toMailbox = { id: toMailboxId, address: toAddress } as Mailbox;
     await sendInternalMessage(c.env.DB, fromMailbox, toMailbox, fromName, content);
 

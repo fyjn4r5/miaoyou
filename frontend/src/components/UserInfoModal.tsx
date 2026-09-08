@@ -36,11 +36,17 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
     <div className="flex items-center justify-between py-2 border-b border-muted/50 last:border-0">
       <span className="text-sm text-muted-foreground min-w-[90px]">{label}</span>
       <div className="flex items-center gap-2 flex-1 justify-end">
-        <span className="text-sm text-right truncate max-w-[280px]">{value}</span>
+        <span
+          onClick={() => copyToClipboard(value, label)}
+          className="text-sm text-right truncate max-w-[280px] cursor-pointer hover:text-primary transition-colors"
+          title={`${label}: ${value}`}
+        >
+          {value}
+        </span>
         <button
           onClick={() => copyToClipboard(value, label)}
           className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0"
-          title={label}
+          title={t('common.copy')}
         >
           <i className="fas fa-copy text-sm"></i>
         </button>
@@ -127,7 +133,11 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({ isOpen, onClose, randomNa
                 >
                   <i className="fas fa-map-marker-alt text-sm"></i>
                 </a>
-                <pre className="text-sm text-right whitespace-pre-line leading-relaxed">{randomName.fullAddress}</pre>
+                <pre
+                  onClick={() => copyToClipboard(randomName.fullAddress, t('email.fullAddress'))}
+                  className="text-sm text-right whitespace-pre-line leading-relaxed cursor-pointer hover:text-primary transition-colors"
+                  title={t('email.copyFullAddress')}
+                >{randomName.fullAddress}</pre>
                 <button
                   onClick={() => copyToClipboard(randomName.fullAddress, t('email.fullAddress'))}
                   className="w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-primary shrink-0 mt-0.5"

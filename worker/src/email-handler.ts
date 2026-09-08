@@ -36,7 +36,7 @@ export async function handleEmail(message: any, env: Env): Promise<void> {
       throw new Error('邮箱不存在');
     }
 
-    // 保存邮件
+    // 保存邮件（收到的 HTML 先做基础净化，移除脚本/事件绑定/javascript:，防存储型XSS）
     const savedEmail = await saveEmail(env.DB, {
       mailboxId: mailbox.id,
       fromAddress: email.from.address,
@@ -44,7 +44,7 @@ export async function handleEmail(message: any, env: Env): Promise<void> {
       toAddress: mailboxAddress,
       subject: email.subject || '',
       textContent: email.text || '',
-      htmlContent: email.html || '',
+      htmlContent: sanitizeHtml(email.html || ''),
       hasAttachments: !!email.attachments?.length,
     });
 
@@ -93,4 +93,23 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+/**
+ * 基础 HTML 净化：移除 <script>、事件绑定属性(on*)、javascript: 协议链接，防存储型XSS
+ * @param html 原始 HTML
+ * @returns 净化后的 HTML
+ */
+function sanitizeHtml(html: string): string {
+  return html
+    // 移除 <script>...</script> 及其自闭合形式
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+    .replace(/<script\b[^>]*\/>/gi, '')
+    // 移除事件绑定属性 on*=...
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    // 移除 javascript: 协议的链接
+    .replace(/(href|src|action)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, '$1=$2$2')
+    // 移除 <iframe>（可嵌入脚本/钓鱼页面）
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe\s*>/gi, '')
+    .replace(/<iframe\b[^>]*\/>/gi, '');
 }

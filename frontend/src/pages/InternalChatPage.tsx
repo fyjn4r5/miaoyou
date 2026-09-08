@@ -162,7 +162,7 @@ const InternalChatPage: React.FC = () => {
     if (!text || !myAddress || !connectedPeer || sending) return;
 
     setSending(true);
-    const result = await sendInternalMessage(myAddress, connectedPeer, text);
+    const result = await sendInternalMessage(myAddress, connectedPeer, text, mailbox?.password);
     setSending(false);
 
     if (result.success) {
