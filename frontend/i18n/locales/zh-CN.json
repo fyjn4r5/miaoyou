@@ -439,6 +439,17 @@
     "clearAllConfirm": "确定清空与该用户的所有站内聊天记录吗？此操作双方均不可恢复。",
     "clearHoursConfirm": "确定清空最近 {{hours}} 小时的站内聊天记录吗？此操作双方均不可恢复。",
     "clearSuccess": "聊天记录已清空",
-    "clearFailed": "清空失败"
+    "clearFailed": "清空失败",
+    "read": "已读",
+    "readAt": "对方于 {{time}} 已读",
+    "delivered": "已送达",
+    "attach": "发送附件",
+    "download": "下载",
+    "downloadFailed": "下载失败",
+    "uploadFailed": "上传失败",
+    "remove": "移除",
+    "fileTooLarge": "超过 10MB 大小限制",
+    "maxAttachments": "每条消息最多 5 个附件",
+    "emoji": "表情"
   }
 }

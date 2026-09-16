@@ -174,6 +174,47 @@ export interface ChatMessage {
   textContent: string;
   receivedAt: number;
   isRead: boolean;
+  msgKey?: string;
+  readAt?: number;
+  peerRead?: boolean;
+  peerReadAt?: number;
+  attachments?: ChatAttachmentListItem[];
+}
+
+// 聊天附件（列表项，不含内容）
+export interface ChatAttachmentListItem {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
+// 聊天附件（含内容，用于下载）
+export interface ChatAttachment {
+  id: string;
+  mailboxId: string;
+  msgKey: string | null;
+  filename: string;
+  mimeType: string;
+  content: string;
+  size: number;
+  createdAt: number;
+}
+
+// 聊天附件保存参数
+export interface SaveChatAttachmentParams {
+  filename: string;
+  mimeType: string;
+  content: string;
+  size: number;
+}
+
+// 已读回执（发送方视角：我的消息对方是否已读）
+export interface ReadReceipt {
+  msgKey: string;
+  peer: string;
+  read: boolean;
+  readAt: number;
 }
 
 // 会话列表项（用于聊天首页展示"谁发来、发了什么、几条未读"）

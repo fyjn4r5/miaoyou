@@ -432,6 +432,17 @@
     "clearAllConfirm": "Clear all internal chat history with this user? This cannot be undone on both sides.",
     "clearHoursConfirm": "Clear internal chat history from the last {{hours}} hour(s)? This cannot be undone on both sides.",
     "clearSuccess": "Chat history cleared",
-    "clearFailed": "Clear failed"
+    "clearFailed": "Clear failed",
+    "read": "Read",
+    "readAt": "Read at {{time}}",
+    "delivered": "Delivered",
+    "attach": "Send attachment",
+    "download": "Download",
+    "downloadFailed": "Download failed",
+    "uploadFailed": "Upload failed",
+    "remove": "Remove",
+    "fileTooLarge": "Exceeds 10MB limit",
+    "maxAttachments": "Max 5 attachments per message",
+    "emoji": "Emoji"
   }
 }

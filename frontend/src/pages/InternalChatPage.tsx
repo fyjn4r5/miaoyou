@@ -3,20 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations } from '../utils/api';
-
-interface ChatMessage {
-  id: string;
-  fromAddress: string;
-  toAddress: string;
-  fromName: string;
-  subject: string;
-  textContent: string;
-  receivedAt: number;
-  isRead: boolean;
-}
+import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations, uploadChatAttachments, downloadChatAttachment, syncChatReadStatus, InternalChatMessage } from '../utils/api';
 
 const POLL_INTERVAL = 4000;
+const READ_SYNC_INTERVAL = 3600000; // 已读回执每小时同步一次
+
+// 常用 emoji（供快速插入）
+const EMOJIS = [
+  '😀','😄','😁','😆','😊','😍','🥰','😘','😎','🤗',
+  '🤔','😅','😂','🤣','😉','🙂','😇','🥳','😜','🤪',
+  '😴','🥺','😢','😭','😤','😠','🤯','🥵','😱','🤩',
+  '👍','👎','👏','🙏','💪','🤝','✌️','🤞','👌','✨',
+  '❤️','💖','🔥','⭐','🎉','🎂','🍀','🌸','❤','💯'
+];
+
+interface PendingFile {
+  id: string;
+  name: string;
+  size: number;
+  base64: string;
+  mimeType: string;
+}
 
 const InternalChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -26,19 +33,28 @@ const InternalChatPage: React.FC = () => {
   const [peer, setPeer] = useState('');
   const [connectedPeer, setConnectedPeer] = useState('');
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<InternalChatMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [showClearMenu, setShowClearMenu] = useState(false);
+  const [showEmojiBar, setShowEmojiBar] = useState(false);
+  const [penders, setPenders] = useState<PendingFile[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const sinceRef = useRef(0);
+  const messagesRef = useRef<InternalChatMessage[]>([]);
   const myAddress = mailbox?.address || '';
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // 支持 ?peer=xxx 直达：从收件箱站内消息点击进入时自动开始聊天
   useEffect(() => {
@@ -103,7 +119,7 @@ const InternalChatPage: React.FC = () => {
     const result = await getInternalChat(myAddress, connectedPeer, since, mailbox?.password);
 
     if (result.success && result.messages) {
-      const incoming: ChatMessage[] = result.messages;
+      const incoming: InternalChatMessage[] = result.messages;
       if (incoming.length > 0) {
         setMessages(prev => {
           if (isInitial) return incoming;
@@ -159,14 +175,35 @@ const InternalChatPage: React.FC = () => {
 
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || !myAddress || !connectedPeer || sending) return;
+    if ((!text && penders.length === 0) || !myAddress || !connectedPeer || sending || uploading) return;
+
+    let attachmentIds: string[] = [];
+    if (penders.length > 0) {
+      setUploading(true);
+      const result = await uploadChatAttachments(myAddress, penders.map(p => ({
+        filename: p.name,
+        mimeType: p.mimeType,
+        content: p.base64,
+        size: p.size,
+      })), mailbox?.password);
+      setUploading(false);
+      if (result.success && result.attachments) {
+        attachmentIds = result.attachments.map(a => a.id);
+        setPenders([]);
+      } else {
+        const msg = typeof result.error === 'string' ? result.error : t('internalChat.uploadFailed');
+        showErrorMessage(msg);
+        return;
+      }
+    }
 
     setSending(true);
-    const result = await sendInternalMessage(myAddress, connectedPeer, text, mailbox?.password);
+    const result = await sendInternalMessage(myAddress, connectedPeer, text, mailbox?.password, attachmentIds);
     setSending(false);
 
     if (result.success) {
       setInput('');
+      setShowEmojiBar(false);
       inputRef.current?.focus();
       // 立即触发一次增量刷新，展示刚发送的消息
       await poll(false);
@@ -175,6 +212,98 @@ const InternalChatPage: React.FC = () => {
       showErrorMessage(msg);
     }
   };
+
+  // 选择附件：读取为 base64，暂存待发送（先上传后发送）
+  const handlePickFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const list = Array.from(files).slice(0, 5 - penders.length);
+    if (list.length === 0) {
+      showErrorMessage(t('internalChat.maxAttachments'));
+      return;
+    }
+    for (const file of list) {
+      if (file.size > 10 * 1024 * 1024) {
+        showErrorMessage(`${file.name}: ${t('internalChat.fileTooLarge')}`);
+        continue;
+      }
+      try {
+        const base64 = await fileToBase64(file);
+        setPenders(prev => {
+          const next = [...prev, { id: `${file.name}-${Date.now()}-${Math.random()}`, name: file.name, size: file.size, base64, mimeType: file.type || 'application/octet-stream' }];
+          return next.slice(0, 5);
+        });
+      } catch {
+        showErrorMessage(t('internalChat.uploadFailed'));
+      }
+    }
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const removePender = (id: string) => {
+    setPenders(prev => prev.filter(p => p.id !== id));
+  };
+
+  // 下载聊天附件
+  const handleDownloadAttachment = async (attachmentId: string, filename: string) => {
+    if (!myAddress) return;
+    try {
+      const result = await downloadChatAttachment(myAddress, attachmentId, mailbox?.password);
+      if (result.success && result.blob) {
+        const url = URL.createObjectURL(result.blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.filename || filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        const msg = typeof result.error === 'string' ? result.error : t('internalChat.downloadFailed');
+        showErrorMessage(msg);
+      }
+    } catch {
+      showErrorMessage(t('internalChat.downloadFailed'));
+    }
+  };
+
+  // 已读回执同步（上报已读 + 拉取对方已读，服务端每小时节流）
+  const runReadSync = useCallback(async () => {
+    if (!myAddress || !connectedPeer) return;
+    const visibleIds = messagesRef.current
+      .filter(m => m.fromAddress !== myAddress)
+      .map(m => m.id)
+      .slice(0, 500);
+    const result = await syncChatReadStatus(myAddress, visibleIds, mailbox?.password);
+    if (result.success && result.readReceipts) {
+      setMessages(prev => {
+        const receiptMap = new Map(result.readReceipts!.filter(r => r.peer === connectedPeer).map(r => [r.msgKey, r]));
+        let changed = false;
+        const next = prev.map(m => {
+          const rec = m.msgKey ? receiptMap.get(m.msgKey) : undefined;
+          if (rec && rec.read && !m.peerRead) {
+            changed = true;
+            return { ...m, peerRead: true, peerReadAt: rec.readAt };
+          }
+          return m;
+        });
+        return changed ? next : prev;
+      });
+    }
+  }, [myAddress, connectedPeer, mailbox?.password]);
+
+  // 打开会话后做一次已读回执同步，并每小时同步一次
+  useEffect(() => {
+    if (!myAddress || !connectedPeer) return;
+    let active = true;
+    runReadSync();
+    const id = window.setInterval(() => {
+      if (active) runReadSync();
+    }, READ_SYNC_INTERVAL);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [myAddress, connectedPeer, runReadSync]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -437,9 +566,49 @@ const InternalChatPage: React.FC = () => {
                           ? 'bg-primary text-primary-foreground rounded-br-sm'
                           : 'bg-muted rounded-bl-sm'
                       }`}>
-                        <p className="whitespace-pre-wrap break-words">{m.textContent}</p>
-                        <div className={`text-[10px] mt-1 ${isMine ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
-                          {formatTime(m.receivedAt)}
+                        {m.textContent && (
+                          <p className="whitespace-pre-wrap break-words">{m.textContent}</p>
+                        )}
+                        {m.attachments && m.attachments.length > 0 && (
+                          <div className={`mt-2 space-y-1.5 ${!m.textContent ? 'mt-0' : ''}`}>
+                            {m.attachments.map(att => (
+                              <button
+                                key={att.id}
+                                onClick={() => handleDownloadAttachment(att.id, att.filename)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left text-xs transition-colors ${
+                                  isMine
+                                    ? 'bg-primary-foreground/10 border-primary-foreground/20 hover:bg-primary-foreground/20'
+                                    : 'bg-background/60 border-border hover:bg-background'
+                                }`}
+                                title={t('internalChat.download')}
+                              >
+                                <i className="fas fa-paperclip shrink-0"></i>
+                                <span className="flex-1 min-w-0">
+                                  <span className={`block truncate font-medium ${isMine ? 'text-primary-foreground' : ''}`}>{att.filename}</span>
+                                  <span className={`${isMine ? 'text-primary-foreground/60' : 'text-muted-foreground/70'}`}>{formatBytes(att.size)}</span>
+                                </span>
+                                <i className="fas fa-download shrink-0 opacity-70"></i>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className={`text-[10px] mt-1 flex items-center gap-1.5 ${isMine ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
+                          <span>{formatTime(m.receivedAt)}</span>
+                          {isMine && (
+                            <span className="flex items-center gap-0.5">
+                              {m.peerRead ? (
+                                <span className="inline-flex items-center gap-0.5" title={t('internalChat.readAt', { time: formatTime(m.peerReadAt || 0) })}>
+                                  <i className="fas fa-check-double"></i>
+                                  <span className="hidden sm:inline">{t('internalChat.read')}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5">
+                                  <i className="fas fa-check"></i>
+                                  <span className="hidden sm:inline">{t('internalChat.delivered')}</span>
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -450,7 +619,65 @@ const InternalChatPage: React.FC = () => {
             </div>
 
             <div className="py-4 border-t">
+              {penders.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {penders.map(p => (
+                    <span key={p.id} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-muted border text-xs max-w-[220px]">
+                      <i className="fas fa-paperclip text-muted-foreground shrink-0"></i>
+                      <span className="truncate">{p.name}</span>
+                      <span className="text-muted-foreground/70 shrink-0">({formatBytes(p.size)})</span>
+                      <button
+                        onClick={() => removePender(p.id)}
+                        className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-red-500/20 text-muted-foreground hover:text-red-500 shrink-0"
+                        title={t('internalChat.remove')}
+                      >
+                        <i className="fas fa-times text-[9px]"></i>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {showEmojiBar && (
+                <div className="flex flex-wrap gap-1 mb-2 max-h-28 overflow-y-auto rounded-xl border bg-popover p-2">
+                  {EMOJIS.map(emoji => (
+                    <button
+                      key={emoji}
+                      onClick={() => setInput(v => v + emoji)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-lg hover:bg-muted transition-colors"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiBar(v => !v)}
+                    className="w-11 h-11 rounded-full bg-muted/70 hover:bg-muted text-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-50"
+                    title={t('internalChat.emoji')}
+                    disabled={sending || uploading}
+                  >
+                    😊
+                  </button>
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={e => handlePickFiles(e.target.files)}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-11 h-11 rounded-full bg-muted/70 hover:bg-muted text-muted-foreground flex items-center justify-center shrink-0 transition-colors disabled:opacity-50"
+                  title={t('internalChat.attach')}
+                  disabled={sending || uploading || penders.length >= 5}
+                >
+                  <i className="fas fa-paperclip"></i>
+                </button>
                 <input
                   ref={inputRef}
                   type="text"
@@ -458,15 +685,15 @@ const InternalChatPage: React.FC = () => {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={t('internalChat.inputPlaceholder')}
-                  disabled={sending}
+                  disabled={sending || uploading}
                   className="flex-1 px-4 py-2.5 rounded-full border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                 />
                 <button
                   onClick={handleSend}
-                  disabled={sending || !input.trim()}
+                  disabled={sending || uploading || (!input.trim() && penders.length === 0)}
                   className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors font-medium"
                 >
-                  {sending ? '...' : t('internalChat.send')}
+                  {uploading ? '↑' : sending ? '...' : t('internalChat.send')}
                 </button>
               </div>
             </div>
@@ -485,6 +712,22 @@ function formatTime(timestamp: number): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(d);
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export default InternalChatPage;

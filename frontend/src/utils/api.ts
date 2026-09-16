@@ -367,15 +367,15 @@ export const batchMarkAsUnread = async (emailIds: string[], password?: string): 
   }
 };
 
-// 发送站内消息（给本站的另一邮箱，需要发件箱密码鉴权）
-export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string, password?: string): Promise<{ success: boolean; error?: any }> => {
+// 发送站内消息（给本站的另一邮箱，需要发件箱密码鉴权；支持附件与emoji）
+export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string, password?: string, attachmentIds: string[] = []): Promise<{ success: boolean; error?: any }> => {
   try {
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(fromAddress)}/messages`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ toAddress, content, password }),
+      body: JSON.stringify({ toAddress, content, password, attachmentIds }),
     });
 
     const data = await response.json();
@@ -390,8 +390,104 @@ export const sendInternalMessage = async (fromAddress: string, toAddress: string
   }
 };
 
+// 上传站内聊天附件（浏览器读取文件后以 base64 提交，最多5个）
+export const uploadChatAttachments = async (address: string, files: { filename: string; mimeType: string; content: string; size: number }[], password?: string): Promise<{ success: boolean; error?: any; attachments?: { id: string; filename: string; mimeType: string; size: number }[] }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/attachments`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(password),
+      },
+      body: JSON.stringify({ files }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      return { success: true, attachments: data.attachments ?? [] };
+    }
+    return { success: false, error: data.error || '上传失败' };
+  } catch (error) {
+    console.error('Error uploading chat attachments:', error);
+    return { success: false, error };
+  }
+};
+
+// 下载站内聊天附件（返回 Blob，供前端生成下载链接）
+export const downloadChatAttachment = async (address: string, attachmentId: string, password?: string): Promise<{ success: boolean; error?: any; blob?: Blob; filename?: string; mimeType?: string }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/attachments/${attachmentId}`), {
+      headers: authHeaders(password),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      return { success: false, error: data.error || `下载失败 (${response.status})` };
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?([^";]+)"?/);
+    return {
+      success: true,
+      blob,
+      filename: match ? decodeURIComponent(match[1]) : 'attachment',
+      mimeType: response.headers.get('Content-Type') || 'application/octet-stream',
+    };
+  } catch (error) {
+    console.error('Error downloading chat attachment:', error);
+    return { success: false, error };
+  }
+};
+
+// 已读回执同步：上报我已读的消息 + 下载对方是否已读我的消息（服务端每小时节流一次）
+export const syncChatReadStatus = async (address: string, messageIds: string[], password?: string): Promise<{ success: boolean; error?: any; synced?: boolean; syncAt?: number; readReceipts?: { msgKey: string; peer: string; read: boolean; readAt: number }[] }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/read-sync`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(password),
+      },
+      body: JSON.stringify({ messageIds }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      return { success: true, synced: data.synced, syncAt: data.syncAt, readReceipts: data.readReceipts ?? [] };
+    }
+    return { success: false, error: data.error || '同步失败' };
+  } catch (error) {
+    console.error('Error syncing chat read status:', error);
+    return { success: false, error };
+  }
+};
+
+// 站内聊天消息
+export interface InternalChatMessage {
+  id: string;
+  fromAddress: string;
+  toAddress: string;
+  fromName: string;
+  subject: string;
+  textContent: string;
+  receivedAt: number;
+  isRead: boolean;
+  msgKey?: string;
+  readAt?: number;
+  peerRead?: boolean;
+  peerReadAt?: number;
+  attachments?: { id: string; filename: string; mimeType: string; size: number }[];
+}
+
+// 上传文件描述（base64）
+export interface ChatUploadFile {
+  filename: string;
+  mimeType: string;
+  content: string;
+  size: number;
+}
+
 // 获取与对方的站内对话（增量轮询）
-export const getInternalChat = async (address: string, withAddress: string, since = 0, password?: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+export const getInternalChat = async (address: string, withAddress: string, since = 0, password?: string): Promise<{ success: boolean; error?: any; messages?: InternalChatMessage[] }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&since=${since}&limit=30`;
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
@@ -411,7 +507,7 @@ export const getInternalChat = async (address: string, withAddress: string, sinc
 };
 
 // 拉取与对方的完整站内对话（导出用，较大的 limit）
-export const getFullInternalChat = async (address: string, withAddress: string, password?: string): Promise<{ success: boolean; error?: any; messages?: any[] }> => {
+export const getFullInternalChat = async (address: string, withAddress: string, password?: string): Promise<{ success: boolean; error?: any; messages?: InternalChatMessage[] }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&since=0&limit=5000`;
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {

@@ -9,7 +9,11 @@ import {
   AttachmentListItem,
   SaveAttachmentParams,
   ChatMessage,
-  ChatConversation
+  ChatConversation,
+  ChatAttachmentListItem,
+  ChatAttachment,
+  SaveChatAttachmentParams,
+  ReadReceipt
 } from './types';
 import { 
   generateId, 
@@ -126,6 +130,26 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_from ON chat_messages(mailbox_id, from_address, created_at);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_to ON chat_messages(mailbox_id, to_address, created_at);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(mailbox_id, is_read);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_mailbox_created ON chat_messages(mailbox_id, created_at DESC);`);
+    
+    // [feat] 站内聊天已读回执与消息关联（msg_key 关联双方副本；peer_read 为发送方本地缓存的对方已读状态）
+    await addColumnIfMissing(db, 'chat_messages', 'read_at', 'INTEGER DEFAULT 0');
+    await addColumnIfMissing(db, 'chat_messages', 'msg_key', 'TEXT');
+    await addColumnIfMissing(db, 'chat_messages', 'peer_read', 'INTEGER DEFAULT 0');
+    await addColumnIfMissing(db, 'chat_messages', 'peer_read_at', 'INTEGER DEFAULT 0');
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_msg_key ON chat_messages(msg_key);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_from ON chat_messages(from_address, mailbox_id);`);
+    
+    // [feat] 站内聊天附件表（与邮件附件分离），msg_key 为空表示已上传但未随消息发送
+    await db.exec(`CREATE TABLE IF NOT EXISTS chat_attachments (id TEXT PRIMARY KEY, mailbox_id TEXT NOT NULL, msg_key TEXT, filename TEXT NOT NULL, mime_type TEXT NOT NULL, content TEXT, size INTEGER NOT NULL, is_large INTEGER DEFAULT 0, chunks_count INTEGER DEFAULT 0, created_at INTEGER NOT NULL);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_attachments_mailbox ON chat_attachments(mailbox_id);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_attachments_msg_key ON chat_attachments(msg_key);`);
+    await db.exec(`CREATE TABLE IF NOT EXISTS chat_attachment_chunks (id TEXT PRIMARY KEY, attachment_id TEXT NOT NULL, chunk_index INTEGER NOT NULL, content TEXT NOT NULL);`);
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_attachment_chunks_attachment ON chat_attachment_chunks(attachment_id);`);
+    
+    // [feat] 站内聊天已读回执同步节流表（每小时最多同步一次，降低 D1 读写量）
+    await db.exec(`CREATE TABLE IF NOT EXISTS chat_sync_state (mailbox_id TEXT PRIMARY KEY, last_sync_at INTEGER NOT NULL);`);
+    
     // 速率限制事件表（登录失败/发信等防爆破防刷）
     await db.exec(`CREATE TABLE IF NOT EXISTS rate_events (ip TEXT, action TEXT, created_at INTEGER);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_rate_events_key ON rate_events(ip, action, created_at);`);
@@ -257,7 +281,7 @@ export async function loginMailbox(db: D1Database, address: string, password: st
  * @param ipAddress IP地址
  * @returns 邮箱列表
  */
-export async function getMailboxes(db: D1Database, ipAddress: string): Promise<Mailbox[]> {
+export async function getMailboxes(db: D1Database, ipAddress: string): Promise<Omit<Mailbox, 'password'>[]> {
   const now = getCurrentTimestamp();
   const results = await db.prepare(`SELECT id, address, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE ip_address = ? AND expires_at > ? ORDER BY created_at DESC`).bind(ipAddress, now).all();
   
@@ -329,7 +353,7 @@ async function cleanupOrphanedAttachments(db: D1Database): Promise<number> {
  * @param db 数据库实例
  * @returns 删除的邮箱数量
  */
-export async function cleanupExpiredMailboxes(db: D1Database): Promise<number> {
+export async function cleanupExpiredMailboxes(_db: D1Database): Promise<number> {
   // 邮箱现在永久有效，不再清理
   // 如果需要清理非常旧的邮箱（例如超过1年），可以取消下面的注释
   // const now = getCurrentTimestamp();
@@ -372,37 +396,6 @@ export async function cleanupReadMails(db: D1Database): Promise<number> {
   await cleanupOrphanedAttachments(db);
   
   return result.meta?.changes || 0;
-}
-
-/**
- * 清理指定邮件的所有附件
- * @param db 数据库实例
- * @param emailId 邮件ID
- */
-async function cleanupAttachments(db: D1Database, emailId: string): Promise<void> {
-  // [refactor] 利用 ON DELETE CASCADE，此函数在删除邮件时不再需要手动调用。
-  // 但保留此函数以备其他需要单独清理附件的场景。
-  try {
-    // 获取邮件的所有附件ID
-    const attachmentsResult = await db.prepare(`SELECT id FROM attachments WHERE email_id = ?`).bind(emailId).all<{ id: string }>();
-    
-    if (attachmentsResult.results && attachmentsResult.results.length > 0) {
-      const attachmentIds = attachmentsResult.results.map(row => row.id);
-      const placeholders = attachmentIds.map(() => '?').join(',');
-
-      console.log(`邮件 ${emailId} 有 ${attachmentIds.length} 个附件需要清理`);
-      
-      // 批量删除所有分块
-      await db.prepare(`DELETE FROM attachment_chunks WHERE attachment_id IN (${placeholders})`).bind(...attachmentIds).run();
-      console.log(`已清理附件的所有分块`);
-      
-      // 批量删除所有附件记录
-      await db.prepare(`DELETE FROM attachments WHERE id IN (${placeholders})`).bind(...attachmentIds).run();
-      console.log(`已清理邮件 ${emailId} 的所有附件`);
-    }
-  } catch (error) {
-    console.error(`清理邮件 ${emailId} 的附件时出错:`, error);
-  }
 }
 
 /**
@@ -774,11 +767,13 @@ export async function getMailboxCountByIpLast24h(db: D1Database, ipAddress: stri
 
 /**
  * 发送站内消息（写入独立的 chat_messages 表，双方各自一条，不进入收件箱）
+ * 双方副本共用 msg_key；发送方副本额外缓存对方已读回执 peer_read/peer_read_at
  * @param db 数据库实例
  * @param fromMailbox 发件人邮箱
  * @param toMailbox 收件人邮箱
  * @param fromName 发件人显示名（地址）
  * @param content 消息内容
+ * @param attachmentIds 附加到该消息的聊天附件ID（须已上传且属于发件人）
  * @returns 发件人侧保存的消息
  */
 export async function sendInternalMessage(
@@ -786,23 +781,34 @@ export async function sendInternalMessage(
   fromMailbox: Mailbox,
   toMailbox: Mailbox,
   fromName: string,
-  content: string
+  content: string,
+  attachmentIds: string[] = []
 ): Promise<ChatMessage> {
   const now = getCurrentTimestamp();
+  const msgKey = generateId();
 
   // 发件人侧副本：is_read=1（自己已读）；收件人侧副本：is_read=0（未读）
   const senderId = generateId();
   const receiverId = generateId();
 
+  // 绑定附件（校验归属发件人且未被占用）
+  if (attachmentIds.length > 0) {
+    const placeholders = attachmentIds.map(() => '?').join(',');
+    await db.prepare(
+      `UPDATE chat_attachments SET msg_key = ? WHERE id IN (${placeholders}) AND mailbox_id = ? AND msg_key IS NULL`
+    ).bind(msgKey, fromMailbox.id, ...attachmentIds).run();
+  }
+
   // 两条写入合并在一次 batch 中，降低 D1 事务开销
   await db.batch([
-    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(senderId, fromMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 1),
-    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(receiverId, toMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 0),
+    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(senderId, fromMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 1, 0, msgKey, 0, 0),
+    db.prepare(`INSERT INTO chat_messages (id, mailbox_id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(receiverId, toMailbox.id, fromMailbox.address, fromName, toMailbox.address, content, now, 0, 0, msgKey, 0, 0),
   ]);
 
   console.log(`站内消息发送成功: ${fromMailbox.address} -> ${toMailbox.address}`);
+  const attachments = Array.from((await getChatAttachmentsByMsgKeys(db, [msgKey])).values()).flat();
   return {
     id: senderId,
     fromAddress: fromMailbox.address,
@@ -812,6 +818,8 @@ export async function sendInternalMessage(
     textContent: content,
     receivedAt: now,
     isRead: true,
+    msgKey,
+    attachments,
   };
 }
 
@@ -839,12 +847,16 @@ let rows: Array<{
     content: string;
     created_at: number;
     is_read: number | boolean;
+    read_at: number;
+    msg_key: string | null;
+    peer_read: number | boolean;
+    peer_read_at: number;
   }> = [];
 
   if (since > 0) {
     // 增量轮询：只取新消息（用 >= 防止同一秒内的消息被遗漏，客户端按 id 去重）
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, content, created_at, is_read
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at
       FROM chat_messages
       WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND created_at >= ?
       ORDER BY created_at ASC
@@ -857,12 +869,16 @@ let rows: Array<{
       content: string;
       created_at: number;
       is_read: number | boolean;
+      read_at: number;
+      msg_key: string | null;
+      peer_read: number | boolean;
+      peer_read_at: number;
     }>();
     rows = res.results || [];
   } else {
     // 初始加载：取最近 limit 条（先按时间倒序取，再升序返回）
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, content, created_at, is_read
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at
       FROM chat_messages
       WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?)
       ORDER BY created_at DESC
@@ -875,9 +891,21 @@ let rows: Array<{
       content: string;
       created_at: number;
       is_read: number | boolean;
+      read_at: number;
+      msg_key: string | null;
+      peer_read: number | boolean;
+      peer_read_at: number;
     }>();
     rows = (res.results || []).reverse();
   }
+
+  if (rows.length === 0) return [];
+
+  // 批量拉取这些消息关联的附件（按 msg_key），降低 D1 读取行数
+  const keys = rows.filter(r => r.msg_key).map(r => r.msg_key as string);
+  const attachmentMap = keys.length > 0 && keys.length <= 200
+    ? await getChatAttachmentsByMsgKeys(db, keys)
+    : new Map<string, ChatAttachmentListItem[]>();
 
   return rows.map(r => ({
     id: r.id,
@@ -888,6 +916,11 @@ let rows: Array<{
     textContent: r.content || '',
     receivedAt: r.created_at,
     isRead: !!r.is_read,
+    readAt: r.read_at || 0,
+    msgKey: r.msg_key || undefined,
+    peerRead: r.msg_key ? !!r.peer_read : false,
+    peerReadAt: r.peer_read_at || 0,
+    attachments: (r.msg_key && attachmentMap.get(r.msg_key)) || [],
   }));
 }
 
@@ -911,6 +944,13 @@ export async function deleteInternalMessages(
 ): Promise<number> {
   // 双方各自删除 from/to 与双方匹配的站内消息
   const timeCond = afterTs > 0 ? ` AND created_at >= ${afterTs}` : '';
+
+  // 先收集匹配的 msg_key，连带清理聊天附件（双方副本共用 msg_key，一次删除即覆盖双方）
+  const keysRes = await db.prepare(`
+    SELECT DISTINCT msg_key FROM chat_messages
+    WHERE msg_key IS NOT NULL AND mailbox_id = ? AND ((from_address = ? AND to_address = ?) OR (from_address = ? AND to_address = ?))${timeCond}
+  `).bind(myId, myAddress, peerAddress, peerAddress, myAddress).all<{ msg_key: string }>();
+  await deleteChatAttachmentsByMsgKeys(db, (keysRes.results || []).map(r => r.msg_key));
 
   const myRes = await db.prepare(`
     DELETE FROM chat_messages
@@ -988,14 +1028,243 @@ export async function getChatConversations(
 }
 
 /**
- * 将某用户发给我的聊天消息标记为已读（打开聊天/轮询时调用）
+ * 将某用户发给我的聊天消息标记为已读（打开聊天时调用，并记录阅读时间供回执使用）
  * @param db 数据库实例
  * @param mailboxId 当前邮箱ID
  * @param peerAddress 对方邮箱地址
  */
 export async function markChatRead(db: D1Database, mailboxId: string, peerAddress: string): Promise<void> {
-  await db.prepare(`UPDATE chat_messages SET is_read = 1 WHERE mailbox_id = ? AND from_address = ? AND is_read = 0`)
-    .bind(mailboxId, peerAddress).run();
+  const now = getCurrentTimestamp();
+  await db.prepare(`UPDATE chat_messages SET is_read = 1, read_at = CASE WHEN read_at = 0 THEN ? ELSE read_at END WHERE mailbox_id = ? AND from_address = ? AND is_read = 0`)
+    .bind(now, mailboxId, peerAddress).run();
+}
+
+/**
+ * 批量将指定的聊天消息标记为已读并记录阅读时间（已读回执上报，节流由调用方控制）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param messageIds 消息ID列表（须属于该邮箱）
+ * @param readAt 阅读时间戳（秒）
+ */
+export async function markChatMessagesRead(
+  db: D1Database,
+  mailboxId: string,
+  messageIds: string[],
+  readAt: number
+): Promise<number> {
+  if (messageIds.length === 0) return 0;
+  const placeholders = messageIds.map(() => '?').join(',');
+  const result = await db.prepare(
+    `UPDATE chat_messages SET is_read = 1, read_at = CASE WHEN read_at = 0 THEN ? ELSE read_at END WHERE mailbox_id = ? AND id IN (${placeholders}) AND is_read = 0`
+  ).bind(readAt, mailboxId, ...messageIds).run();
+  return result.meta?.changes || 0;
+}
+
+/**
+ * 保存一份聊天附件（含大附件分块，与邮件附件相同的分块策略）
+ * @param db 数据库实例
+ * @param mailboxId 归属邮箱ID（上传者）
+ * @param params 附件参数
+ * @returns 附件列表项
+ */
+export async function saveChatAttachment(
+  db: D1Database,
+  mailboxId: string,
+  params: SaveChatAttachmentParams
+): Promise<ChatAttachmentListItem> {
+  const now = getCurrentTimestamp();
+  const attachmentId = generateId();
+  const cleanFilename = params.filename.replace(/[\\\/\r\n]/g, '').slice(0, 200) || 'attachment';
+  const isLarge = params.content.length > CHUNK_SIZE;
+
+  if (isLarge) {
+    const contentLength = params.content.length;
+    const chunksCount = Math.ceil(contentLength / CHUNK_SIZE);
+    await db.prepare(`INSERT INTO chat_attachments (id, mailbox_id, msg_key, filename, mime_type, content, size, is_large, chunks_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(attachmentId, mailboxId, null, cleanFilename, params.mimeType, '', params.size, 1, chunksCount, now).run();
+    for (let i = 0; i < chunksCount; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, contentLength);
+      await db.prepare(`INSERT INTO chat_attachment_chunks (id, attachment_id, chunk_index, content) VALUES (?, ?, ?, ?)`)
+        .bind(generateId(), attachmentId, i, params.content.substring(start, end)).run();
+    }
+  } else {
+    await db.prepare(`INSERT INTO chat_attachments (id, mailbox_id, msg_key, filename, mime_type, content, size, is_large, chunks_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(attachmentId, mailboxId, null, cleanFilename, params.mimeType, params.content, params.size, 0, 0, now).run();
+  }
+
+  return { id: attachmentId, filename: cleanFilename, mimeType: params.mimeType, size: params.size };
+}
+
+/**
+ * 按 msg_key 批量获取聊天附件（键与双方副本一致，一次查询拉取对话内的所有附件，降低 D1 读取行数）
+ * @param db 数据库实例
+ * @param msgKeys 消息关联键列表
+ * @returns 附件列表（按 msgKey 分组）
+ */
+export async function getChatAttachmentsByMsgKeys(
+  db: D1Database,
+  msgKeys: string[]
+): Promise<Map<string, ChatAttachmentListItem[]>> {
+  const map = new Map<string, ChatAttachmentListItem[]>();
+  if (msgKeys.length === 0) return map;
+  const placeholders = msgKeys.map(() => '?').join(',');
+  const res = await db.prepare(
+    `SELECT id, filename, mime_type, size, msg_key FROM chat_attachments WHERE msg_key IN (${placeholders})`
+  ).bind(...msgKeys).all<{ id: string; filename: string; mime_type: string; size: number; msg_key: string }>();
+  for (const r of res.results || []) {
+    const list = map.get(r.msg_key) || [];
+    list.push({ id: r.id, filename: r.filename, mimeType: r.mime_type, size: r.size });
+    map.set(r.msg_key, list);
+  }
+  return map;
+}
+
+/**
+ * 获取聊天附件详情（含内容，用于下载）
+ * @param db 数据库实例
+ * @param id 附件ID
+ * @returns 附件详情
+ */
+export async function getChatAttachment(db: D1Database, id: string): Promise<ChatAttachment | null> {
+  const result = await db.prepare(`SELECT id, mailbox_id, msg_key, filename, mime_type, content, size, is_large, chunks_count, created_at FROM chat_attachments WHERE id = ?`).bind(id).first();
+  if (!result) return null;
+
+  let content = result.content as string;
+  if (result.is_large) {
+    const chunksCount = result.chunks_count as number;
+    let joined = '';
+    for (let i = 0; i < chunksCount; i++) {
+      const chunk = await db.prepare(`SELECT content FROM chat_attachment_chunks WHERE attachment_id = ? AND chunk_index = ?`).bind(id, i).first();
+      if (chunk && chunk.content) joined += chunk.content as string;
+    }
+    content = joined;
+  }
+
+  return {
+    id: result.id as string,
+    mailboxId: result.mailbox_id as string,
+    msgKey: (result.msg_key as string) || null,
+    filename: result.filename as string,
+    mimeType: result.mime_type as string,
+    content,
+    size: result.size as number,
+    createdAt: result.created_at as number,
+  };
+}
+
+/**
+ * 判断当前用户是否有权访问某聊天附件（上传者本人，或该附件所关联消息的收发双方）
+ * @param db 数据库实例
+ * @param attachmentId 附件ID
+ * @param requesterMailboxId 访问者邮箱ID
+ * @returns 是否有权访问
+ */
+export async function canAccessChatAttachment(
+  db: D1Database,
+  attachmentId: string,
+  requesterMailboxId: string
+): Promise<boolean> {
+  const attachment = await db.prepare(`SELECT mailbox_id, msg_key FROM chat_attachments WHERE id = ?`).bind(attachmentId).first<{ mailbox_id: string; msg_key: string | null }>();
+  if (!attachment) return false;
+  if (attachment.mailbox_id === requesterMailboxId) return true;
+  if (!attachment.msg_key) return false;
+  // 未绑定归属判断：消息收发双方均可见
+  const msg = await db.prepare(`SELECT 1 AS x FROM chat_messages WHERE msg_key = ? AND mailbox_id = ?`).bind(attachment.msg_key, requesterMailboxId).first();
+  return !!msg;
+}
+
+/**
+ * 清理与一组 msg_key 关联的聊天附件（删除附件记录及分块）
+ * @param db 数据库实例
+ * @param msgKeys 消息关联键列表
+ */
+async function deleteChatAttachmentsByMsgKeys(db: D1Database, msgKeys: string[]): Promise<void> {
+  if (msgKeys.length === 0) return;
+  const keyPlaceholders = msgKeys.map(() => '?').join(',');
+  const attRes = await db.prepare(`SELECT id FROM chat_attachments WHERE msg_key IN (${keyPlaceholders})`).bind(...msgKeys).all<{ id: string }>();
+  const ids = (attRes.results || []).map(r => r.id);
+  if (ids.length > 0) {
+    const idPlaceholders = ids.map(() => '?').join(',');
+    await db.prepare(`DELETE FROM chat_attachment_chunks WHERE attachment_id IN (${idPlaceholders})`).bind(...ids).run();
+  }
+  await db.prepare(`DELETE FROM chat_attachments WHERE msg_key IN (${keyPlaceholders})`).bind(...msgKeys).run();
+}
+
+/**
+ * 已读回执同步：上报我读过的消息 + 下载对方是否已读我的消息（每小时一次，节流）
+ * 未到同步周期时仅返回当前缓存的已读回执，不产生任何 D1 写入
+ * @param db 数据库实例
+ * @param myId 当前邮箱ID
+ * @param myAddress 当前邮箱地址
+ * @param reportedReadIds 我在当前会话中已查看的消息ID列表
+ * @returns 同步结果与已读回执列表
+ */
+export async function syncChatReadStatus(
+  db: D1Database,
+  myId: string,
+  myAddress: string,
+  reportedReadIds: string[]
+): Promise<{ synced: boolean; syncAt: number; readReceipts: ReadReceipt[] }> {
+  const now = getCurrentTimestamp();
+  const HOUR = 3600;
+
+  const state = await db.prepare(`SELECT last_sync_at FROM chat_sync_state WHERE mailbox_id = ?`).bind(myId).first<{ last_sync_at: number }>();
+  const lastSync = state?.last_sync_at || 0;
+  const due = now - lastSync >= HOUR;
+  const syncAt = due ? now : lastSync;
+
+  if (due) {
+    // 1. 上报：把我已打开/已读的消息标记为已读并记录时间
+    if (reportedReadIds.length > 0) {
+      await markChatMessagesRead(db, myId, reportedReadIds, now);
+    }
+
+    // 2. 下载：对方副本中标记已读的消息回填到我方副本（有索引(from_address, mailbox_id)、(msg_key)）
+    const receivers = await db.prepare(`
+      SELECT msg_key, to_address AS peer, read_at
+      FROM chat_messages
+      WHERE from_address = ? AND mailbox_id != ? AND is_read = 1 AND msg_key IS NOT NULL
+    `).bind(myAddress, myId).all<{ msg_key: string; peer: string; read_at: number }>();
+
+    const readByKey = new Map<string, number>();
+    for (const r of receivers.results || []) {
+      if (r.msg_key && !readByKey.has(r.msg_key)) readByKey.set(r.msg_key, r.read_at);
+    }
+
+    const updateStmts: ReturnType<D1Database['prepare']>[] = [];
+    for (const [key, readAt] of readByKey) {
+      updateStmts.push(
+        db.prepare(`UPDATE chat_messages SET peer_read = 1, peer_read_at = ? WHERE mailbox_id = ? AND msg_key = ? AND from_address = ?`)
+          .bind(readAt, myId, key, myAddress)
+      );
+    }
+    if (updateStmts.length > 0) {
+      await db.batch(updateStmts);
+    }
+
+    // 3. 记录同步时间（节流）
+    await db.prepare(`INSERT INTO chat_sync_state (mailbox_id, last_sync_at) VALUES (?, ?)
+      ON CONFLICT(mailbox_id) DO UPDATE SET last_sync_at = excluded.last_sync_at`).bind(myId, now).run();
+  }
+
+  // 读取当前最佳已知的已读回执（发送方本地缓存，仅限我发出的消息，最多最近500条）
+  const mySent = await db.prepare(`
+    SELECT msg_key, to_address AS peer, peer_read, peer_read_at
+    FROM chat_messages
+    WHERE mailbox_id = ? AND from_address = ? AND msg_key IS NOT NULL
+    ORDER BY created_at DESC
+    LIMIT 500
+  `).bind(myId, myAddress).all<{ msg_key: string; peer: string; peer_read: number | boolean; peer_read_at: number }>();
+
+  const readReceipts: ReadReceipt[] = (mySent.results || []).map(r => ({
+    msgKey: r.msg_key,
+    peer: r.peer,
+    read: !!r.peer_read,
+    readAt: r.peer_read_at || 0,
+  }));
+
+  return { synced: due, syncAt, readReceipts };
 }
 
 /**

@@ -42,13 +42,15 @@ function generateSSN(): string {
   return parts.join("-");
 }
 
-function generateCreditCardNumber(): string {
-  const CARD_BIN = "622759531087";
+function generateCreditCardNumber(): { number: string; type: string } {
+  const CARD_BINS = ["601121255660", "546775142533", "622759531087", "479229938031"];
+  const cardBin = CARD_BINS[randomInt(0, CARD_BINS.length - 1)];
+  const cardType = cardBin.startsWith("6011") ? "Discover" : cardBin.startsWith("5467") ? "Mastercard" : cardBin.startsWith("6227") ? "UnionPay" : "Visa";
   const middle = String(randomInt(0, 999)).padStart(3, "0");
-  const partial = CARD_BIN + middle;
+  const partial = cardBin + middle;
   const checkDigit = (10 - (luhnCheckSum(partial + "0") % 10)) % 10;
   const full = partial + checkDigit;
-  return full.match(/.{1,4}/g)!.join(" ");
+  return { number: full.match(/.{1,4}/g)!.join(" "), type: cardType };
 }
 
 function luhnCheckSum(numStr: string): number {
@@ -135,8 +137,7 @@ export function generateRandomName(countryCode?: string): RandomName {
   const company = pick(COMPANIES);
   const occupation = pick(OCCUPATIONS);
   const ssn = generateSSN();
-  const creditCardType = "UnionPay";
-  const creditCardNumber = generateCreditCardNumber();
+  const creditCard = generateCreditCardNumber();
   const cvv2 = String(randomInt(100, 999));
   const expires = generateExpiry();
   const password = generatePassword();
@@ -148,7 +149,7 @@ export function generateRandomName(countryCode?: string): RandomName {
     gender, birthday, streetAddress, city,
     state: stateData.abbr, stateFull: stateData.name,
     zipCode, telephone, fullAddress, title, company, occupation,
-    ssn, creditCardType, creditCardNumber, cvv2, expires, password
+    ssn, creditCardType: creditCard.type, creditCardNumber: creditCard.number, cvv2, expires, password
   };
 }
 
@@ -198,8 +199,8 @@ export async function generateFromOSM(countryCode?: string): Promise<RandomName 
     company: pick(COMPANIES),
     occupation: pick(OCCUPATIONS),
     ssn: userData?.id?.value || generateSSN(),
-    creditCardType: "UnionPay",
-    creditCardNumber: generateCreditCardNumber(),
+    creditCardType: generateCreditCardNumber().type,
+    creditCardNumber: generateCreditCardNumber().number,
     cvv2: String(randomInt(100, 999)),
     expires: generateExpiry(),
     password: generatePassword(),

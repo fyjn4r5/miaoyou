@@ -29,7 +29,11 @@ import {
   getEmailOwnerMailboxId,
   getAttachmentMailboxId,
   getMailboxAddressById,
-  getEmailsOwnerMailboxId
+  getEmailsOwnerMailboxId,
+  saveChatAttachment,
+  getChatAttachment,
+  canAccessChatAttachment,
+  syncChatReadStatus
 } from './database';
 import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 
@@ -328,7 +332,7 @@ app.get('/api/mailboxes/:address/emails', async (c) => {
   }
 });
 
-// 站内发信（发送站内消息给本站的另一邮箱）
+// 站内发信（发送站内消息给本站的另一邮箱，支持附件与emoji）
 app.post('/api/mailboxes/:address/messages', async (c) => {
   try {
     const address = c.req.param('address').trim().toLowerCase();
@@ -337,11 +341,19 @@ app.post('/api/mailboxes/:address/messages', async (c) => {
     if (!body.toAddress || typeof body.toAddress !== 'string') {
       return c.json({ success: false, error: '请填写收件人邮箱地址' }, 400);
     }
-    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) {
-      return c.json({ success: false, error: '消息内容不能为空' }, 400);
+
+    let attachmentIds: string[] = [];
+    if (body.attachmentIds !== undefined) {
+      if (!Array.isArray(body.attachmentIds) || !body.attachmentIds.every((a: unknown) => typeof a === 'string')) {
+        return c.json({ success: false, error: '附件ID格式不正确' }, 400);
+      }
+      attachmentIds = body.attachmentIds.slice(0, 5);
     }
 
-    const content = body.content.trim();
+    const content = (typeof body.content === 'string' ? body.content : '').trim();
+    if (!content && attachmentIds.length === 0) {
+      return c.json({ success: false, error: '消息内容不能为空' }, 400);
+    }
     if (content.length > 5000) {
       return c.json({ success: false, error: '单条消息长度不能超过 5000 字符' }, 400);
     }
@@ -372,6 +384,17 @@ app.post('/api/mailboxes/:address/messages', async (c) => {
       return c.json({ success: false, error: '对方邮箱不存在，请确认对方已在秒邮注册' }, 404);
     }
 
+    // 校验附件归属且未被使用
+    if (attachmentIds.length > 0) {
+      const placeholders = attachmentIds.map(() => '?').join(',');
+      const check = await c.env.DB.prepare(
+        `SELECT COUNT(*) AS cnt FROM chat_attachments WHERE id IN (${placeholders}) AND mailbox_id = ? AND msg_key IS NULL`
+      ).bind(...attachmentIds, fromMailbox.id).first<{ cnt: number }>();
+      if ((check?.cnt || 0) !== attachmentIds.length) {
+        return c.json({ success: false, error: '存在无效或已被使用的附件，请重新上传' }, 400);
+      }
+    }
+
     // 按发件邮箱限流，防刷屏
     const rateLimited = await enforceRateLimit(c.env.DB, `send:${address}`, 60, 30);
     if (rateLimited) {
@@ -380,9 +403,9 @@ app.post('/api/mailboxes/:address/messages', async (c) => {
 
     const fromName = extractMailboxName(address);
     const toMailbox = { id: toMailboxId, address: toAddress } as Mailbox;
-    await sendInternalMessage(c.env.DB, fromMailbox, toMailbox, fromName, content);
+    const message = await sendInternalMessage(c.env.DB, fromMailbox, toMailbox, fromName, content, attachmentIds);
 
-    return c.json({ success: true });
+    return c.json({ success: true, message });
   } catch (error) {
     console.error('站内发信失败:', error);
     return c.json({
@@ -416,8 +439,10 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     const peerAddress = withAddress;
     const messages = await getChatMessages(c.env.DB, mailboxId, peerAddress, since, limit);
 
-    // 打开/轮询聊天时，把对方发给我的消息标记为已读，角标清零
-    await markChatRead(c.env.DB, mailboxId, peerAddress);
+    // 仅在初始打开聊天（since=0）时标记已读，轮询（since>0）不写入，降低 D1 写入量
+    if (since === 0) {
+      await markChatRead(c.env.DB, mailboxId, peerAddress);
+    }
 
     return c.json({ success: true, messages });
   } catch (error) {
@@ -468,6 +493,123 @@ app.get('/api/mailboxes/:address/chat/unread', async (c) => {
     return c.json({
       success: false,
       error: '获取未读站内消息数失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 上传站内聊天附件（先上传后随消息发送；base64 编码，最多5个/次，单文件不超过10MB）
+app.post('/api/mailboxes/:address/chat/attachments', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const body = await c.req.json();
+    const files = Array.isArray(body.files) ? body.files.slice(0, 5) : [];
+    if (files.length === 0) {
+      return c.json({ success: false, error: '请选择要上传的附件' }, 400);
+    }
+
+    // 上传限流：每邮箱每10秒最多5次
+    const limited = await enforceRateLimit(c.env.DB, `chat-upload:${address}`, 10, 5);
+    if (limited) {
+      return c.json({ success: false, error: '上传过于频繁，请稍后再试' }, 429);
+    }
+
+    const saved = [];
+    for (const file of files) {
+      if (typeof file.filename !== 'string' || typeof file.content !== 'string' || !file.content) {
+        return c.json({ success: false, error: '附件参数不完整' }, 400);
+      }
+      const size = typeof file.size === 'number' ? file.size : Math.floor(file.content.length * 3 / 4);
+      if (size > 10 * 1024 * 1024) {
+        return c.json({ success: false, error: '单个附件不能超过 10MB' }, 413);
+      }
+      saved.push(await saveChatAttachment(c.env.DB, auth.id, {
+        filename: typeof file.filename === 'string' ? file.filename : 'attachment',
+        mimeType: typeof file.mimeType === 'string' ? file.mimeType : 'application/octet-stream',
+        content: file.content,
+        size,
+      }));
+    }
+
+    return c.json({ success: true, attachments: saved });
+  } catch (error) {
+    console.error('上传站内聊天附件失败:', error);
+    return c.json({
+      success: false,
+      error: '上传附件失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 下载站内聊天附件（上传者本人及消息收发双方可访问）
+app.get('/api/mailboxes/:address/chat/attachments/:id', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const id = c.req.param('id');
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const allowed = await canAccessChatAttachment(c.env.DB, id, auth.id);
+    if (!allowed) {
+      return c.json({ success: false, error: '附件不存在或无权访问' }, 404);
+    }
+
+    const attachment = await getChatAttachment(c.env.DB, id);
+    if (!attachment) {
+      return c.json({ success: false, error: '附件不存在' }, 404);
+    }
+
+    const binaryContent = atob(attachment.content);
+    const bytes = new Uint8Array(binaryContent.length);
+    for (let i = 0; i < binaryContent.length; i++) {
+      bytes[i] = binaryContent.charCodeAt(i);
+    }
+    c.header('Content-Type', attachment.mimeType);
+    c.header('Content-Disposition', `attachment; filename="${encodeURIComponent(attachment.filename)}"`);
+    return c.body(bytes);
+  } catch (error) {
+    console.error('下载站内聊天附件失败:', error);
+    return c.json({
+      success: false,
+      error: '下载附件失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 已读回执同步：上报我已读的消息 + 下载对方是否已读我的消息（每小时一次，节流）
+// 上报的 messageIds 为本邮箱收到的在我方副本中已查看的消息ID
+app.post('/api/mailboxes/:address/chat/read-sync', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const body = await c.req.json().catch(() => ({}));
+    const reportedReadIds = (Array.isArray(body.messageIds) ? body.messageIds : [])
+      .filter((x: unknown): x is string => typeof x === 'string')
+      .slice(0, 500);
+
+    const result = await syncChatReadStatus(c.env.DB, auth.id, address, reportedReadIds);
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    console.error('已读回执同步失败:', error);
+    return c.json({
+      success: false,
+      error: '已读回执同步失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

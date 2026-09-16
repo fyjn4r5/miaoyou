@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// 生成以 622759531087 开头的 16 位虚拟信用卡
+// 生成固定前缀的 16 位虚拟信用卡，每次随机选取一种前缀，后缀随机
 // 输出格式: 卡号|月|年|CVV  例如: 6227595310871473|01|2026|600
 // 卡号经过 Luhn 校验，保证通过基本信用卡账号验证
 
 import { readFileSync } from "node:fs";
 
-const BIN = "622759531087";
+const BINS = ["601121255660", "546775142533", "622759531087", "479229938031"];
 const CARD_LENGTH = 16;
 
 function luhnCheck(numStr) {
@@ -36,10 +36,11 @@ function randomInt(min, max) {
 }
 
 function randomCardNumber() {
+  const bin = BINS[randomInt(0, BINS.length - 1)];
   const randomDigits = 3;
   let suffix = "";
   for (let i = 0; i < randomDigits; i++) suffix += randomInt(0, 9);
-  const partial = BIN + suffix;
+  const partial = bin + suffix;
   return partial + luhnCheckDigit(partial);
 }
 
@@ -95,7 +96,8 @@ if (args.includes("--self-test")) {
   let ok = true;
   for (let i = 0; i < 10000; i++) {
     const num = randomCardNumber();
-    if (num.length !== CARD_LENGTH || !num.startsWith(BIN) || !luhnCheck(num)) {
+    const startsWithAny = BINS.some((bin) => num.startsWith(bin));
+    if (num.length !== CARD_LENGTH || !startsWithAny || !luhnCheck(num)) {
       ok = false;
       console.log("失败:", num);
       break;
