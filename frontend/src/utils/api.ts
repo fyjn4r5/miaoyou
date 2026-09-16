@@ -368,7 +368,7 @@ export const batchMarkAsUnread = async (emailIds: string[], password?: string): 
 };
 
 // 发送站内消息（给本站的另一邮箱，需要发件箱密码鉴权；支持附件与emoji）
-export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string, password?: string, attachmentIds: string[] = []): Promise<{ success: boolean; error?: any }> => {
+export const sendInternalMessage = async (fromAddress: string, toAddress: string, content: string, password?: string, attachmentIds: string[] = []): Promise<{ success: boolean; error?: any; message?: InternalChatMessage }> => {
   try {
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(fromAddress)}/messages`), {
       method: 'POST',
@@ -378,15 +378,21 @@ export const sendInternalMessage = async (fromAddress: string, toAddress: string
       body: JSON.stringify({ toAddress, content, password, attachmentIds }),
     });
 
-    const data = await response.json();
+    // 优先解析 JSON；失败时透出 HTTP 状态，避免把真正的错误吞成"发送失败"
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      return { success: false, error: `服务器返回异常 (HTTP ${response.status})` };
+    }
 
     if (data.success) {
-      return { success: true };
+      return { success: true, message: data.message };
     }
-    return { success: false, error: data.error || '发送失败' };
+    return { success: false, error: data.error || `请求失败 (HTTP ${response.status})` };
   } catch (error) {
     console.error('Error sending internal message:', error);
-    return { success: false, error };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 };
 

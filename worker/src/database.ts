@@ -41,6 +41,11 @@ function hexToBytes(hex: string): Uint8Array {
   return out;
 }
 
+/** 规范化邮箱地址：去空白并统一小写，防止大小写不一致导致匹配失败 */
+function normalizeAddress(address: string): string {
+  return address.trim().toLowerCase();
+}
+
 // 常数时间字符串比较（避免时序攻击）
 function timingSafeEqualHex(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -168,7 +173,12 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     // [feat] 站内信：为对话按 peer 地址查询建立索引（from/to 双向，降低扫描行数）
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_emails_mailbox_peer ON emails(mailbox_id, from_address, received_at);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_emails_mailbox_to ON emails(mailbox_id, to_address, received_at);`);
-    
+
+    // [fix] 将历史记录中的邮箱地址统一为小写，避免大小写不一致导致站内发信/登录鉴权失败
+    await db.exec(`UPDATE mailboxes SET address = lower(address) WHERE address <> lower(address);`);
+    await db.exec(`UPDATE chat_messages SET from_address = lower(from_address) WHERE from_address <> lower(from_address);`);
+    await db.exec(`UPDATE chat_messages SET to_address = lower(to_address) WHERE to_address <> lower(to_address);`);
+
     console.log('数据库初始化成功');
   } catch (error) {
     console.error('数据库初始化失败:', error);
@@ -188,7 +198,7 @@ export async function createMailbox(db: D1Database, params: CreateMailboxParams)
   const hashedPassword = await hashPassword(params.password);
   const mailbox: Mailbox = {
     id: generateId(),
-    address: params.address,
+    address: normalizeAddress(params.address),
     password: hashedPassword,
     createdAt: now,
     expiresAt: calculateExpiryTimestamp(params.expiresInHours),
@@ -209,7 +219,8 @@ export async function createMailbox(db: D1Database, params: CreateMailboxParams)
  */
 export async function getMailbox(db: D1Database, address: string): Promise<Mailbox | null> {
   const now = getCurrentTimestamp();
-  const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ?`).bind(address).first();
+  const normalized = normalizeAddress(address);
+  const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ?`).bind(normalized).first();
   
   if (!result) return null;
   
@@ -234,7 +245,7 @@ export async function getMailbox(db: D1Database, address: string): Promise<Mailb
  * @returns 邮箱ID或null
  */
 export async function getMailboxId(db: D1Database, address: string): Promise<string | null> {
-  const result = await db.prepare(`SELECT id FROM mailboxes WHERE address = ?`).bind(address).first<{ id: string }>();
+  const result = await db.prepare(`SELECT id FROM mailboxes WHERE address = ?`).bind(normalizeAddress(address)).first<{ id: string }>();
   return result?.id || null;
 }
 
@@ -1317,7 +1328,7 @@ export async function cleanupRateEvents(db: D1Database, keepSeconds = 86400): Pr
  */
 export async function verifyMailboxPassword(db: D1Database, address: string, password: string): Promise<Mailbox | null> {
   const result = await db.prepare(`SELECT id, address, password, created_at, expires_at, ip_address, last_accessed FROM mailboxes WHERE address = ?`)
-    .bind(address).first();
+    .bind(normalizeAddress(address)).first();
   if (!result) return null;
 
   const storedPassword = result.password as string;

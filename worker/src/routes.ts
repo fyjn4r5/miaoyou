@@ -190,8 +190,8 @@ app.post('/api/mailboxes', async (c) => {
       }
     }
     
-    // 生成或使用提供的地址
-    const address = body.address || generateRandomAddress();
+    // 生成或使用提供的地址（统一小写，避免大小写不一致导致后续鉴权/发信失败）
+    const address = (body.address || generateRandomAddress()).trim().toLowerCase();
     // 使用前端提供的密码，或生成随机密码
     const password = body.password || generatePassword();
     

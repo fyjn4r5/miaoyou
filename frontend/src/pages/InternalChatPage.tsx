@@ -202,13 +202,23 @@ const InternalChatPage: React.FC = () => {
     setSending(false);
 
     if (result.success) {
+      // 用服务端返回的真实消息即时追加，无需再等一次轮询即可显示
+      if (result.message) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === result.message!.id)) return prev;
+          const next = [...prev, result.message!];
+          return next;
+        });
+        sinceRef.current = Math.max(sinceRef.current, result.message.receivedAt);
+        scrollToBottom();
+      }
       setInput('');
       setShowEmojiBar(false);
       inputRef.current?.focus();
-      // 立即触发一次增量刷新，展示刚发送的消息
-      await poll(false);
+      // 后台增量刷新一次，与服务器状态保持一致（按 id 去重，不会重复显示）
+      void poll(false);
     } else {
-      const msg = typeof result.error === 'string' ? result.error : t('internalChat.sendFailed');
+      const msg = typeof result.error === 'string' ? result.error : (result.error?.message || t('internalChat.sendFailed'));
       showErrorMessage(msg);
     }
   };
