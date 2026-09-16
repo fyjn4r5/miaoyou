@@ -807,7 +807,7 @@ export async function sendInternalMessage(
     const placeholders = attachmentIds.map(() => '?').join(',');
     await db.prepare(
       `UPDATE chat_attachments SET msg_key = ? WHERE id IN (${placeholders}) AND mailbox_id = ? AND msg_key IS NULL`
-    ).bind(msgKey, fromMailbox.id, ...attachmentIds).run();
+    ).bind(msgKey, ...attachmentIds, fromMailbox.id).run();
   }
 
   // 两条写入合并在一次 batch 中，降低 D1 事务开销
