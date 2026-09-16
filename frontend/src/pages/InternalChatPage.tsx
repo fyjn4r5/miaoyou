@@ -1,9 +1,9 @@
 import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Navigate } from 'react-router-dom';
 import { MailboxContext } from '../contexts/MailboxContext';
 import Container from '../components/Container';
-import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations, uploadChatAttachments, downloadChatAttachment, syncChatReadStatus, InternalChatMessage } from '../utils/api';
+import { sendInternalMessage, getInternalChat, getFullInternalChat, clearInternalChat, getInternalChatConversations, uploadChatAttachments, downloadChatAttachment, syncChatReadStatus, InternalChatMessage, getMailboxFromLocalStorage } from '../utils/api';
 
 const POLL_INTERVAL = 4000;
 const READ_SYNC_INTERVAL = 3600000; // 已读回执每小时同步一次
@@ -51,6 +51,15 @@ const InternalChatPage: React.FC = () => {
   const sinceRef = useRef(0);
   const messagesRef = useRef<InternalChatMessage[]>([]);
   const myAddress = mailbox?.address || '';
+
+  // 未登录直接跳回首页（同步读取本地存储，避免邮箱从会话恢复完成前的闪烁跳转）
+  const [hasSavedMailbox] = useState(() => {
+    try {
+      return !!getMailboxFromLocalStorage();
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -404,12 +413,13 @@ const InternalChatPage: React.FC = () => {
     <Container>
       <div className="max-w-4xl mx-auto h-[calc(100vh-12rem)] flex flex-col">
         {!myAddress ? (
-          <div className="flex items-center justify-center min-h-[50vh] text-center">
-            <div>
-              <div className="text-5xl mb-4 opacity-30"><i className="fas fa-envelope"></i></div>
-              <p className="text-lg text-muted-foreground">{t('internalChat.needLogin')}</p>
+          hasSavedMailbox ? (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          </div>
+          ) : (
+            <Navigate to="/" replace />
+          )
         ) : !connectedPeer ? (
           <div className="flex-1 flex flex-col items-center justify-start min-h-[50vh] pt-6 text-center space-y-5">
             <div>

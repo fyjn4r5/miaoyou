@@ -418,7 +418,6 @@
     "send": "Send",
     "sendFailed": "Send failed. Make sure the peer mailbox exists",
     "selfError": "You cannot send an internal message to yourself",
-    "needLogin": "Please create or log in to a Miaoyou mailbox first",
     "peer": "Peer",
     "me": "Me",
     "exportTitle": "Internal Chat Export",
