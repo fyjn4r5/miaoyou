@@ -79,8 +79,20 @@ const InternalChatPage: React.FC = () => {
     messagesRef.current = messages;
   }, [messages]);
 
-  // 支持 ?peer=xxx 直达：从收件箱站内消息点击进入时自动开始聊天
+  // 切换/恢复账号时：清空旧账号的聊天状态，并按账号恢复上次聊天的对象（避免跨账号串台、聊天记录残留）
   useEffect(() => {
+    if (!myAddress) {
+      setConnectedPeer('');
+      setPeer('');
+      setMessages([]);
+      sinceRef.current = 0;
+      return;
+    }
+
+    setMessages([]);
+    sinceRef.current = 0;
+
+    // 支持 ?peer=xxx 直达：从收件箱站内消息点击进入时自动开始聊天
     const peerParam = searchParams.get('peer');
     if (peerParam && peerParam.trim()) {
       const target = peerParam.trim().toLowerCase();
@@ -88,24 +100,26 @@ const InternalChatPage: React.FC = () => {
         setPeer(target);
         setConnectedPeer(target);
         try {
-          localStorage.setItem('internalChatPeer', target);
+          localStorage.setItem(`internalChatPeer:${myAddress}`, target);
         } catch {}
       }
-    } else {
-      const saved = (() => {
-        try {
-          return localStorage.getItem('internalChatPeer') || '';
-        } catch {
-          return '';
-        }
-      })();
-      if (saved) {
-        setPeer(saved);
-        setConnectedPeer(saved);
+      return;
+    }
+
+    // 恢复该账号上次聊天的对象（优先按账号，旧版全局 key 作为兼容回退）
+    const saved = (() => {
+      try {
+        return localStorage.getItem(`internalChatPeer:${myAddress}`) || localStorage.getItem('internalChatPeer') || '';
+      } catch {
+        return '';
       }
+    })();
+    if (saved) {
+      setPeer(saved);
+      setConnectedPeer(saved);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [myAddress]);
 
   // 拉取历史会话列表（联系人），供"开始聊天"页与聊天窗口内的快速切换使用
   useEffect(() => {
@@ -261,7 +275,7 @@ const InternalChatPage: React.FC = () => {
     }
     setConnectedPeer(target);
     try {
-      localStorage.setItem('internalChatPeer', target);
+      localStorage.setItem(`internalChatPeer:${myAddress}`, target);
     } catch {}
     sinceRef.current = 0;
     setMessages([]);
@@ -586,7 +600,7 @@ const InternalChatPage: React.FC = () => {
     setMessages([]);
     sinceRef.current = 0;
     try {
-      localStorage.removeItem('internalChatPeer');
+      localStorage.removeItem(`internalChatPeer:${myAddress}`);
     } catch {}
   };
 
@@ -698,7 +712,7 @@ const InternalChatPage: React.FC = () => {
                         setConnectedPeer(conv.peer);
                         setPeer(conv.peer);
                         try {
-                          localStorage.setItem('internalChatPeer', conv.peer);
+                          localStorage.setItem(`internalChatPeer:${myAddress}`, conv.peer);
                         } catch {}
                         sinceRef.current = 0;
                         setMessages([]);
@@ -883,7 +897,7 @@ const InternalChatPage: React.FC = () => {
                       setConnectedPeer(c.peer);
                       setPeer(c.peer);
                       try {
-                        localStorage.setItem('internalChatPeer', c.peer);
+                        localStorage.setItem(`internalChatPeer:${myAddress}`, c.peer);
                       } catch {}
                       sinceRef.current = 0;
                       setMessages([]);
