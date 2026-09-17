@@ -397,7 +397,7 @@ export const sendInternalMessage = async (fromAddress: string, toAddress: string
 };
 
 // 上传站内聊天附件（浏览器读取文件后以 base64 提交，最多5个）
-export const uploadChatAttachments = async (address: string, files: { filename: string; mimeType: string; content: string; size: number }[], password?: string): Promise<{ success: boolean; error?: any; attachments?: { id: string; filename: string; mimeType: string; size: number }[] }> => {
+export const uploadChatAttachments = async (address: string, files: { filename: string; mimeType: string; content: string; size: number }[], password?: string): Promise<{ success: boolean; error?: any; message?: string; attachments?: { id: string; filename: string; mimeType: string; size: number }[] }> => {
   try {
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/attachments`), {
       method: 'POST',
@@ -408,14 +408,19 @@ export const uploadChatAttachments = async (address: string, files: { filename: 
       body: JSON.stringify({ files }),
     });
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      return { success: false, error: `服务器返回异常 (HTTP ${response.status})` };
+    }
     if (data.success) {
       return { success: true, attachments: data.attachments ?? [] };
     }
-    return { success: false, error: data.error || '上传失败' };
+    return { success: false, error: data.error || '上传失败', message: data.message };
   } catch (error) {
     console.error('Error uploading chat attachments:', error);
-    return { success: false, error };
+    return { success: false, error: `上传请求失败: ${error instanceof Error ? error.message : String(error)}` };
   }
 };
 

@@ -51,7 +51,15 @@ const InternalChatPage: React.FC = () => {
   const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const pendingTempId = useRef<string | null>(null);
 
+  // 联系人昵称备注（本地存储，key 含本人邮箱避免多账号冲突）
+  const [remarks, setRemarks] = useState<Record<string, string>>({});
+  const [editingRemark, setEditingRemark] = useState<string | null>(null);
+  const [remarkDraft, setRemarkDraft] = useState('');
+  // 防止 Enter/Escape 后 blur 再次触发保存导致昵称被误删
+  const remarkGuardRef = useRef(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesListRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const sinceRef = useRef(0);
@@ -118,8 +126,56 @@ const InternalChatPage: React.FC = () => {
     return () => { active = false; };
   }, [myAddress, connectedPeer]);
 
+  // 加载联系人昵称备注
+  useEffect(() => {
+    if (!myAddress) {
+      setRemarks({});
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(`internalChatRemarks:${myAddress}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') setRemarks(parsed);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAddress]);
+
+  const persistRemarks = (next: Record<string, string>) => {
+    setRemarks(next);
+    if (!myAddress) return;
+    try {
+      if (Object.keys(next).length === 0) {
+        localStorage.removeItem(`internalChatRemarks:${myAddress}`);
+      } else {
+        localStorage.setItem(`internalChatRemarks:${myAddress}`, JSON.stringify(next));
+      }
+    } catch {}
+  };
+
+  // 保存/清空昵称
+  const saveRemark = (peer: string) => {
+    if (!remarkGuardRef.current) return;
+    remarkGuardRef.current = false;
+    const nickname = remarkDraft.trim();
+    if (!nickname) {
+      persistRemarks(Object.fromEntries(Object.entries(remarks).filter(([k]) => k !== peer)));
+      showSuccessMessage(t('internalChat.remarkRemoved'));
+    } else {
+      persistRemarks({ ...remarks, [peer]: nickname });
+      showSuccessMessage(t('internalChat.remarkSaved'));
+    }
+    setEditingRemark(null);
+    setRemarkDraft('');
+  };
+
+  // 只滚动消息列表本身，避免 scrollIntoView 带动整页上移、把聊天头部（对方邮箱）顶出视线
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = messagesListRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
@@ -232,7 +288,9 @@ const InternalChatPage: React.FC = () => {
         pendingAttachments = uploadResult.attachments;
         setPenders([]);
       } else {
-        const msg = typeof uploadResult.error === 'string' ? uploadResult.error : t('internalChat.uploadFailed');
+        const msg = typeof uploadResult.error === 'string'
+          ? uploadResult.error
+          : (uploadResult.error?.message || uploadResult.message || t('internalChat.uploadFailed'));
         showErrorMessage(msg);
         return;
       }
@@ -602,7 +660,7 @@ const InternalChatPage: React.FC = () => {
 
   return (
     <Container>
-      <div className="max-w-4xl mx-auto h-[calc(100vh-14rem)] min-h-[320px] flex flex-col">
+      <div className="max-w-4xl mx-auto h-[calc(100dvh-16rem)] min-h-[320px] flex flex-col">
         {!myAddress ? (
           hasSavedMailbox ? (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -652,7 +710,7 @@ const InternalChatPage: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-sm truncate font-mono">{conv.peer}</span>
+                          <span className="font-medium text-sm truncate font-mono">{remarks[conv.peer] || conv.peer}</span>
                           <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">{formatTime(conv.lastAt)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2">
@@ -703,19 +761,65 @@ const InternalChatPage: React.FC = () => {
                   <i className="fas fa-arrow-left"></i>
                 </button>
                 <div className="min-w-0">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(connectedPeer).then(() => {
-                        showSuccessMessage(t('internalChat.copied'));
-                      }).catch(() => {
-                        showErrorMessage(t('internalChat.copyFailed'));
-                      });
-                    }}
-                    className="font-mono font-medium truncate max-w-[200px] hover:underline hover:text-primary transition-colors"
-                    title={t('internalChat.peerCopy')}
-                  >
-                    {connectedPeer}
-                  </button>
+                  {editingRemark === connectedPeer ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        autoFocus
+                        value={remarkDraft}
+                        onChange={e => setRemarkDraft(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            remarkGuardRef.current = true;
+                            saveRemark(connectedPeer);
+                          }
+                          if (e.key === 'Escape') {
+                            remarkGuardRef.current = false;
+                            setEditingRemark(null);
+                            setRemarkDraft('');
+                          }
+                        }}
+                        onBlur={() => {
+                          remarkGuardRef.current = true;
+                          saveRemark(connectedPeer);
+                        }}
+                        placeholder={t('internalChat.remarkPlaceholder')}
+                        className="w-48 px-2 py-1 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <i className="fas fa-check text-green-500"></i>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {remarks[connectedPeer] && (
+                          <span className="font-semibold truncate max-w-[140px]">{remarks[connectedPeer]}</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            remarkGuardRef.current = true;
+                            setRemarkDraft(remarks[connectedPeer] || '');
+                            setEditingRemark(connectedPeer);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted transition-colors shrink-0"
+                          title={t('internalChat.remark')}
+                        >
+                          <i className="fas fa-pen text-[10px]"></i>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(connectedPeer).then(() => {
+                            showSuccessMessage(t('internalChat.copied'));
+                          }).catch(() => {
+                            showErrorMessage(t('internalChat.copyFailed'));
+                          });
+                        }}
+                        className="block font-mono text-sm truncate max-w-[220px] hover:underline hover:text-primary transition-colors"
+                        title={t('internalChat.peerCopy')}
+                      >
+                        {connectedPeer}
+                      </button>
+                    </>
+                  )}
                   <div className="text-xs text-muted-foreground">{t('internalChat.online')}</div>
                 </div>
               </div>
@@ -792,7 +896,7 @@ const InternalChatPage: React.FC = () => {
                     }`}
                     title={c.peer}
                   >
-                    {c.peer}
+                    {remarks[c.peer] || c.peer}
                     {c.unreadCount > 0 && (
                       <span className="ml-1.5 inline-flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full text-[10px] font-bold bg-red-500 text-white">
                         {c.unreadCount > 99 ? '99+' : c.unreadCount}
@@ -804,7 +908,8 @@ const InternalChatPage: React.FC = () => {
             )}
 
             <div
-              className="relative flex-1 overflow-y-auto py-4 space-y-3"
+              ref={messagesListRef}
+              className="relative flex-1 overflow-y-auto overflow-x-hidden overscroll-contain py-4 space-y-3"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -893,12 +998,7 @@ const InternalChatPage: React.FC = () => {
                           {!!m.editedAt && (
                             <span title={`${t('internalChat.edited')} ${formatTime(m.editedAt)}`}>{t('internalChat.edited')}</span>
                           )}
-                          {m.pending ? (
-                            <span className="inline-flex items-center gap-1 opacity-90">
-                              <i className="fas fa-circle-notch fa-spin"></i>
-                              <span className="hidden sm:inline">{t('internalChat.sending')}</span>
-                            </span>
-                          ) : m.failed ? (
+                          {m.failed ? (
                             <button
                               onClick={() => retrySend(m)}
                               className="inline-flex items-center gap-1 text-red-300 hover:text-red-100 transition-colors"
@@ -970,7 +1070,7 @@ const InternalChatPage: React.FC = () => {
                 </div>
               )}
               {sendStatus !== 'idle' && (
-                <div className={`text-xs mb-2 pl-1 flex items-center gap-1.5 ${
+                <div className={`text-xs mb-2 pr-1 flex items-center justify-end gap-1.5 ${
                   sendStatus === 'failed'
                     ? 'text-red-500'
                     : sendStatus === 'sent'

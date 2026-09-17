@@ -462,6 +462,10 @@
     "sending": "Sending…",
     "sent": "Sent",
     "sendFailedShort": "Send failed",
-    "retry": "Retry"
+    "retry": "Retry",
+    "remark": "Set nickname",
+    "remarkPlaceholder": "Enter nickname",
+    "remarkSaved": "Nickname saved",
+    "remarkRemoved": "Nickname removed"
   }
 }

@@ -469,6 +469,10 @@
     "sending": "发送中…",
     "sent": "已发送",
     "sendFailedShort": "发送失败",
-    "retry": "重试"
+    "retry": "重试",
+    "remark": "设置昵称备注",
+    "remarkPlaceholder": "输入昵称",
+    "remarkSaved": "昵称已保存",
+    "remarkRemoved": "昵称已清除"
   }
 }
