@@ -33,7 +33,10 @@ import {
   saveChatAttachment,
   getChatAttachment,
   canAccessChatAttachment,
-  syncChatReadStatus
+  syncChatReadStatus,
+  getDeletedChatKeys,
+  editInternalMessage,
+  deleteChatMessage
 } from './database';
 import { generateRandomAddress, generatePassword, isValidEmailAddress, extractMailboxName, getCurrentTimestamp } from './utils';
 
@@ -439,12 +442,15 @@ app.get('/api/mailboxes/:address/chat', async (c) => {
     const peerAddress = withAddress;
     const messages = await getChatMessages(c.env.DB, mailboxId, peerAddress, since, limit);
 
+    // 返回该时段内被删除的 msg_key，供客户端移除本地副本（轮询时）
+    const deleted = since > 0 ? await getDeletedChatKeys(c.env.DB, since) : { keys: [], maxDeletedAt: 0 };
+
     // 仅在初始打开聊天（since=0）时标记已读，轮询（since>0）不写入，降低 D1 写入量
     if (since === 0) {
       await markChatRead(c.env.DB, mailboxId, peerAddress);
     }
 
-    return c.json({ success: true, messages });
+    return c.json({ success: true, messages, deletedKeys: deleted.keys, deletedAt: deleted.maxDeletedAt });
   } catch (error) {
     console.error('获取站内对话失败:', error);
     return c.json({
@@ -610,6 +616,88 @@ app.post('/api/mailboxes/:address/chat/read-sync', async (c) => {
     return c.json({
       success: false,
       error: '已读回执同步失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 编辑一条站内消息（仅发送者可编辑，双方副本同步更新并记录编辑时间，对方增量轮询可发现）
+app.post('/api/mailboxes/:address/chat/messages/:msgKey/edit', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const msgKey = c.req.param('msgKey').trim();
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const body = await c.req.json().catch(() => ({}));
+    const content = (typeof body.content === 'string' ? body.content : '').trim();
+    if (!content) {
+      return c.json({ success: false, error: '消息内容不能为空' }, 400);
+    }
+    if (content.length > 5000) {
+      return c.json({ success: false, error: '单条消息长度不能超过 5000 字符' }, 400);
+    }
+    if (!msgKey || msgKey.length > 64) {
+      return c.json({ success: false, error: '非法的消息标识' }, 400);
+    }
+
+    // 从消息中解析对方地址：编辑的消息必须存在于我的会话中
+    const peerRow = await c.env.DB.prepare(
+      `SELECT to_address FROM chat_messages WHERE msg_key = ? AND mailbox_id = ? LIMIT 1`
+    ).bind(msgKey, auth.id).first<{ to_address: string }>();
+    if (!peerRow) {
+      return c.json({ success: false, error: '消息不存在或无权编辑' }, 404);
+    }
+
+    const updated = await editInternalMessage(c.env.DB, auth.id, address, peerRow.to_address, msgKey, content);
+    if (!updated) {
+      return c.json({ success: false, error: '消息不存在或无权编辑' }, 404);
+    }
+    return c.json({ success: true, message: updated });
+  } catch (error) {
+    console.error('编辑站内消息失败:', error);
+    return c.json({
+      success: false,
+      error: '编辑消息失败',
+      message: error instanceof Error ? error.message : String(error)
+    }, 500);
+  }
+});
+
+// 删除一条站内消息（仅发送者可删除；双方副本连同附件一并删除，对方增量轮询可发现）
+app.delete('/api/mailboxes/:address/chat/messages/:msgKey', async (c) => {
+  try {
+    const address = c.req.param('address').trim().toLowerCase();
+    const msgKey = c.req.param('msgKey').trim();
+    const auth = await requireMailboxAuth(c, address);
+    if (!auth) {
+      const exists = await getMailboxId(c.env.DB, address);
+      return exists ? unauthorized(c) : c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+    if (!msgKey || msgKey.length > 64) {
+      return c.json({ success: false, error: '非法的消息标识' }, 400);
+    }
+
+    const peerRow = await c.env.DB.prepare(
+      `SELECT to_address FROM chat_messages WHERE msg_key = ? AND mailbox_id = ? LIMIT 1`
+    ).bind(msgKey, auth.id).first<{ to_address: string }>();
+    if (!peerRow) {
+      return c.json({ success: false, error: '消息不存在或无权删除' }, 404);
+    }
+
+    const deleted = await deleteChatMessage(c.env.DB, auth.id, address, peerRow.to_address, msgKey);
+    if (!deleted) {
+      return c.json({ success: false, error: '消息不存在或无权删除' }, 404);
+    }
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('删除站内消息失败:', error);
+    return c.json({
+      success: false,
+      error: '删除消息失败',
       message: error instanceof Error ? error.message : String(error)
     }, 500);
   }

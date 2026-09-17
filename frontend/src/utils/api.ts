@@ -479,9 +479,14 @@ export interface InternalChatMessage {
   isRead: boolean;
   msgKey?: string;
   readAt?: number;
+  editedAt?: number;
   peerRead?: boolean;
   peerReadAt?: number;
   attachments?: { id: string; filename: string; mimeType: string; size: number }[];
+  /** 本地乐观发送的占位消息（尚未收到服务端确认） */
+  pending?: boolean;
+  /** 发送失败标记（仅乐观占位消息） */
+  failed?: boolean;
 }
 
 // 上传文件描述（base64）
@@ -493,7 +498,7 @@ export interface ChatUploadFile {
 }
 
 // 获取与对方的站内对话（增量轮询）
-export const getInternalChat = async (address: string, withAddress: string, since = 0, password?: string): Promise<{ success: boolean; error?: any; messages?: InternalChatMessage[] }> => {
+export const getInternalChat = async (address: string, withAddress: string, since = 0, password?: string): Promise<{ success: boolean; error?: any; messages?: InternalChatMessage[]; deletedKeys?: string[]; deletedAt?: number }> => {
   try {
     const query = `with=${encodeURIComponent(withAddress)}&since=${since}&limit=30`;
     const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat?${query}`), {
@@ -503,12 +508,48 @@ export const getInternalChat = async (address: string, withAddress: string, sinc
     const data = await response.json();
 
     if (data.success) {
-      return { success: true, messages: data.messages };
+      return { success: true, messages: data.messages, deletedKeys: data.deletedKeys || [], deletedAt: data.deletedAt || 0 };
     }
     return { success: false, error: data.error || '获取对话失败' };
   } catch (error) {
     console.error('Error fetching internal chat:', error);
-    return { success: false, error, messages: [] };
+    return { success: false, error, messages: [], deletedKeys: [], deletedAt: 0 };
+  }
+};
+
+// 编辑站内消息（仅发送者可编辑）
+export const editInternalMessage = async (address: string, msgKey: string, content: string, password?: string): Promise<{ success: boolean; error?: any; message?: InternalChatMessage }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/messages/${encodeURIComponent(msgKey)}/edit`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(password),
+      },
+      body: JSON.stringify({ content }),
+    });
+    const data = await response.json();
+    if (data.success) return { success: true, message: data.message };
+    return { success: false, error: data.error || '编辑失败' };
+  } catch (error) {
+    console.error('Error editing internal message:', error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+};
+
+// 删除站内消息（仅发送者可删除）
+export const deleteChatMessage = async (address: string, msgKey: string, password?: string): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const response = await fetch(apiUrl(`/api/mailboxes/${encodeURIComponent(address)}/chat/messages/${encodeURIComponent(msgKey)}`), {
+      method: 'DELETE',
+      headers: authHeaders(password),
+    });
+    const data = await response.json();
+    if (data.success) return { success: true };
+    return { success: false, error: data.error || '删除失败' };
+  } catch (error) {
+    console.error('Error deleting internal message:', error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 };
 

@@ -449,6 +449,26 @@
     "remove": "移除",
     "fileTooLarge": "超过 10MB 大小限制",
     "maxAttachments": "每条消息最多 5 个附件",
-    "emoji": "表情"
+    "emoji": "表情",
+    "copy": "复制",
+    "copied": "已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "edit": "编辑",
+    "delete": "删除",
+    "edited": "已编辑",
+    "cancel": "取消",
+    "confirm": "确定",
+    "editPlaceholder": "编辑消息内容...",
+    "editFailed": "编辑失败",
+    "messageEmpty": "消息内容不能为空",
+    "deleteConfirm": "确定删除这条消息吗？删除后双方都将看不到它",
+    "deleteSuccess": "消息已删除",
+    "deleteFailed": "删除失败",
+    "dropHint": "松开鼠标上传附件",
+    "peerCopy": "点击复制对方邮箱",
+    "sending": "发送中…",
+    "sent": "已发送",
+    "sendFailedShort": "发送失败",
+    "retry": "重试"
   }
 }

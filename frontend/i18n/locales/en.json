@@ -442,6 +442,26 @@
     "remove": "Remove",
     "fileTooLarge": "Exceeds 10MB limit",
     "maxAttachments": "Max 5 attachments per message",
-    "emoji": "Emoji"
+    "emoji": "Emoji",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Copy failed",
+    "edit": "Edit",
+    "delete": "Delete",
+    "edited": "edited",
+    "cancel": "Cancel",
+    "confirm": "OK",
+    "editPlaceholder": "Edit message...",
+    "editFailed": "Edit failed",
+    "messageEmpty": "Message cannot be empty",
+    "deleteConfirm": "Delete this message? It will be removed for both sides",
+    "deleteSuccess": "Message deleted",
+    "deleteFailed": "Delete failed",
+    "dropHint": "Drop files to attach",
+    "peerCopy": "Click to copy address",
+    "sending": "Sending…",
+    "sent": "Sent",
+    "sendFailedShort": "Send failed",
+    "retry": "Retry"
   }
 }

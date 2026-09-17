@@ -142,6 +142,8 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     await addColumnIfMissing(db, 'chat_messages', 'msg_key', 'TEXT');
     await addColumnIfMissing(db, 'chat_messages', 'peer_read', 'INTEGER DEFAULT 0');
     await addColumnIfMissing(db, 'chat_messages', 'peer_read_at', 'INTEGER DEFAULT 0');
+    // [feat] 消息编辑：记录最后一次编辑时间，供对方增量轮询发现编辑
+    await addColumnIfMissing(db, 'chat_messages', 'edited_at', 'INTEGER DEFAULT 0');
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_msg_key ON chat_messages(msg_key);`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_from ON chat_messages(from_address, mailbox_id);`);
     
@@ -154,6 +156,9 @@ export async function initializeDatabase(db: D1Database): Promise<void> {
     
     // [feat] 站内聊天已读回执同步节流表（每小时最多同步一次，降低 D1 读写量）
     await db.exec(`CREATE TABLE IF NOT EXISTS chat_sync_state (mailbox_id TEXT PRIMARY KEY, last_sync_at INTEGER NOT NULL);`);
+
+    // [feat] 站内消息删除墓碑（记录已删除的 msg_key，供对方增量轮询时移除本地副本）
+    await db.exec(`CREATE TABLE IF NOT EXISTS chat_deletions (msg_key TEXT PRIMARY KEY, deleted_at INTEGER NOT NULL);`);
     
     // 速率限制事件表（登录失败/发信等防爆破防刷）
     await db.exec(`CREATE TABLE IF NOT EXISTS rate_events (ip TEXT, action TEXT, created_at INTEGER);`);
@@ -862,17 +867,18 @@ let rows: Array<{
     msg_key: string | null;
     peer_read: number | boolean;
     peer_read_at: number;
+    edited_at: number;
   }> = [];
 
   if (since > 0) {
-    // 增量轮询：只取新消息（用 >= 防止同一秒内的消息被遗漏，客户端按 id 去重）
+    // 增量轮询：新消息（created_at >= since）或该时间段内被编辑的消息（edited_at >= since）都会返回，客户端按 id 合并
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at, edited_at
       FROM chat_messages
-      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND created_at >= ?
+      WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?) AND (created_at >= ? OR edited_at >= ?)
       ORDER BY created_at ASC
       LIMIT ?
-    `).bind(mailboxId, peerAddress, peerAddress, since, limit).all<{
+    `).bind(mailboxId, peerAddress, peerAddress, since, since, limit).all<{
       id: string;
       from_address: string;
       from_name: string;
@@ -884,12 +890,13 @@ let rows: Array<{
       msg_key: string | null;
       peer_read: number | boolean;
       peer_read_at: number;
+      edited_at: number;
     }>();
     rows = res.results || [];
   } else {
     // 初始加载：取最近 limit 条（先按时间倒序取，再升序返回）
     const res = await db.prepare(`
-      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at
+      SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at, edited_at
       FROM chat_messages
       WHERE mailbox_id = ? AND (from_address = ? OR to_address = ?)
       ORDER BY created_at DESC
@@ -906,6 +913,7 @@ let rows: Array<{
       msg_key: string | null;
       peer_read: number | boolean;
       peer_read_at: number;
+      edited_at: number;
     }>();
     rows = (res.results || []).reverse();
   }
@@ -929,10 +937,125 @@ let rows: Array<{
     isRead: !!r.is_read,
     readAt: r.read_at || 0,
     msgKey: r.msg_key || undefined,
+    editedAt: r.edited_at || 0,
     peerRead: r.msg_key ? !!r.peer_read : false,
     peerReadAt: r.peer_read_at || 0,
     attachments: (r.msg_key && attachmentMap.get(r.msg_key)) || [],
   }));
+}
+
+/**
+ * 获取该时段内被删除的站内消息 msg_key（用于对方增量轮询时移除本地副本）
+ * @param db 数据库实例
+ * @param since 只返回 deleted_at >= since 的删除记录
+ * @returns 被删除的 msg_key 列表与最近删除时间（用于推进客户端的删除水位线）
+ */
+export async function getDeletedChatKeys(
+  db: D1Database,
+  since: number
+): Promise<{ keys: string[]; maxDeletedAt: number }> {
+  if (since <= 0) return { keys: [], maxDeletedAt: 0 };
+  const res = await db.prepare(`
+    SELECT msg_key, deleted_at FROM chat_deletions
+    WHERE deleted_at >= ?
+    ORDER BY deleted_at ASC
+    LIMIT 500
+  `).bind(since).all<{ msg_key: string; deleted_at: number }>();
+  const rows = res.results || [];
+  return {
+    keys: rows.map(r => r.msg_key),
+    maxDeletedAt: rows.reduce((m, r) => Math.max(m, r.deleted_at), 0),
+  };
+}
+
+/**
+ * 编辑一条站内消息（仅发送者可编辑，消息双方副本同步更新并记录编辑时间）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param address 当前邮箱地址（发送者）
+ * @param peerAddress 对方邮箱地址
+ * @param msgKey 消息关联键
+ * @param newContent 新内容
+ * @returns 编辑后的消息（发送者副本）；无权限或不存在返回 null
+ */
+export async function editInternalMessage(
+  db: D1Database,
+  mailboxId: string,
+  address: string,
+  peerAddress: string,
+  msgKey: string,
+  newContent: string
+): Promise<ChatMessage | null> {
+  // 必须存在"我发给该对方"的副本，才是可编辑的本人消息
+  const own = await db.prepare(
+    `SELECT 1 AS x FROM chat_messages WHERE msg_key = ? AND mailbox_id = ? AND from_address = ? AND to_address = ? LIMIT 1`
+  ).bind(msgKey, mailboxId, address, peerAddress).first();
+  if (!own) return null;
+
+  const now = getCurrentTimestamp();
+  await db.prepare(`UPDATE chat_messages SET content = ?, edited_at = ? WHERE msg_key = ?`)
+    .bind(newContent, now, msgKey).run();
+
+  const row = await db.prepare(
+    `SELECT id, from_address, from_name, to_address, content, created_at, is_read, read_at, msg_key, peer_read, peer_read_at, edited_at
+     FROM chat_messages WHERE msg_key = ? AND mailbox_id = ? LIMIT 1`
+  ).bind(msgKey, mailboxId).first<{
+    id: string; from_address: string; from_name: string; to_address: string;
+    content: string; created_at: number; is_read: number | boolean; read_at: number;
+    msg_key: string; peer_read: number | boolean; peer_read_at: number; edited_at: number;
+  }>();
+  if (!row) return null;
+
+  const attachmentMap = await getChatAttachmentsByMsgKeys(db, [msgKey]);
+  return {
+    id: row.id,
+    fromAddress: row.from_address,
+    toAddress: row.to_address,
+    fromName: row.from_name || '',
+    subject: '',
+    textContent: row.content || '',
+    receivedAt: row.created_at,
+    isRead: !!row.is_read,
+    readAt: row.read_at || 0,
+    msgKey: row.msg_key || undefined,
+    editedAt: row.edited_at || 0,
+    peerRead: row.msg_key ? !!row.peer_read : false,
+    peerReadAt: row.peer_read_at || 0,
+    attachments: (row.msg_key && attachmentMap.get(row.msg_key)) || [],
+  };
+}
+
+/**
+ * 删除一条站内消息（仅发送者可删除；双方副本连同附件一并删除，并写入删除墓碑供对方轮询移除）
+ * @param db 数据库实例
+ * @param mailboxId 当前邮箱ID
+ * @param address 当前邮箱地址（发送者）
+ * @param peerAddress 对方邮箱地址
+ * @param msgKey 消息关联键
+ * @returns 是否删除成功（本人无权限或不存在返回 false）
+ */
+export async function deleteChatMessage(
+  db: D1Database,
+  mailboxId: string,
+  address: string,
+  peerAddress: string,
+  msgKey: string
+): Promise<boolean> {
+  const own = await db.prepare(
+    `SELECT 1 AS x FROM chat_messages WHERE msg_key = ? AND mailbox_id = ? AND from_address = ? AND to_address = ? LIMIT 1`
+  ).bind(msgKey, mailboxId, address, peerAddress).first();
+  if (!own) return false;
+
+  await deleteChatAttachmentsByMsgKeys(db, [msgKey]);
+
+  const now = getCurrentTimestamp();
+  // 删除双方副本，同时写入墓碑（供对方轮询移除）并顺手清理7天前的旧墓碑
+  await db.batch([
+    db.prepare(`DELETE FROM chat_messages WHERE msg_key = ?`).bind(msgKey),
+    db.prepare(`INSERT OR REPLACE INTO chat_deletions (msg_key, deleted_at) VALUES (?, ?)`).bind(msgKey, now),
+    db.prepare(`DELETE FROM chat_deletions WHERE deleted_at < ?`).bind(now - 7 * 86400),
+  ]);
+  return true;
 }
 
 /**

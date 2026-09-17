@@ -176,6 +176,7 @@ export interface ChatMessage {
   isRead: boolean;
   msgKey?: string;
   readAt?: number;
+  editedAt?: number;
   peerRead?: boolean;
   peerReadAt?: number;
   attachments?: ChatAttachmentListItem[];
