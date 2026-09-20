@@ -24,22 +24,28 @@ export async function getEmailDomains(): Promise<string[]> {
     console.error('获取邮箱域名配置失败:', error);
   }
   
-  // 如果 API 获取失败，使用环境变量作为后备
+  // 如果 API 获取失败，使用环境变量作为后备；
+  // 注意：不标记 configLoaded，下次调用会重试，避免把无效的 example.com 永久缓存
   const fallbackDomains = (import.meta.env.VITE_EMAIL_DOMAIN || '').split(',').map(domain => domain.trim()).filter(domain => domain);
-  cachedEmailDomains = fallbackDomains.length > 0 ? fallbackDomains : ['example.com'];
-  configLoaded = true;
+  cachedEmailDomains = fallbackDomains.length > 0 ? fallbackDomains : [];
   return cachedEmailDomains!;
 }
 
 // 获取默认邮箱域名
 export async function getDefaultEmailDomain(): Promise<string> {
   const domains = await getEmailDomains();
-  return domains[0] || 'example.com';
+  return domains[0] || '';
 }
 
-// 同步版本的邮箱域名配置（用于向后兼容）
-export const EMAIL_DOMAINS = (import.meta.env.VITE_EMAIL_DOMAIN || '').split(',').map(domain => domain.trim()).filter(domain => domain) || ['example.com'];
-export const DEFAULT_EMAIL_DOMAIN = EMAIL_DOMAINS[0] || 'example.com';
+// 同步版本的邮箱域名配置（用于向后兼容；构建时未注入则留空，避免显示无效的 example.com）
+export const EMAIL_DOMAINS = (import.meta.env.VITE_EMAIL_DOMAIN || '').split(',').map(domain => domain.trim()).filter(domain => domain) || [];
+export const DEFAULT_EMAIL_DOMAIN = EMAIL_DOMAINS[0] || '';
+
+// 清除域名缓存，强制下次调用重新向服务端拉取
+export function resetEmailDomainsCache(): void {
+  cachedEmailDomains = null;
+  configLoaded = false;
+}
 
 // API地址配置
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';

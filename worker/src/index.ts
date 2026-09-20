@@ -3,6 +3,21 @@ import { initializeDatabase, cleanupExpiredMailboxes, cleanupExpiredMails, clean
 import { handleEmail } from './email-handler';
 import app from './routes';
 
+// 数据库初始化标志：避免每个请求都执行几十条 D1 语句（初始化+全表 UPDATE），
+// 导致 Worker 超出 CPU 时间上限（Cloudflare 503 / error code 1102）
+let dbInitPromise: Promise<void> | null = null;
+
+function ensureDatabaseInitialized(env: Env): Promise<void> {
+  if (!dbInitPromise) {
+    dbInitPromise = initializeDatabase(env.DB).catch(error => {
+      // 初始化失败时重置，允许后续请求重试
+      dbInitPromise = null;
+      throw error;
+    });
+  }
+  return dbInitPromise;
+}
+
 // 导出Worker处理函数
 export default {
   // 处理HTTP请求
@@ -27,8 +42,8 @@ export default {
     }
 
     try {
-      // 自动初始化数据库（如果需要）
-      await initializeDatabase(env.DB);
+      // 自动初始化数据库（每个 isolate 仅执行一次，避免每请求全表初始化导致 CPU 超时）
+      await ensureDatabaseInitialized(env);
       
       // 手动初始化数据库（如果请求中包含init参数）
       if (url.searchParams.has('init')) {

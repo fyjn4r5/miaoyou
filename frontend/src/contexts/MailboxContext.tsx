@@ -9,7 +9,7 @@ import {
   createMailboxWithCredentials
 } from '../utils/api';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_AUTO_REFRESH, AUTO_REFRESH_INTERVAL, getEmailDomains, getDefaultEmailDomain, EMAIL_DOMAINS, DEFAULT_EMAIL_DOMAIN } from '../config';
+import { DEFAULT_AUTO_REFRESH, AUTO_REFRESH_INTERVAL, getEmailDomains, getDefaultEmailDomain, EMAIL_DOMAINS, DEFAULT_EMAIL_DOMAIN, resetEmailDomainsCache } from '../config';
 
 // 邮件详情缓存接口
 interface EmailCache {
@@ -52,6 +52,7 @@ interface MailboxContextType {
   emailDomains: string[];
   selectedDomain: string;
   setSelectedDomain: (domain: string) => void;
+  refreshEmailDomains: () => Promise<void>;
 }
 
 export const MailboxContext = createContext<MailboxContextType>({
@@ -84,8 +85,9 @@ export const MailboxContext = createContext<MailboxContextType>({
   setShowPasswordDialog: () => {},
   createMailboxWithCredentials: async () => false,
   emailDomains: [],
-  selectedDomain: 'example.com',
+  selectedDomain: '',
   setSelectedDomain: () => {},
+  refreshEmailDomains: async () => {},
 });
 
 interface MailboxProviderProps {
@@ -185,6 +187,23 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
     };
     loadConfig();
   }, []);
+
+  // 强制重新拉取域名配置（用于启动时拉取失败、当前只剩兜底域名时）
+  const refreshEmailDomains = async () => {
+    try {
+      resetEmailDomainsCache();
+      const domains = await getEmailDomains();
+      if (domains.length > 0) {
+        setEmailDomains(domains);
+        setSelectedDomain(domains[Math.floor(Math.random() * domains.length)]);
+        return;
+      }
+      const fresh = EMAIL_DOMAINS.length > 0 ? EMAIL_DOMAINS : [];
+      setEmailDomains(fresh);
+    } catch (error) {
+      console.error('刷新邮箱域名配置失败:', error);
+    }
+  };
 
   // 使用指定的用户名和密码创建邮箱
   const createMailboxWithCredentialsFn = async (address: string, password: string): Promise<boolean> => {
@@ -427,6 +446,7 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({ children }) =>
         emailDomains,
         selectedDomain,
         setSelectedDomain,
+        refreshEmailDomains,
       }}
     >
       {/* [feat] 全局通知组件 */}

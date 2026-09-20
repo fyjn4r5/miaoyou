@@ -13,7 +13,7 @@ const MIN_PASSWORD_LENGTH = 6;
 
 const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss }) => {
   const { t } = useTranslation();
-  const { loginWithPassword, isLoading, createMailboxWithCredentials, showSuccessMessage, showErrorMessage, emailDomains, selectedDomain, setSelectedDomain } = useContext(MailboxContext);
+  const { loginWithPassword, isLoading, createMailboxWithCredentials, showSuccessMessage, showErrorMessage, emailDomains, selectedDomain, setSelectedDomain, refreshEmailDomains } = useContext(MailboxContext);
   const [activeTab, setActiveTab] = useState<'create' | 'login'>('create');
 
   const [generatedAddress, setGeneratedAddress] = useState(() => generateRandomAddress());
@@ -37,7 +37,13 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     setCustomAddress('');
     setCustomPassword('');
     if (emailDomains.length > 0) {
-      setSelectedDomain(emailDomains[Math.floor(Math.random() * emailDomains.length)]);
+      // 过滤掉无效兜底域名（example.com 等），只在真实配置的域名里随机
+      const validDomains = emailDomains.filter(d => !d.includes('example.com'));
+      const pool = validDomains.length > 0 ? validDomains : emailDomains;
+      setSelectedDomain(pool[Math.floor(Math.random() * pool.length)]);
+    } else {
+      // 启动时拉取失败导致没有域名时，强制重新拉取
+      refreshEmailDomains();
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -48,8 +54,10 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     setGeneratedPassword(generatePassword());
     setUseCustomPassword(false);
     setCustomPassword('');
-    const randomDomain = emailDomains.length > 0
-      ? emailDomains[Math.floor(Math.random() * emailDomains.length)]
+    const validDomains = emailDomains.filter(d => !d.includes('example.com'));
+    const pool = validDomains.length > 0 ? validDomains : emailDomains;
+    const randomDomain = pool.length > 0
+      ? pool[Math.floor(Math.random() * pool.length)]
       : selectedDomain;
     setSelectedDomain(randomDomain);
   };
@@ -59,6 +67,14 @@ const CreateLoginDialog: React.FC<CreateLoginDialogProps> = ({ isOpen, onDismiss
     if (!localPart) {
       showErrorMessage(t('mailbox.invalidAddress'));
       return;
+    }
+    if (!selectedDomain) {
+      // 域名尚未就绪时先重新拉取，避免生成 @ 空域名的无效账号
+      await refreshEmailDomains();
+      if (!selectedDomain) {
+        showErrorMessage(t('mailbox.invalidAddress'));
+        return;
+      }
     }
     const finalPassword = useCustomPassword ? customPassword.trim() : generatedPassword;
     if (useCustomPassword && finalPassword.length < MIN_PASSWORD_LENGTH) {
